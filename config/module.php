@@ -5,7 +5,8 @@ return  [
     'modules' => [
        'Cliente',
        'Comercial',
-       'Credito'
+       'Credito',
+       'Sica'
       ]
 ];
 ?>
