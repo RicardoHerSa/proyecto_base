@@ -1,0 +1,858 @@
+
+@font-face {
+    font-family: "FS Albert";
+    src: url("../fonts/fsalbert-webfont.woff");
+  }
+
+
+
+h1 ,h2,h3,h4,h5,h6 {
+    color: #003A5D; 
+    font-family: "FS Albert";
+  }
+
+body{
+    font-family: "FS Albert" !important;
+    overflow-x: hidden;
+}
+
+.container2{
+
+    padding-top: 0px;
+    padding-right: 0px;
+    padding-bottom: 0px;
+    padding-left: 130px;
+
+}
+
+
+
+.img_binvenida{
+
+    padding-top: 0px;
+    padding-right: 0px;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    text-align: left
+
+   
+}
+
+.img_derecha_fondo{
+
+     background-color:  #005387 ;
+
+
+}
+
+.container3{
+
+    padding-top: 0px;
+    padding-right: 0px;
+    padding-bottom: 0px;
+    padding-left: 130px;
+    
+    }
+
+.titulo1{
+
+    font-family: "FS Albert";
+    font-style: normal;
+    font-weight: bold;
+    font-size: 96px;
+    line-height: 132%;
+    /* identical to box height, or 127px */
+
+    display: flex;
+    align-items: center;
+    /* H1 - Dark Blue Tittle */
+    color: #011827;
+}
+
+.titulo2{
+
+    font-family: "FS Albert";
+    font-style: normal;
+    font-weight: bold;
+    font-size: 48px;
+    line-height: 122.5%;
+    /* identical to box height, or 59px */
+
+    display: flex;
+    align-items: center;
+
+    /* H1 - Dark Blue Tittle */
+
+    color: #011827;
+}
+
+.titulo3{
+    font-family: "FS Albert";
+    font-style: normal;
+    font-weight: bold;
+    font-size: 28px;
+    line-height: 156.5%;
+    /* identical to box height, or 44px */
+    display: flex;
+    align-items: center;
+
+    /* H1 - Dark Blue Tittle */  
+    color: #011827;
+}
+
+.cuerpo1{
+
+    font-family: "FS Albert";
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+}
+
+.cuerpo2{
+
+    font-family: "FS Albert";
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    /*padding-left: 20px;*/
+    padding-right: 100px;
+}
+
+.cuerpo3{
+    color:  #005387;
+    font-family: "FS Albert";
+    font-style: normal;
+    font-weight: bold;
+    font-size: 14px;
+    padding-left: 20px;
+    
+}
+
+.link1{
+
+    font-family: "FS Albert" !important;
+    font-style: normal !important;
+    font-weight: bold !important;
+    font-size: 15px !important;
+    line-height: 176.5% !important;
+}
+
+
+
+.btn-primary  {
+    color: #fff !important;
+    background: #005387 !important;
+    border-radius: 27px !important; 
+ 
+    
+
+    font-family: "FS Albert" !important;
+    font-style: normal !important;
+    font-size: 15px !important ;
+   
+   /* line-height: 24px !important;
+    
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    
+    padding-top: 50px;
+    padding-right: 30px;
+    padding-bottom: 50px;
+    padding-left: 80px;
+
+    left: 12.47% !important;
+    right: 43.77% !important;
+    top: calc(50% - 24px/2);
+    line-height: 24px !important;*/
+    
+
+    /*display: flex !important;
+    align-items: center !important;  */
+}
+
+ .btn-danger , .btn-warning , .btn-secondary , .btn-success , .btn-info , .btn-dark {
+    color: #fff !important;
+   
+    border-radius: 27px !important; 
+ 
+   
+}
+
+
+
+.titulo4{
+
+/* H4 -FS Albert 24 px */
+
+font-family: "FS Albert";
+font-style: normal;
+font-weight: bold;
+font-size: 24px;
+line-height: 156.5%;
+/* identical to box height, or 38px */
+
+display: flex;
+align-items: center;
+
+/* H1 - Dark Blue Tittle */
+
+color: #011827;
+
+
+
+}
+
+@media (max-width: 600px) {
+    .dropdown-menu .sub-menu {
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+    }
+  }
+.dropdown-menu .sub-menu {
+    left: 100%;
+    position: absolute;
+    top: 0;
+    visibility: hidden;
+    margin-top: -1px;
+}
+.dropdown-menu li:hover .sub-menu {
+    visibility: visible;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+.combobox{
+    min-width: 90%;
+
+}
+.gorup-table tr.item-2 td:first-child{
+    padding-left: 2em;
+}
+.gorup-table  tr.item-3 td:first-child{
+    padding-left: 4em;
+}
+.gorup-table  tbody tr td:last-child {
+    text-align: right;
+}
+.form-login{
+    padding-left: 0;
+    padding-right: 0;
+}
+
+
+.t {
+    border-color:white;
+    border-radius: 0px 0px 0px 0px;
+    border-left: 50px solid white;
+    border-right: 50px solid white;
+    border-bottom: 5px solid white;
+   
+    margin-top: 0;
+    background:white;
+	
+}
+
+
+
+
+footer.cts {
+  
+    left: 0;
+    bottom: 0;
+    width: 100%;
+  
+    text-align: center;
+    padding: 1em;
+    background: white;
+    font-family: 'FS Albert';
+    
+    
+    /*Sombra*/
+   /* -webkit-box-shadow: -1px -4px 11px 1px rgba(3,8,41,1);
+    -moz-box-shadow: -1px -4px 11px 1px rgba(3,8,41,1);
+    box-shadow: -1px -4px 11px 1px rgba(3,8,41,1);*/
+    
+}
+body.cts-body {
+    background-image: url("../resources/Background.png");
+    background: white;
+}
+main.principal-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    
+}
+
+
+.form-control{
+
+
+    border: 1px solid rgba(78, 81, 109, 0.3) !important;
+    border-radius: 20px !important;
+    
+    font-family: "FS Albert" !important;
+    font-style: normal !important;
+    font-size: 15px !important ;
+} 
+
+
+
+
+.form-select{
+
+    border: 1px solid rgba(78, 81, 109, 0.3);
+    border-radius: 20px;
+    font-family: "FS Albert" !important;
+    font-style: normal !important;
+    font-size: 15px !important ;
+
+
+} 
+
+
+.form-control.pass{
+
+    
+    border: 0px solid rgba(78, 81, 109, 0.3) !important;;
+    border-bottom-width: 1px  !important;
+    border-top-width: 1px !important;
+    border-left-width: 1px !important;
+ 
+
+    border-radius: 20px 0px 0px 20px !important;
+   
+  
+} 
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border: 0px solid rgba(78, 81, 109, 0.3) !important;;
+   /* border: 1px , 0px , 1px , 1px solid rgba(28, 31, 56, 0.3) !important;*/
+
+    border-bottom-width: 1px  !important;
+    border-top-width: 1px !important;
+    border-right-width: 1px !important;
+
+    background-color: transparent;
+    background-image: none;
+    border-radius: 0px 20px 20px 0px !important;
+   
+}
+
+main.principal-container .container {
+    background:white;
+   /* padding-top: 2em;
+    padding-bottom: 5em; */
+    max-width: 100%;
+}
+img{
+    width: 100%;
+}
+div#menu_filter label {
+    float: right;
+}
+body.footer-fixed footer {
+    position: relative;
+    width: 100%;
+    bottom: 0;
+}
+.container.reset-password {
+   
+    padding-bottom: 10px;
+}
+
+
+ul.list-unstyled li {
+    list-style: none !important;
+    
+}
+
+.linkNav::after {
+    content: "";
+    visibility: hidden;
+    width: 0px;
+    margin-left: 0;
+    border-left: 0;
+    border-right: 0;
+	color: #006290 !important;
+}
+.noLinkNav{
+    padding-left: 0;
+    padding-right: 0;
+    border-left: 0;
+    border-right: 0;
+	color: #006290 !important;
+	
+}
+.linkNav {
+    padding-right: 0;
+	color: #006290 !important;
+}
+.dataTables_filter {
+    float: right;
+}
+iframe {
+    border: 0;
+}
+ul.dropdown-menu.sub-menu {
+    background: rgb(245,245,245);
+	color: #006290 !important;
+}
+ul.navbar-nav.ml-auto * {
+    color: #006290 !important;
+    font-weight: bold;
+}
+
+ul.navbar-nav.ml-auto li:hover {
+    background: #f7f7f7;
+    border-radius: 10px 0px 10px 0px;
+	color: #006290 !important;
+}
+
+.navbar-light .navbar-nav .nav-link {
+ 
+    border-radius: 10px 0px 10px 0px;
+	color: #006290 !important;
+}
+
+
+.parent {
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
+.image2 {
+    position: relative;
+    top: 0;
+    left: 60px;
+    height: 20%;
+    width: 75%;
+  
+}
+.image1 {
+    position: absolute;
+    top: 0px;
+    left:59%;
+    background-color:#005387;
+    height: 100%;
+    width: 100%;
+
+    
+}
+
+.image3 {
+    position: absolute;
+    padding-top: -20%;
+ 
+    left:50%;
+    mix-blend-mode: normal;
+    opacity: 0.2;
+  
+
+    
+}
+
+
+.image4 {
+    position: absolute;
+ 
+    left:0%;
+    mix-blend-mode: normal;
+    opacity: 0.3;
+    padding-top: 10%;
+    padding-left: 30%;
+
+    
+}
+
+.image5 {
+    position: absolute;
+ 
+    left:60%;
+    mix-blend-mode: normal;
+    opacity: 0.3;
+    padding-top: 30%;
+    
+}
+
+/**/
+
+.home4 {
+    position: absolute;
+ 
+    left:0%;
+    mix-blend-mode: normal;
+    opacity: 0.3;
+    padding-top: 90%;
+    padding-left: 60%;
+
+    height: 300px;
+    width:  300px;
+
+    
+}
+.home5 {
+    position: relative;
+    left: 70%;
+    width:  300px;
+    padding-top: 10%;
+}
+.home2 {
+    position: absolute;
+ 
+    right:  15%;
+    mix-blend-mode: normal;
+    opacity: 0.3;
+    padding-top: 50%;
+    width:  455px;
+    
+}
+
+.home1 {
+    position: absolute!important;
+    top: 0px!important;
+    
+    background-color:#005387!important;
+    height: 100% !important;
+    width:  400px !important;
+}
+
+.home3 {
+    position: absolute;
+    padding-top: 20%;
+    height: 300px;
+    width:  300px;
+    mix-blend-mode: normal;
+    opacity: 0.2;
+
+}
+
+.container4{
+
+    padding-top: 30px !important;
+    padding-left: 300px !important;
+    padding-right: 350px !important; 
+
+}
+
+.container5 {
+    font-family: "FS Albert";
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+
+    padding-right: 100px;
+}
+
+
+.list-group-item.active {
+    z-index: 2;
+    color: #fff !important;
+    background-color:#005387!important ; 
+    border-color: #005387 !important;
+   
+    font-family: 'FS Albert' !important; 
+}
+
+
+.list-group-item{
+    padding-top: 3px!important;
+    padding-bottom: 3px!important;
+     
+    border-top-left-radius: 20px !important;
+    border-bottom-left-radius: 20px !important;
+}
+
+.completado{
+    color:#43CE05 !important;
+}
+
+.pendiente{
+    color:#fd2003 !important;
+}
+
+#btnAgregarUbicacion{
+    height: 50px;
+    margin-top: 13px;
+}
+
+#btnAgregarDirecc{
+    height: 50px;
+    margin-top: 13px;
+    width: 40px;
+}
+
+#modalDirecciones{
+    width: 1000px;
+    margin-left: -180px;
+}
+
+#botonModal{
+    background: #D65F07;
+    color: white;
+    font-weight: bold;
+}
+
+#iconoCampana{
+    font-size: 30px;
+    color: #D65F07;
+    cursor: pointer;
+}
+
+#indicadorCampana{
+    background: red;
+    font-weight: 700;
+    font-size: 20px;
+    position: relative;
+    top: 7px;
+    right: 1px;
+    color: white;
+    border-radius: 10px;
+    padding: 3px;
+    
+}
+
+
+.btn-link {
+   
+    color:  #005387 !important;
+    text-decoration: none !important;
+    font-weight: bold !important;
+    font-family: "FS Albert" !important;
+}
+
+.btn-link:hover {
+   
+    color:  #1654a5 !important;
+    text-decoration: none !important;
+    font-weight: bold !important;
+    font-family: "FS Albert" !important;
+}
+
+.card-header {
+    padding: 0.5rem 0.5rem !important; 
+    margin-bottom: 0 !important;
+    background-color: #005387 !important; /* rgba(143, 137, 137, 0.062) !important; */
+    border-bottom: 0px solid rgba(0,0,0,.125) !important;
+    color: #ffff;
+}
+
+.card-header:hover {
+    padding: 0.5rem 0.5rem !important; 
+    margin-bottom: 0 !important;
+    /* background-color: rgba(13, 15, 46, 0.123) !important;  */
+    background-color: #005387  !important;
+    border-bottom: 0px solid rgba(0,0,0,.125) !important;
+    color: #ffff;
+}
+.container13{
+
+    padding-top: 0px;
+    padding-right: 0;
+    padding-bottom: 0px;
+    padding-left:0;
+
+}
+
+.cuadrado{
+
+    position: relative;
+	display: block;
+    margin: 0.5em;
+
+	padding-top: 15px;
+    padding-right: 1px;
+    padding-bottom: 5px;
+    padding-left:1px;
+
+
+	border-radius: 1em; 
+	text-align: center;
+	font-weight: bold;
+	 max-width: 320px;
+    /*max-height: 320px;
+	height: 65px; */
+	/*margin-bottom: 60px;*/
+	overflow: hidden;
+	color: #005387;
+	cursor: pointer;
+	/*letter-spacing: 2px;*/
+	box-shadow:inset 0 0 0 1px rgba(0,0,0,0.1);
+	text-decoration: none;
+	transition: all ease 1.5s;
+	background: #c6cbcf1e ;
+    width: 100px !important; 
+    height: 100px !important; 
+     font-family: "FS Albert";
+     font-size: 0.8em;
+      
+     /* width: 100px; 
+     height: 100px; 
+     background: #c6cbcf1e !important;
+     
+     margin: 0.5em;
+     border-radius: 1em; 
+     color: #003A5D; 
+     font-family: "FS Albert";
+     font-weight: bold;
+     font-size: 0.8em ; */
+}
+.cuadrado::after,
+.cuadrado:before {
+        width: 30px;
+        height: 200px;
+        content: '';
+        display: block;
+        background: rgba(255, 255, 255, 0.226);
+        transform: rotate(45deg);
+        top: -60px;
+        position: absolute;
+        transition: none;
+        right:-45%;
+        cursor: pointer;
+        
+    }
+
+.cuadrado:before{
+        left: -48%;
+    }
+
+.cuadrado:hover{
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+    color: #f7f7f7; 
+	background : #005387
+  
+}
+
+.cuadrado:hover:after,
+.cuadrado:hover:before{
+	transform: rotate(45deg), scaleX(130%);
+	background: rgba(211, 204, 250, 0.11);
+	transition: all ease 3s;
+}
+
+.cuadrado:hover:after{
+	right: 130%;
+}
+ 
+.cuadrado:hover:before{
+	left: 130%;
+ }
+
+.titulo5{
+    font-family: "FS Albert";
+    font-style: normal;
+    font-weight: bold;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+        
+        /* H1 - Dark Blue Tittle */
+    color: #011827;
+}
+
+label {
+    color: #003A5D !important;
+    font-family: "FS Albert" !important;
+
+}
+
+.documento{
+
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+    padding: .375rem .75rem;
+    margin-bottom: 0;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    text-align: left;
+   /* white-space: nowrap;*/
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    
+    
+    
+   
+}
+
+i.fa.fa-download {
+    padding-right: 20px;
+}
+.form-control.file{
+
+    
+    border-radius: 5px 0px 0px 5px !important;
+    padding: 0px;
+    color: #5a5a5a;
+    font-family: "FS Albert" !important;
+    border-top: 1px  !important;
+    border-right: 0px  !important;
+}
+
+.form-control.file::-webkit-file-upload-button{
+
+    color: #f2f3f5;
+    border: 0px solid rgba(78, 81, 109, 0.3) !important;;
+   /* border: 1px , 0px , 1px , 1px solid rgba(28, 31, 56, 0.3) !important;*/
+    font-family: "FS Albert" !important;
+    border-bottom-width: 0px  !important;
+    border-top-width: 0px !important;
+    border-right-width:0px !important;
+    height: 100%;
+    background-color:#005387 ;
+    padding: 10px;
+    border-radius: 5px 0px 0px 5px !important;
+}
+
+.popover {
+    font-family: "FS Albert" !important;
+     /* position: fixed !important; */
+    /* top: 0 !important;
+     left: 0 !important;
+    z-index: 1060 !important; */
+    /* display: none !important; */
+     /* width: 250px !important;
+    padding: 1px !important;  
+     text-align: left !important;
+    white-space: normal !important; */
+    background-color: #1879c8 !important;
+     -webkit-background-clip: padding-box !important;
+    background-clip: padding-box !important;
+     border: 1px solid #ccc !important;
+    border: 1px solid rgba(0, 0, 0, .2) !important; 
+    border-radius:8px !important;
+    -webkit-box-shadow: -8px 6px 29px 6px rgba(0,0,0,0.40) !important;
+    -moz-box-shadow: -8px 6px 29px 6px rgba(0,0,0,0.40) !important;
+    box-shadow: -8px 6px 29px 6px rgba(0,0,0,0.40) !important;
+    color: white !important; 
+    }
+    
+.popover-body {
+        /* padding: .5rem .75rem !important; */
+        color: #f7f7f7 !important;
+}  
+
+
+    /* ========== END POPOVER 1 ========== */
+    
+   
+.obligatorio{
+    font-family: "FS Albert" !important;
+    color: #fa2b07 !important; 
+    font-style: normal;
+    font-weight: bold;
+
+}
+
+.bg-info {
+    background-color: #17a2b8!important;
+    color: #FFFF !important;
+}
