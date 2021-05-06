@@ -50,7 +50,7 @@ return [
             |
             */
 
-            'auto_connect' => env('LDAP_AUTO_CONNECT', true),
+            'auto_connect' => env('LDAP_AUTO_CONNECT', false),
 
             /*
             |--------------------------------------------------------------------------

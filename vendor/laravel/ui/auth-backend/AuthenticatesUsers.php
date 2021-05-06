@@ -102,6 +102,14 @@ trait AuthenticatesUsers
         $username = $info[$this->username()];
         $password = $info['password'];
 
+        $infouser = User::where($this->username(), $username)->first();
+        if(isset($infouser)){
+            return $info;
+        }else{
+            //el usuario local no existe
+            return $info;
+        }
+
             /*e-fergua Se modifica el metodo de busqueda 
                 puesto que la cosulta busca similitudes y puede traer usuario errados 
                 causando el no logueo a la aplicacion
@@ -111,54 +119,52 @@ trait AuthenticatesUsers
             por politica coorporativa todos los usuarios 
             son en minuscula   
              */
-           $user = Adldap::search()->where('samaccountname', '=', $username)->get();
+          // $user = Adldap::search()->where('samaccountname', '=', $username)->get();
            
-         
-
            
-
-           if(isset($user[0]['mail'][0])){
+        //      if(isset($user[0]['mail'][0])){
               
-               if (Adldap::auth()->attempt($user[0]['mail'][0], $password, $bindAsUser = true)) {
-                $infouser = User::where($this->username(), $username)->first();
+        //        if (Adldap::auth()->attempt($user[0]['mail'][0], $password, $bindAsUser = true)) {
+        //         $infouser = User::where($this->username(), $username)->first();
                 
-                if(isset($infouser)){
-                    if (Hash::check($password, $infouser->password)){
-                        return $info;
-                    }else{
-                        $pass = Hash::make($password);
-                        $infouser->update([
-                            'password' => $pass
-                        ]);
-                        return $info;
-                    }
+        //         if(isset($infouser)){
+        //             if (Hash::check($password, $infouser->password)){
+        //                 return $info;
+        //             }else{
+        //                 $pass = Hash::make($password);
+        //                 $infouser->update([
+        //                     'password' => $pass
+        //                 ]);
+        //                 return $info;
+        //             }
                     
-                }else{
-                    $info = [
-                        "username" => "nn",
-                        "password" => "password",
-                        "block" => 1,
-                        ];
-                    return $info;
+        //         }else{
+        //             $info = [
+        //                 "username" => "nn",
+        //                 "password" => "password",
+        //                 "block" => 1,
+        //                 ];
+        //             return $info;
                    
-                }
-            } else{
-                $info = [
-                "username" => "nn",
-                "password" => "password",
-                "block" => 1,
-                ];
-                return $info;
-            }
-        }else {
-            $infouser = User::where($this->username(), $username)->first();
-            if(isset($infouser)){
-                return $info;
-            }else{
-                //el usuario local no existe
-                return $info;
-            }
-        }
+        //         }
+        //     } else{
+        //         $info = [
+        //         "username" => "nn",
+        //         "password" => "password",
+        //         "block" => 1,
+        //         ];
+        //         return $info;
+        //     }
+        // }else {
+        //     $infouser = User::where($this->username(), $username)->first();
+        //     if(isset($infouser)){
+        //         return $info;
+        //     }else{
+        //         //el usuario local no existe
+        //         return $info;
+        //     }
+        // }
+        
     }
     /**
      * Send the response after the user was authenticated.
