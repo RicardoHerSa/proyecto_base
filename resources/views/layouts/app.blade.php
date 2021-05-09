@@ -8,18 +8,21 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Portal Cliente Carvajal</title>
-    <!--Incorporación de selectpicker-->
-    <link rel="stylesheet" href="{{ asset('libraries/selectpicker/css/select.min.css') }}">
+   
+      <!-- Styles -->
+      <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+      <link href="{{ asset('css/layaout.css') }}" rel="stylesheet">
     <!--Incorporacion Alertify-->
     
-<!-- JavaScript -->
-<script src="{{ asset('js/alertify.js')}}"></script>
+         <!--Incorporación de selectpicker-->
+    <link rel="stylesheet" href="{{ asset('libraries/selectpicker/css/select.min.css') }}">
+    <!-- JavaScript -->
+    <script src="{{ asset('js/alertify.js')}}"></script>
 
-<!-- CSS -->
-<link rel="stylesheet" href="{{asset('js/alertify.core.css')}}"/>
-<!-- Default theme -->
-<link rel="stylesheet" href="{{asset('js/alertify.default.css')}}"/>
-
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{asset('js/alertify.core.css')}}"/>
+    <!-- Default theme -->
+    <link rel="stylesheet" href="{{asset('js/alertify.default.css')}}"/>
 
     <link href="{{ asset('libraries/FontAwesome/css/font-awesome.min.css') }}" rel="stylesheet">
     <!--<link href="{{ asset('libraries/flag-icon-css-master/css/flag-icon.min') }}" rel="stylesheet">-->
@@ -27,10 +30,10 @@
     
     
     <link href="{{ asset('resources/favicon.ico') }}" rel="shortcut icon" type="image/vnd.microsoft.icon" />
-    <!-- Styles -->
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/layaout.css') }}" rel="stylesheet">
+  
+   
     <script src="{{ asset('js/jquery-3.3.1.js') }}"></script>
+  
     
     <!----summernote-0.8.18-dist -->
 
@@ -65,8 +68,6 @@
    
     <script src="https://unpkg.com/bootstrap-show-password@1.2.1/dist/bootstrap-show-password.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js" integrity="sha512-HWlJyU4ut5HkEj0QsK/IxBCY55n5ZpskyjVlAoV9Z7XQwwkqXoYdCIC93/htL3Gu5H3R4an/S0h2NXfbZk3g7w==" crossorigin="anonymous"></script>
-
-
 
     
 </head>
@@ -289,9 +290,12 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 
 
 </body>
-<footer class="cts">
-    Carvajal © 2020 <br>
+@if (!isset($modulo))
+    <footer class="cts">
+        Carvajal © 2020 <br>
+        
+    </footer>
     
-</footer>
+@endif
 
 </html>

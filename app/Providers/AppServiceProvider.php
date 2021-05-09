@@ -30,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         view()->composer('layouts.app', function($view) {
             $view->with('menus', Menu::menus());
         });
+        
     //Mostrar vista desde otro directorio
     $this->loadViewsFrom(__DIR__.'../../Modules/UsuarioP/Views', 'UsuarioP');
 

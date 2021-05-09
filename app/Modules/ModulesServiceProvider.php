@@ -37,13 +37,11 @@ class ModulesServiceProvider extends \Illuminate\Support\ServiceProvider
 
              // Load the lang
            
-           
-             if(is_dir(__DIR__.'/'.$module.'/lang')) {
+           //echo __DIR__.'/'.$module.'/lang'."<br>";
+             if(is_dir(__DIR__.'/'.$module.'/lang'.$module)) {
                
-                $this->loadTranslationsFrom(__DIR__.'/'.$module.'/lang', $module);
-               
+                $var =$this->loadTranslationsFrom(__DIR__.'/'.$module.'/lang'.$module, 'lang'.$module);
              }
-            
         }
     }
 

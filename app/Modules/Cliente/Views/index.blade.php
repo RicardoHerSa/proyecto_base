@@ -14,7 +14,8 @@
       </blockquote>
     </div>
   </div>
-
+<p>Español: {{trans('langCliente::es.modulo')}}</p><br>
+<p>Ingles: {{trans('langCliente::en.modulo')}}</p>
   
 </div>
 
