@@ -4,12 +4,21 @@
 return  [
     'modules' => [
        'Cliente',
-       'Visitante',
-       'Prueba',
-       'PruebaDos',
-       'Comercial',
-       'Credito',
-       'Sica'
+       'Permisos' => [
+           'Permisos',
+           'PermisosMasivos',
+           'PermisosUnitarios',
+           'AsignacionCodigos',
+           'RegistroVisitante',
+           'RegistroVisitanteTemporal'
+       ],
+       'ubicaciones' => [
+           'UbicacionesHorario',
+           'Porteria',
+           'Horario'
+       ],
+       'CargueMasivo',
+       'Reportes'
       ]
 ];
 ?>
