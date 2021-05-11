@@ -6,8 +6,7 @@ Route::group(['middleware' => 'web'], function () {
         
         //Route::resource('/', 'PruebaDosController'); 
         Route::get('registro-visitante-temporal', 'RegistroVisitanteTemporalController@index');
-        Route::post('consultaVisitante', 'RegistroVisitanteTemporalController@consultaVisitante')->name('consultaVisitante');
-        Route::get('consultaAlClickearTabla', 'RegistroVisitanteTemporalController@consultarClickTabla');
+        Route::post('consultaVisitanteTemporal', 'RegistroVisitanteTemporalController@consultaVisitanteTemporal')->name('consultaVisitanteTemporal');
         Route::post('registrarCodigo', 'RegistroVisitanteTemporalController@registrarCodigo')->name('registrarCodigo');
 
     });

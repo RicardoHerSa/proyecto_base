@@ -1,10 +1,10 @@
-@include('layouts.app', ['modulo' => 'unitario'])
+@include('layouts.app', ['modulo' => 'asignacion'])
 <div class="container">
     <br>
     
     @if (Session::has('mensaje'))
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <strong>Información!</strong> {{Session::get('mensaje')}}.
+            <strong>Información!</strong> {{Session::get('mensaje')}}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
             </button>
@@ -30,7 +30,7 @@
                                 <input id="btn_consulta" name="btn_consulta" type="submit" value="Consultar" class="btn btn-primary">
                                 @if (isset($tabla) && $tabla != "")
                                  <br>
-                                 <input type='submit' id='btn_foto' name='btn_foto' value='Tomar foto' class="btn btn-primary"/>
+                                <a  href="{{url('tomarFoto/'.$cedulVi)}}" class="btn btn-primary">Tomar Foto</a>
                                 @endif
                             </div>
                            
@@ -68,14 +68,14 @@
         @if (isset($tabla) && $tabla != null)
         <div class="col-xs-12 col-md-9 col-lg-9">
             <!-- Letrero de cambio realizado -->
-            @if (Session::has('operacion') && Session::has('operacion') == 'ok')
+            @if (isset($operacion) && $operacion == true)
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>Información!</strong>  Operación registrda satisfactoriamente.
+                    <strong>Información!</strong>  Operación registrada satisfactoriamente.
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-            @elseif(Session::has('operacion') && Session::has('operacion') == 'error')
+            @elseif(isset($operacion) && $operacion == false)
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <strong>Información!</strong>  Ha ocurrido un error al registrar.
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -87,7 +87,7 @@
                 <div class="card-body">
                     <h3 class="card-title" style="color:#666666">Registro de Código</h3>
                     <hr>
-                    <form  id="formCod" name="formCod" method="POST" action="{{route('registrarCodigo')}}">
+                    <form  method="POST" action="{{route('registrarCodigos')}}">
                         @csrf
                         <div class="row">
                             <div class="col-xs-12 col-md-4 col-lg-4">
@@ -342,4 +342,4 @@
  });
     
  </script>
-@include('layouts.footer', ['modulo' => 'unitario'])
+@include('layouts.footer', ['modulo' => 'asignacion'])

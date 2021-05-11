@@ -1,10 +1,36 @@
 @include('layouts.app', ['modulo' => 'unitario'])
 <div class="container">
     <br>
-    
-    @if (Session::has('mensaje'))
+    @php
+        if(isset($data_v) && $data_v[0] != ''){
+            echo "uno";
+            $nombre=$data_v[0];
+            $cedula=$data_v[1];
+            $vehiculo=$data_v[4];
+            $placa=$data_v[5];
+            $estado=$data_v[6];
+            $codigo=$data_v[7];
+            $responsable=$data_v[8];
+        }elseif (isset($data_b)&& $data_b[0] != ''){
+            echo "dos";
+            $nombre=$data_b[0];
+            $cedula=$data_b[1];
+            $vehiculo="";
+            $placa="";
+            $estado="";
+            $codigo="";
+        }else{
+            echo "tres";
+            $nombre="";
+            $vehiculo="";
+            $placa="";
+            $estado="";
+            $codigo="";
+        }
+    @endphp
+    @if (Session::has('alerta'))
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <strong>Información!</strong> {{Session::get('mensaje')}}.
+            <strong>Información!</strong> {{Session::get('alerta')}}.
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
             </button>
@@ -19,7 +45,7 @@
                     <div class="card-body">
                         <h3 class="card-title" style="color:#666666">Consulta</h3>
                         <hr>
-                        <form method="POST" action="{{route('consultaVisitante')}}">
+                        <form method="POST" action="{{route('consultaVisitanteTemporal')}}">
                             @csrf
                             <div class="form-group">
                                 <label for="tx_cedula">Cedula: </label>
@@ -46,12 +72,22 @@
                     echo $tabla;
                 @endphp
             @elseif(isset($tabla) && $tabla == '0')
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <strong>Información!</strong> No se encontraron registros.
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
+                 <table class='table' style='background-color: #00BFFF;
+                    border-radius: 10px; height: 200px; width=500 px;
+                    border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
+                    <tr>	 
+                        <td width='200' height='200'> 
+                        <img src='http://172.19.92.223/ingresocarvajal/images/person.png' height='130' width='190'> 
+                        </td> 
+                        <td width='500' height='100'>
+                        <table>
+                            <tr> <td><label>NOMBRE </label></td></tr> 
+                            <tr><td><label id='cc'>IDENTIFICACIÓN</label></td></tr> 
+                            <tr> <td><label>EMPRESA A VISITAR</label></td></tr> 
+                            </table>
+                        </td> 
+                    </tr> 
+                 </table>
                 <br>
             @endif
         </div>
@@ -65,7 +101,8 @@
     <div class="row justify-content-center">
         <div class="col-xs-12 col-md-3 col-lg-3">
         </div>
-        @if (isset($tabla) && $tabla != null)
+        
+        @if (isset($tabla))
         <div class="col-xs-12 col-md-9 col-lg-9">
             <!-- Letrero de cambio realizado -->
             @if (Session::has('operacion') && Session::has('operacion') == 'ok')
@@ -85,56 +122,96 @@
             @endif
             <div class="card" >
                 <div class="card-body">
-                    <h3 class="card-title" style="color:#666666">Registro de Código</h3>
+                    <h3 class="card-title" style="color:#666666">Registro Visitante Temporal</h3>
                     <hr>
-                    <form  id="formCod" name="formCod" method="POST" action="{{route('registrarCodigo')}}">
+                    <form  id="formCod" name="formCod" method="POST" action="{{route('registrarVisitante')}}">
                         @csrf
                         <div class="row">
-                            <div class="col-xs-12 col-md-4 col-lg-4">
+                            <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
-                                    <label for="tx_cedula">Artículo: </label>
-                                    <input required id="articulo" name="articulo" type="text" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-md-4 col-lg-4">
-                                <div class="form-group">
-                                    <label for="tx_cedula">Modelo: </label>
-                                    <input required id="modelo" name="modelo" type="text" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-md-4 col-lg-4">
-                                <div class="form-group">
-                                    <label for="tx_cedula">Serial: </label>
-                                    <input required id="serial" name="serial" type="text" class="form-control">
+                                    <label for="nombre">Nombre: </label>
+                                    <input id="nombre" name="nombre" required value="{{isset($nombre)?$nombre:''}}" type="text" class="form-control">
                                 </div>
                             </div>
                         </div>
-
                         <div class="row">
-                            <div class="col-xs-12 col-md-4 col-lg-4">
+                            <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
-                                    <label for="tx_cedula">Código Visitante: </label>
-                                    <input required  id="codigo" name="codigo" type="text" class="form-control">
+                                    <label for="cedula">Cedula: </label>
+                                    <input id="cedula" name="cedula" required value="{{isset($cedula)?$cedula:''}}" type="text" class="form-control">
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-md-4 col-lg-4">
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
-                                    <div class="form-check">
-                                        <input  id="activo" name="activo" value="1" checked class="form-check-input" type="checkbox">
-                                        <label class="form-check-label" for="activo">
-                                          Activo
-                                        </label>
-                                      </div>
+                                    <label for="empresa">Empresa Destino: </label>
+                                    <select name="empresa" id="empresa" class="form-control">
+                                            <option value="0">SELECCIONE</option>
+                                            @foreach ($listaEmpresas as $lista)
+                                            <option {{isset($id_empresa) && $id_empresa != null && $id_empresa == $lista->codigo_empresa?'selected':''}} value="{{$lista->codigo_empresa}}">{{$lista->descripcion}}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-md-4 col-lg-4">
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
-                                    <div class="form-check">
-                                        <input id="full_parqueo" name="full_parqueo" value="1" class="form-check-input" type="checkbox">
-                                        <label class="form-check-label" for="full_parqueo">
-                                          Parquedero
-                                        </label>
-                                      </div>
+                                    <label for="ciudad">Ciudad: </label>
+                                    <select name="ciudad" id="ciudad" class="form-control">
+                                        <option value="0">SELECCIONE</option>
+                                        @foreach ($listaCiudades as $lista)
+                                            <option {{isset($id_ciudad) && $id_ciudad != null && $id_ciudad == $lista->ciudad?'selected':''}} value="{{$lista->ciudad}}">{{$lista->ciudad}}</option>
+                                        @endforeach
+                                </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-md-12 col-lg-12">
+                                <div class="form-group">
+                                    <label for="vehiculo">Vehículo: </label>
+                                    <input id="vehiculo" name="vehiculo" required type="text" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-md-12 col-lg-12">
+                                <div class="form-group">
+                                    <label for="placa">Placa: </label>
+                                    <input id="placa" name="placa" required type="text" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-md-12 col-lg-12">
+                                <div class="form-group">
+                                    <label for="responsable">Autorizado Por: </label>
+                                    <input id="responsable" name="responsable" required type="text" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="puerta" id="ck_entrada" value="ENTRADA"  {{isset($estado)&&$estado=="ENTRADA"||$estado==""?'checked':''}}>
+                                <label class="form-check-label" for="ck_entrada">
+                                  ENTRADA
+                                </label>
+                              </div>
+                              <br>
+                              <div class="form-check">
+                                <input class="form-check-input" type="radio" name="puerta" id="ck_salida" value="SALIDA" {{isset($estado)&&$estado!="ENTRADA"&&$estado != ""?'checked':''}}>
+                                <label class="form-check-label" for="exampleRadios2">
+                                  SALIDA
+                                </label>
+                              </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-md-12 col-lg-12">
+                                <div class="form-group">
+                                    <label for="tx_cedula">Código: </label>
+                                    <input required id="serial" name="serial" type="text" class="form-control">
                                 </div>
                             </div>
                         </div>
@@ -144,8 +221,7 @@
                             <div class="float-right">
                                 <input type="hidden" name="cedula" value="{{isset($cedulVi)?$cedulVi:''}}">
                                 <input type="hidden" name="username" value="{{Auth::user()->name}}">
-                                <input type="submit" id="btn_guardar" name="btn_guardar" value="Guardar" class="btn btn-primary"/>
-
+                                <input type="submit" id="btn_registrar" name="btn_registrar" value="Registrar" class="btn btn-primary"/>
                             </div>
                         </div>
                     
@@ -157,19 +233,7 @@
        
     </div>
 
-    <!--Tabla de codigos -->
-    <div class="row justify-content-center">
-        <div class="col-xs-12 col-md-3 col-lg-3">
-        </div>
-
-        @if (isset($tabla) && $tabla != null)
-            <div class="col-xs-12 col-md-9 col-lg-9">
-                <hr>
-                <div id='jqxgrid'></div>
-            </div>
-        @endif
-
-    </div>
+  
 </div>
  <!--CSS y JS PARA EL MÓDULO DE PERMISOS UNITARIOS-->
  <script src="{{ asset('permisosUnitarios/js/jquery.min.js')}}"></script> 
