@@ -276,15 +276,26 @@ class RegistroVisitanteTemporalController extends Controller
 
     public function getDataBasica($cedula)
     {
-        $data = DB::table('ohxqc_visitantes')
-        ->select('nombre', 'identificacion')
+        //select id_empresa from ohxqc_empresas_visitante where id_visitante = 2 order by fecha_actualizacion DESC LIMIT 1
+        //SELECT codigo, vehiculo, placa FROM ohxqc_codigobidimensional where id_visitante = 2
+        $data = DB::table('ohxqc_visitantes as v')
+        ->select('v.nombre', 'v.identificacion', 'v.ciudad', 'v.responsable', 'cod.codigo', 'cod.vehiculo', 'cod.placa', 'emv.id_empresa')
+        ->join('ohxqc_codigobidimensional as cod', 'cod.id_visitante', '=', 'v.id_visitante')
+        ->join('ohxqc_empresas_visitante as emv', 'emv.id_visitante', '=', 'v.id_visitante')
         ->where('identificacion', '=', $cedula)
+        ->limit(1)
         ->get();
         $row = array();
         if(count($data) > 0){
             foreach($data as $d){
                 $row[0] = $d->nombre;
                 $row[1] = $d->identificacion;
+                $row[2] = $d->ciudad;
+                $row[3] = $d->responsable;
+                $row[4] = $d->codigo;
+                $row[5] = $d->vehiculo;
+                $row[6] = $d->placa;
+                $row[7] = $d->id_empresa;
             }
             return $row;
         }else{
@@ -296,7 +307,7 @@ class RegistroVisitanteTemporalController extends Controller
     public function registrarVisitante(Request $request)
     {   
         $nombre =  $request->input("nombre");
-        $cedula =  $request->input("cedula");
+        $cedula =  $request->input("cedulaR");
         $empresa =  $request->input("empresa");
         $vehiculo =  $request->input("vehiculo");
         $placa =  $request->input("placa");
@@ -304,29 +315,131 @@ class RegistroVisitanteTemporalController extends Controller
         $responsable = $request->input("responsable"); 
         $puerta = $request->input("puerta"); 
         $codigo = $request->input("codigo");
-        $user = substr(Auth::user()->name, 0,25);
-
+        $user = substr($request->input("username"), 0,25);
+        //echo "nombre: ".$nombre."<br> Cedula: ".$cedula."<br>Empresa: ".$empresa."<br>Vehiculo: ".$vehiculo."<br>placa: ".$placa."<br>ciudad: ".$ciudad."<br>responsable: ".$responsable."<br>Puerta: ".$puerta."<br>Codigo: ".$codigo."<br>user: ".$user;
         RegistroVisitanteTemporalController::guardarRegistro($cedula,$nombre,$ciudad,$empresa,$codigo,$vehiculo,$placa,$puerta,$user,$responsable);
+
+        $tabla="";
+        $consulta = DB::table('ohxqc_visitantes as v')
+        ->select('v.nombre', 'v.apellido', 'v.identificacion', 'e.descripcion as empresa', 'foto', 'cod.vehiculo','cod.placa', 'v.responsable')
+        ->join('ohxqc_empresas_visitante as emp', 'emp.id_visitante', '=', 'v.id_visitante')
+        ->join('ohxqc_empresas as e', 'e.id_empresa', '=', 'emp.id_empresa')
+        ->join('ohxqc_codigobidimensional as cod', 'cod.id_visitante', '=', 'v.id_visitante')
+        ->where('v.identificacion', '=', $cedula)
+        ->orderBy('cod.id_visitante', 'DESC')
+        ->limit(1)
+        ->get();
+        $row = array();
+        if(count($consulta) > 0){
+            foreach($consulta as $c){
+                $row [0] = $c->nombre;
+                $row [1] = $c->apellido;
+                $row [2] = $c->identificacion;
+                $row [3] = $c->empresa;
+                $row [4] = $c->foto;
+                $row [5] = $c->vehiculo;
+                $row [6] = $c->placa;
+                $row [7] = $c->responsable;
+            }
+
+            //CASO CUANDO NO TIENE FOTO
+            if($row[4]=='N'){
+                //SI TIENE PERMISOS PINTA LA TABLA DE VERDE
+                $tabla="<table class='table' style='background-color: #00BFFF;
+                    border-radius: 10px; 
+                    border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
+                <tr>	 
+                    <td> 
+                    <img src='http://172.19.92.223/ingresocarvajal/images/person.png' height='130' width='190'> 
+                    </td> 
+                    <td>
+                    <table>
+                        <tr> <td><label>".$row[0]." ".$row[1]." </label></td></tr> 
+                        <tr><td><label id='cc'>".$row[2]."</label></td></tr> 
+                        <tr> <td><label>".$row[3]."</label></td></tr> 
+                        ";
+                    if(trim($row[5])!='' && trim($row[6])!=''){
+                         $tabla= $tabla."<tr> <td><label>".$row[5]."</label></td></tr> 
+                         <tr> <td><label>".$row[6]."</label></td></tr>";
+                    }
+                        $tabla= $tabla."
+                            <tr> <td><label>Autorizado por:</label></td></tr> 
+                            <tr> <td><label>".$row[7]."</label></td></tr> 
+                            </table>
+                        </td> 
+                    </tr> 
+                    </table>";
+                
+            }else if($row[4]=='S'){
+                //pinta tabla con foto
+            $tabla="<table class='table' style='background-color: #00BFFF;
+                border-radius: 10px; 
+                border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
+            <tr>	 
+                <td> 
+                <img src='http://172.19.92.223/ingresocarvajal/modules/mod_visitantes/fotos/".$row[2].".jpg' height='200' width='245'> 
+                </td> 
+                <td>
+                <table>
+                    <tr> <td><label>".$row[0]." ".$row[1]." </label></td></tr> 
+                    <tr><td><label id='cc'>".$row[2]."</label></td></tr> 
+                    <tr> <td><label>".$row[3]."</label></td></tr>";
+                    if(trim($row[5])!='' && trim($row[6])!=''){
+                        $tabla= $tabla."<tr> <td><label>".$row[5]."</label></td></tr> 
+                    <tr> <td><label>".$row[6]."</label></td></tr>";
+                    }
+                    $tabla= $tabla."<tr> <td><label>Autorizado por:</label></td></tr> 
+                    <tr> <td><label>".$row[7]."</label></td></tr>  
+                    </table>
+                </td> 
+            </tr> 
+            </table>";
+    
+            }else{
+                $tabla="0";
+            }
+          }else{
+              $tabla = "0";
+          }
+        $data_v = RegistroVisitanteTemporalController::getDataV($cedula);
+        
+        if($data_v[0] !=''){
+            $id_empresa=$data_v[2];
+            $id_ciudad=$data_v[3];
+        }else{
+            $id_empresa=null;
+            $id_ciudad=null;
+            $data_b = RegistroVisitanteTemporalController::getDataBasica($cedula);
+            
+        }
+        
+
+        $listaEmpresas=RegistroVisitanteTemporalController::getListaEmpresas();
+        $listaCiudades=RegistroVisitanteTemporalController::getListaCiudades();
+        if($tabla != "0"){
+            $operacion = true;
+        }else{
+            $operacion = false;
+        }
+        return view('Permisos::registroTemporal', compact('listaEmpresas', 'listaCiudades', 'id_empresa', 'id_ciudad', 'data_v', 'tabla', 'data_b','cedula', 'operacion'));
     }
 
     public function guardarRegistro($cedula,$nombre,$ciudad,$empresa,$codigo,$vehiculo,$placa,$puerta,$user,$responsable)
     {
         $id_empresa_v="";
         //INSERTA TABLA VISITANTE
-        $insertaVisitante = DB::table('')->insert([
-
-        ]);
+      
         $consulta = DB::table('ohxqc_visitantes')
         ->select('id_visitante')
         ->where('identificacion', '=', $cedula)
         ->get();
+        $fecha_ini= date('Y-m-d');
+        $fecha_fin = date('Y-m-d', strtotime("+1 day"));
         if(count($consulta) > 0){
             $id_v = "";
             foreach($consulta as $c){
                 $id_v = $c->id_visitante;
             }
-            $fecha_ini= date('Y-m-d');
-            $fecha_fin = date('Y-m-d', strtotime("+1 day"));
 
             if(trim($responsable)==''){$responsable="null";}
 
@@ -410,153 +523,226 @@ class RegistroVisitanteTemporalController extends Controller
                 'fecha_actualizacion' => now()
             ]);
 
-            $obtenerIdEmpresa = DB::table('ohxqc_empresas_visitante')->max('id_empresa_visitante as id')->get();
+            $obtenerIdEmpresa = DB::table('ohxqc_empresas_visitante')->max('id_empresa_visitante')->get();
             foreach($obtenerIdEmpresa as $idem){
-                $id_empresa_v = $idem->id;
+                $id_empresa_v = $idem->id_empresa_visitante;
             }
             
            
         }
       
-      /*
+     
         if($id_v == ''){ //CUANDO NO EXISTE
            
         }else{
            
         }
         //INSERTA CODIGO  DESDE AQUI SE EMPIEZA
-        $sql="SELECT c.id
-            FROM ohxqc_visitantes v, ohxqc_empresas_visitante ev, ohxqc_codigobidimensional c
-            where v.id_visitante=ev.id_visitante
-            and ev.id_visitante=c.id_visitante
-            and v.id_visitante=c.id_visitante
-            and v.identificacion='$cedula'
-            and c.activo='S'
-            and ev.id_empresa='$empresa'
-            and c.codigo='$codigo'";
-        $result= pg_query($cnx,$sql);
-        $row= pg_fetch_array($result);
-        $id_c=$row[0];
-        
+        $consultaId = DB::table('ohxqc_codigobidimensional as c')
+        ->select('c.id')
+        ->join('ohxqc_visitantes as v', 'v.id_visitante', '=', 'c.id_visitante')
+        ->join('ohxqc_empresas_visitante as ev', 'ev.id_visitante', '=', 'c.id_visitante')
+        ->where('v.identificacion', '=', $cedula)
+        ->where('c.activo', '=', 'S')
+        ->where('ev.id_empresa', '=', $empresa)
+        ->where('c.codigo', '=', $codigo)
+        ->get();
+        $id_c = "";
+        foreach($consultaId as $ide){
+            $id_c = $ide->id;
+        }
+       
         //**Obtiene fecha ingreso y fin de la persona para compararla con la fecha actual
-        $sql="SELECT fecha_ingreso, fecha_fin, tipo_visitante FROM ohxqc_visitantes WHERE identificacion='$cedula'";
-        $res= pg_query($cnx,$sql);
-        $row= pg_fetch_array($res);
-        $fecha_ingreso= $row[0];
-        $fecha_fin= $row[1];
-        $tipo_visitante = $row[2];
-        $actual_date = date('Y-m-d');
+        $consultaFecha = DB::table('ohxqc_visitantes')
+        ->select('fecha_ingreso', 'fecha_fin', 'tipo_visitante')
+        ->where('identificacion','=',$cedula)
+        ->get();
+        foreach($consultaFecha as $conf){
+            $fecha_ingreso= $conf->fecha_ingreso;
+            $fecha_fin= $conf->fecha_fin;
+            $tipo_visitante = $conf->tipo_visitante;
+        }
+      
+            $actual_date = date('Y-m-d');
         
-        if(trim($ck_entrada)=='ENTRADA' && trim($ck_salida)=='' && $id_c==''){
+        
+        if(trim($puerta)=='ENTRADA' && $id_c ==''){
             
             if(trim($vehiculo) != ''){$vehiculo= $vehiculo;}else{$vehiculo= "Sin vehiculo.";}
             if(trim($placa) != ''){$placa= "'".$placa."'";}else{$placa= "null";}
             //CUANDO SE INSERTA UN NUEVO CODIGO
-            $sql="INSERT INTO ohxqc_codigobidimensional(
-              id_equipo, id_visitante, codigo, tipo, activo, fecha_creacion, 
-              usuario_creacion, fecha_actualizacion, usuario_actualizacion, 
-              vehiculo, placa, fecha_ingreso, fecha_salida, fecha_registro)
-      VALUES (null, $id_v, '$codigo', 'VISITANTE', 'S', now(), 
-              '$user', now(), '$user', 
-              '$vehiculo', $placa, now(), null, now())";
-        pg_query($cnx,$sql);
-  
+            $insertaCodigo = DB::table('ohxqc_codigobidimensional')->insert([
+                'id_equipo' => null,
+                'id_visitante' => $id_v,
+                'codigo' => $codigo,
+                'tipo' => 'VISITANTE',
+                'activo' => 'S',
+                'fecha_creacion' => now(),
+                'usuario_creacion' => $user,
+                'fecha_actualizacion' => now(),
+                'usuario_actualizacion' => $user,
+                'vehiculo' => $vehiculo,
+                'placa' => $placa,
+                'fecha_ingreso' => now(),
+                'fecha_salida' => now(),
+                'fecha_registro' => now(),
+            ]);
             
-        }elseif(trim($ck_entrada)=='ENTRADA' || trim($ck_salida)=='' && $id_c != ''){
+        }elseif(trim($puerta)=='ENTRADA' && $id_c != ''){
             //CUANDO SE GUARDO UN CODIGO PERO SE ACTUALIZA ALGUN CAMPO
-            $sql="UPDATE ohxqc_codigobidimensional
-                 SET fecha_actualizacion= now(), 
-                     usuario_actualizacion='$user', 
-                     vehiculo='$vehiculo',
-                     placa='$placa',
-                     fecha_ingreso= now()
-               WHERE id= $id_c";
-            pg_query($cnx,$sql);
-        }elseif(trim($ck_entrada)=='' && trim($ck_salida)=='SALIDA' && $id_c != ''){
+            $actualizacion = DB::table('ohxqc_codigobidimensional')
+            ->where('id', '=', $id_c)
+            ->update([
+                'fecha_actualizacion' => now(), 
+                'usuario_actualizacion' => $user, 
+                'vehiculo' => $vehiculo,
+                'placa' => $placa,
+                'fecha_ingreso' => now()
+            ]);
+
+        }elseif(trim($puerta)=='SALIDA' && $id_c != ''){
           if((($fecha_ingreso <= $actual_date) == false) || (($actual_date <= $fecha_fin) == false)){
                   //CUANDO SALE LA PERSONA
-                  if($tipo_visitante != 1){
-                      $sql2="delete from ohxqc_permisos where id_permiso in (
+                  $this->cedula = $cedula;
+                      $elimina = DB::table('ohxqc_permisos')
+                      ->whereIn('id_permiso', function($query){
+                          $query->select('p.id_permiso')
+                          ->from('ohxqc_permisos as p')
+                          ->join('ohxqc_empresas_visitante as ev', 'ev.id_empresa_visitante', '=', 'p.id_empresa_visitante')
+                          ->join('ohxqc_visitantes as v', 'v.id_visitante', '=', 'ev.id_visitante')
+                          ->where('v.identificacion', '=',$this->cedula);
+                      })
+                      ->delete();
+                      /*$sql2="delete from ohxqc_permisos where id_permiso in (
                           select p.id_permiso 
                           from ohxqc_visitantes v, ohxqc_empresas_visitante ev, ohxqc_permisos p 
                           where v.identificacion='$cedula'
                           and v.id_visitante=ev.id_visitante
                           and p.id_empresa_visitante=ev.id_empresa_visitante)";
-                    pg_query($cnx,$sql2);
+                    pg_query($cnx,$sql2);*/
                   }
-          }	
-        $startDate = strtotime($actual_date);
-        $endDate = strtotime($fecha_fin);
-        if($startDate <= $endDate){
-        $datediff = $endDate - $startDate;
-        $calc_days = floor($datediff / (60 * 60 * 24));
-        }
-        $sql="UPDATE ohxqc_codigobidimensional
-                 SET fecha_actualizacion= now(), 
-                     usuario_actualizacion='$user',fecha_salida= now(),activo='N' WHERE id= $id_c";
-            pg_query($cnx,$sql);
-        if($calc_days<= 2){
-            $sql="UPDATE ohxqc_visitantes SET parqueadero=0, activo = 'N', fecha_fin= '$actual_date' WHERE identificacion='$cedula'";
-            //$sql="UPDATE ohxqc_visitantes SET parqueadero=0 WHERE identificacion='$cedula'";
-        pg_query($cnx,$sql);
-        }else{
-            $sql="UPDATE ohxqc_visitantes SET parqueadero=0 WHERE identificacion='$cedula'";
-            pg_query($cnx,$sql);
-        }
+                  $startDate = strtotime($actual_date);
+                  $endDate = strtotime($fecha_fin);
+                  if($startDate <= $endDate){
+                      $datediff = $endDate - $startDate;
+                      $calc_days = floor($datediff / (60 * 60 * 24));
+                  }
+                  $actualizaFecha = DB::table('ohxqc_codigobidimensional')->where('id', '=', $id_c)->update([
+                      'fecha_actualizacion'=> now(), 
+                      'usuario_actualizacion' => $user,
+                      'fecha_salida'=> now(),
+                      'activo' => 'N'
+                  ]);
+      
+                  if($calc_days<= 2){
+                      $actualizaVisi = DB::table('ohxqc_visitantes')->where('identificacion', '=', $cedula)->update([
+                          'parqueadero' => 0,
+                          'activo' => 'N',
+                          'fecha_fin' => $actual_date
+                      ]);
+                  }else{
+                      $actualizaVisi = DB::table('ohxqc_visitantes')->where('identificacion', '=', $cedula)->update([
+                          'parqueadero' => 0
+                      ]);
+                  }
+        }	
             
-        }
+        
         
         //echo $sql;
         //AGREGA LOS PERMISOS PARA CALI
         if((($fecha_ingreso <= $actual_date) == false) && (($actual_date <= $fecha_fin) == false)){
             if($tipo_visitante != 1){
                 //***ELIMINA REGISTROS ANTERIORES
-                $sql="delete from ohxqc_permisos where id_permiso in (
+                $eliminaPermisos = DB::table('ohxqc_permisos')
+                ->whereIn('id_permiso', function($query){
+                    $query->select('p.id_permiso')
+                    ->from('ohxqc_permisos as p')
+                    ->join('ohxqc_empresas_visitante as ev', 'ev.id_empresa_visitante', '=', 'p.id_empresa_visitante')
+                    ->join('ohxqc_visitantes as v', 'v.id_visitante', '=', 'ev.id_visitante')
+                    ->where('v.identificacion', '=',$this->cedula);
+                })->delete();
+               /* $sql="delete from ohxqc_permisos where id_permiso in (
                           select p.id_permiso 
                           from ohxqc_visitantes v, ohxqc_empresas_visitante ev, ohxqc_permisos p 
                           where v.identificacion='$cedula'
                           and v.id_visitante=ev.id_visitante
                           and p.id_empresa_visitante=ev.id_empresa_visitante)";
                 //"DELETE FROM ohxqc_permisos where id_empresa_visitante= $id_empresa_v";
-                pg_query($cnx,$sql);
+                pg_query($cnx,$sql);*/
             }	
         }
   
           //26-nov-2020. Validamos si en la ciudad de Cali el ingreso es para una de las empresas de Carvajal
-          $sql="SELECT grupo_carvajal FROM ohxqc_empresas where id_empresa = '$empresa'";
-          $result = pg_query($cnx, $sql);
-          while ($row = pg_fetch_assoc($result)) {
-              $grupo_carvajal = $row['grupo_carvajal'];
-          }		
+          $consultaIngreso = DB::table('ohxqc_empresas')
+          ->select('grupo_carvajal')
+          ->where('id_empresa', '=', $empresa)
+          ->get();
+          foreach($consultaIngreso as $ing){
+            $grupo_carvajal = $ing->grupo_carvajal;
+          }
+         
           
             //INSERTA PERMISOS A NIVEL DE ID_PADRE EN CASO DE ENTRADA
             //***revisar
           
           if($ciudad == 'CALI' && $grupo_carvajal == '1'){
-              $sql="SELECT id_ubicacion FROM ohxqc_ubicaciones where id_padre in ('2','96') and activo='S'";
+              $idUbica = DB::table('ohxqc_ubicaciones')
+              ->select('id_ubicacion')
+              ->whereIn('id_padre', ['2','6'])
+              ->where('activo', '=', 'S')
+              ->get();
+              //$sql="SELECT id_ubicacion FROM ohxqc_ubicaciones where id_padre in ('2','96') and activo='S'";
             }elseif($ciudad == 'CALI'){
-                $sql="SELECT id_ubicacion FROM ohxqc_ubicaciones where id_padre= 2 and activo='S'";
+                $idUbica = DB::table('ohxqc_ubicaciones')
+                ->select('id_ubicacion')
+                ->where('id_padre', '=', 2)
+                ->where('activo', '=', 'S')
+                ->get();
             }elseif ($ciudad == 'BOGOTÁ'){
-                $sql="SELECT id_ubicacion FROM ohxqc_ubicaciones where id_padre= 15 and activo='S'";
+                $idUbica = DB::table('ohxqc_ubicaciones')
+                ->select('id_ubicacion')
+                ->where('id_padre', '=', 15)
+                ->where('activo', '=', 'S')
+                ->get();
             }elseif ($ciudad == 'YUMBO'){
-                $sql="SELECT id_ubicacion FROM ohxqc_ubicaciones where id_padre= 6 and activo='S'";
+                $idUbica = DB::table('ohxqc_ubicaciones')
+                ->select('id_ubicacion')
+                ->where('id_padre', '=', 6)
+                ->where('activo', '=', 'S')
+                ->get();
             }elseif ($ciudad == 'MEDELLÍN'){
-                $sql="SELECT id_ubicacion FROM ohxqc_ubicaciones where id_padre= 11 and activo='S'";
+                $idUbica = DB::table('ohxqc_ubicaciones')
+                ->select('id_ubicacion')
+                ->where('id_padre', '=', 11)
+                ->where('activo', '=', 'S')
+                ->get();
             } 		
-            $result=pg_query($cnx,$sql);
-            if(trim($ck_salida)!='SALIDA'){
-                while($row=pg_fetch_array($result)){
-                    $id_ub=$row[0];
-                    $sql="INSERT INTO ohxqc_permisos(
-                      id_empresa_visitante, id_ubicacion, id_horario, identificacion_responsable, 
-                          fecha_inicio, fecha_fin, activo, usuario_creacion, fecha_creacion, 
-                          usuario_actualizacion, fecha_actualizacion)
-                  VALUES ($id_empresa_v, $id_ub, 5, null, 
-                          '$fecha_ini', '$fecha_fin', 'S', '$user', now(), 
-                          '$user', now())";
-              pg_query($cnx,$sql);	
+            
+            if(trim($puerta)!='SALIDA'){
+                foreach($idUbica as $id){
+                    $id_ub = $id->id_ubicacion;
+
+                    $insertaPermisos = DB::table('ohxqc_permisos')->insert([
+                        'id_empresa_visitante' => $id_empresa_v,
+                        'id_ubicacion' => $id_ub,
+                        'id_horario' => 5,
+                        'identificacion_responsable' => null,
+                        'fecha_inicio' =>  $fecha_ini,
+                        'fecha_fin' => $fecha_fin,
+                        'activo' => 'S',
+                        'usuario_creacion' => $user,
+                        'fecha_creacion' => now(),
+                        'usuario_actualizacion' => $user,
+                        'fecha_actualizacion' => now()
+                    ]);
                 }	
-            }	*/
+            }	
+    }
+
+    public function tomarFotoTemporal($cedula)
+    {
+        return view('Permisos::tomarfotoTemporal', compact('cedula'));
     }
 
 

@@ -8,6 +8,9 @@ Route::group(['middleware' => 'web'], function () {
         Route::get('registro-visitante-temporal', 'RegistroVisitanteTemporalController@index');
         Route::post('consultaVisitanteTemporal', 'RegistroVisitanteTemporalController@consultaVisitanteTemporal')->name('consultaVisitanteTemporal');
         Route::post('registrarCodigo', 'RegistroVisitanteTemporalController@registrarCodigo')->name('registrarCodigo');
+        Route::post('registrarVisitante', 'RegistroVisitanteTemporalController@registrarVisitante')->name('registrarVisitante');
+        
+        Route::get('tomarfototemporal/{cedula}', 'RegistroVisitanteTemporalController@tomarFotoTemporal');
 
     });
 

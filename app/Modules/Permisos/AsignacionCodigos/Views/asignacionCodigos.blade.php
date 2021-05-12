@@ -15,6 +15,9 @@
         <!--Formulario de consulta-->
         <div class="col-xs-12 col-md-{{isset($tabla)?'3':'12'}} col-lg-{{isset($tabla)?'3':'12'}} ">
                 <!-- Formulario de consulta-->
+                @if (isset($tabla))
+                 <a href="{{url('asigna-codigos')}}" class="btn btn-primary mb-3">Volver</a>
+                @endif
                 <div class="card" >
                     <div class="card-body">
                         <h3 class="card-title" style="color:#666666">Consulta</h3>

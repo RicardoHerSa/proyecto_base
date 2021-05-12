@@ -3,7 +3,7 @@
     <br>
     @php
         if(isset($data_v) && $data_v[0] != ''){
-            echo "uno";
+            //echo "uno";
             $nombre=$data_v[0];
             $cedula=$data_v[1];
             $vehiculo=$data_v[4];
@@ -12,15 +12,18 @@
             $codigo=$data_v[7];
             $responsable=$data_v[8];
         }elseif (isset($data_b)&& $data_b[0] != ''){
-            echo "dos";
+            //echo "dos";
             $nombre=$data_b[0];
             $cedula=$data_b[1];
-            $vehiculo="";
-            $placa="";
+            $nombreCiudad = $data_b[2];
+            $responsable = $data_b[3];
+            $codigo = $data_b[4];
+            $vehiculo= $data_b[5];
+            $placa= $data_b[6];
+            $idEmpresa = $data_b[7];
             $estado="";
-            $codigo="";
         }else{
-            echo "tres";
+            //echo "tres";
             $nombre="";
             $vehiculo="";
             $placa="";
@@ -41,6 +44,9 @@
         <!--Formulario de consulta-->
         <div class="col-xs-12 col-md-{{isset($tabla)?'3':'12'}} col-lg-{{isset($tabla)?'3':'12'}} ">
                 <!-- Formulario de consulta-->
+                @if (isset($tabla))
+                    <a href="{{url('registro-visitante-temporal')}}" class="btn btn-primary mb-3">Volver</a>
+                @endif
                 <div class="card" >
                     <div class="card-body">
                         <h3 class="card-title" style="color:#666666">Consulta</h3>
@@ -56,7 +62,7 @@
                                 <input id="btn_consulta" name="btn_consulta" type="submit" value="Consultar" class="btn btn-primary">
                                 @if (isset($tabla) && $tabla != "")
                                  <br>
-                                 <input type='submit' id='btn_foto' name='btn_foto' value='Tomar foto' class="btn btn-primary"/>
+                                <a href="{{url('tomarfototemporal/'.$cedula)}}" class="btn btn-primary">Tomar Foto</a>
                                 @endif
                             </div>
                            
@@ -105,16 +111,9 @@
         @if (isset($tabla))
         <div class="col-xs-12 col-md-9 col-lg-9">
             <!-- Letrero de cambio realizado -->
-            @if (Session::has('operacion') && Session::has('operacion') == 'ok')
+            @if (isset($operacion))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>Información!</strong>  Operación registrda satisfactoriamente.
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            @elseif(Session::has('operacion') && Session::has('operacion') == 'error')
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>Información!</strong>  Ha ocurrido un error al registrar.
+                    <strong>Información!</strong>  Operación registrada satisfactoriamente.
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                     </button>
@@ -138,7 +137,7 @@
                             <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <label for="cedula">Cedula: </label>
-                                    <input id="cedula" name="cedula" required value="{{isset($cedula)?$cedula:''}}" type="text" class="form-control">
+                                    <input id="cedula" name="cedulaR" required value="{{isset($cedula)?$cedula:''}}" type="text" class="form-control">
                                 </div>
                             </div>
                         </div>
@@ -149,7 +148,7 @@
                                     <select name="empresa" id="empresa" class="form-control">
                                             <option value="0">SELECCIONE</option>
                                             @foreach ($listaEmpresas as $lista)
-                                            <option {{isset($id_empresa) && $id_empresa != null && $id_empresa == $lista->codigo_empresa?'selected':''}} value="{{$lista->codigo_empresa}}">{{$lista->descripcion}}</option>
+                                            <option {{isset($idEmpresa) && $idEmpresa != null && $idEmpresa == $lista->codigo_empresa?'selected':''}} value="{{$lista->codigo_empresa}}">{{$lista->descripcion}}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -162,7 +161,7 @@
                                     <select name="ciudad" id="ciudad" class="form-control">
                                         <option value="0">SELECCIONE</option>
                                         @foreach ($listaCiudades as $lista)
-                                            <option {{isset($id_ciudad) && $id_ciudad != null && $id_ciudad == $lista->ciudad?'selected':''}} value="{{$lista->ciudad}}">{{$lista->ciudad}}</option>
+                                            <option {{isset($nombreCiudad) && $nombreCiudad != null && $nombreCiudad == $lista->ciudad?'selected':''}} value="{{$lista->ciudad}}">{{$lista->ciudad}}</option>
                                         @endforeach
                                 </select>
                                 </div>
@@ -172,7 +171,7 @@
                             <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <label for="vehiculo">Vehículo: </label>
-                                    <input id="vehiculo" name="vehiculo" required type="text" class="form-control">
+                                    <input id="vehiculo" name="vehiculo"  type="text" class="form-control" value="{{isset($vehiculo)?$vehiculo:'Sin vehiculo'}}">
                                 </div>
                             </div>
                         </div>
@@ -180,7 +179,7 @@
                             <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <label for="placa">Placa: </label>
-                                    <input id="placa" name="placa" required type="text" class="form-control">
+                                    <input id="placa" name="placa"  type="text" class="form-control" value="{{isset($placa)?$placa:''}}">
                                 </div>
                             </div>
                         </div>
@@ -188,7 +187,7 @@
                             <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <label for="responsable">Autorizado Por: </label>
-                                    <input id="responsable" name="responsable" required type="text" class="form-control">
+                                    <input id="responsable" name="responsable" required type="text" class="form-control" value="{{isset($responsable)?$responsable:''}}">
                                 </div>
                             </div>
                         </div>
@@ -210,8 +209,8 @@
                         <div class="row">
                             <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
-                                    <label for="tx_cedula">Código: </label>
-                                    <input required id="serial" name="serial" type="text" class="form-control">
+                                    <label for="codigo">Código: </label>
+                                    <input required id="codigo" name="codigo" type="text" class="form-control" value="{{isset($codigo)?$codigo:''}}">
                                 </div>
                             </div>
                         </div>

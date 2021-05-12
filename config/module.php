@@ -12,8 +12,8 @@ return  [
            'RegistroVisitante',
            'RegistroVisitanteTemporal'
        ],
-       'ubicaciones' => [
-           'UbicacionesHorario',
+       'Ubicaciones' => [
+           'Ubicaciones',
            'Porteria',
            'Horario'
        ],
