@@ -6,6 +6,8 @@ Route::group(['middleware' => 'web'], function () {
         
         //Route::resource('/', 'PruebaDosController'); 
         Route::get('porteria', 'PorteriaController@index');
+        Route::post('actualizarNodo', 'PorteriaController@actualizarNodo')->name('actualizarNodo');
+        Route::post('registrarNodo', 'PorteriaController@registrarNodo')->name('registrarNodo');
    
 
     });

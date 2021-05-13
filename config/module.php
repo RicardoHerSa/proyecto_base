@@ -18,7 +18,11 @@ return  [
            'Horario'
        ],
        'CargueMasivo',
-       'Reportes'
+       'Reportes' => [
+            'Reportes',
+            'ReporteIngreso',
+            'ReporteParqueadero'
+        ],
       ]
 ];
 ?>
