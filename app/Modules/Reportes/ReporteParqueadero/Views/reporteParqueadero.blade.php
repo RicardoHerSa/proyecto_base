@@ -13,7 +13,7 @@
         <div class="col-xs-12 col-md-12 col-lg-12">
             <div class="card">
                 <div class="card-header">
-                   <h2> Reporte de Parqueaderos </h2>
+                   <h4> Reporte de Parqueaderos </h4>
                 </div>
                 <div class="card-body">
                     <form action="{{route('consultarReporteParqueadero')}}" method="POST">

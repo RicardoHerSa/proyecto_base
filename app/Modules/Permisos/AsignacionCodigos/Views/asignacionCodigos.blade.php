@@ -45,8 +45,24 @@
         <!--Resultado encabezado info personal-->
         <div class="col-xs-12 col-md-{{isset($tabla)?'9':''}} col-lg-{{isset($tabla)?'9':''}}">
             @if (isset($tabla) && $tabla != '0')
+            <table class='table' style='background-color: #00FF1A;
+                   border-radius: 10px; 
+                   border-left:0px; font-size:20px;font-family:'Lato', 'sans-serif'> 
+               <tr>	 
+                   <td> 
+                    <img class="img-thumbnail" style="width:80%" src="{{asset('storage').'/fotos'.'/'.$cedulVi.'.png'}}" alt="">
+                   </td> 
+                   <td>
+                       <table>
+                           <tr> <td><label><b>{{$row[0]." ".$row[1]}}<b></label></td></tr> 
+                           <tr><td><label id='cc'><b>{{$row[2]}}<b></label></td></tr> 
+                           <tr> <td><label><b>{{$row[3]}}</b></label></td></tr> 
+                       </table>
+                   </td> 
+               </tr> 
+               </table>
                 @php
-                    echo $tabla;
+                    //echo $tabla;
                 @endphp
             @elseif(isset($tabla) && $tabla == '0')
                 <div class="alert alert-warning alert-dismissible fade show" role="alert">

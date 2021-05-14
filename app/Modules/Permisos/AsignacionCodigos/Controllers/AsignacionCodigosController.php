@@ -4,6 +4,7 @@ namespace App\Modules\Permisos\AsignacionCodigos\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AsignacionCodigosController extends Controller
 {
@@ -44,17 +45,16 @@ class AsignacionCodigosController extends Controller
                $row[3] = $i->descripcion;
                $row[4] = $i->foto;
              }
-            // var_dump($info);
    
              if($row[4]=='N'){
-   
+                $tabla = 1;
                //SI TIENE PERMISOS PINTA LA TABLA DE VERDE
-               $tabla="<table class='table' style='background-color: #00FF1A;
+              /* $tabla="<table class='table' style='background-color: #00FF1A;
                    border-radius: 10px; 
                    border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                <tr>	 
                    <td> 
-                    <img src='http://172.19.92.223/ingresocarvajal/images/person.png' height='130' width='190'> 
+                    <img src=".$rutaFoto."height='130' width='190'> 
                     </td> 
                     <td>
                     <table>
@@ -64,17 +64,19 @@ class AsignacionCodigosController extends Controller
                        </table>
                     </td> 
                </tr> 
-               </table>";
+               </table>";*/
                            
                        
            }else if($row[4]=='S'){
+               
                //pinta tabla con foto
-               $tabla="<table class='table' style='background-color: #00FF1A;
+                $tabla = 1;
+               /*$tabla="<table class='table' style='background-color: #00FF1A;
                    border-radius: 10px; 
                    border-left:0px; font-size:20px;font-family:'Lato', 'sans-serif'> 
                <tr>	 
                    <td> 
-                        <img src='http://172.19.92.223/ingresocarvajal/modules/mod_visitantes/fotos/".$row[2].".jpg' height='200' width='245'> 
+                        <img src='".$rutaFoto."' height='200' width='245'> 
                    </td> 
                    <td>
                        <table>
@@ -84,7 +86,7 @@ class AsignacionCodigosController extends Controller
                        </table>
                    </td> 
                </tr> 
-               </table>";
+               </table>";*/
            }else{
                $tabla="0";
            }
@@ -124,7 +126,7 @@ class AsignacionCodigosController extends Controller
            }else{
    
            }
-           return view('Permisos::asignacionCodigos', compact('tabla', 'dataV', 'dataA', 'cedulVi'));
+           return view('Permisos::asignacionCodigos', compact('tabla', 'dataV', 'dataA', 'cedulVi', 'row'));
         }else{
             return redirect('asigna-codigos')->with('mensaje', 'No se encontraron registros.');
         }
@@ -652,19 +654,25 @@ class AsignacionCodigosController extends Controller
         return view('Permisos::tomarFoto', compact('cedula'));
     }
 
-    public function guardarFoto(){
-        $data = $_REQUEST['base64data']; 
-        $id_nombre= $_REQUEST['nombre_archivo'];
-        echo $data;
-        if($id_nombre == ""){
-          $newname="../fotos/prueba.jpg";
+    public function guardarFoto(Request $request){
+        $cedula = $request->input('cedula');
+        $url= $request->input('urlfoto');
+        $image = explode('base64,',$url); 
+        $newname = $cedula.".png";
+
+        
+        if(Storage::disk('Permisos')->put($newname,base64_decode($image[1]))){
+                return back()->with('msj', 'ok');
+            
         }else{
-            $newname="../fotos/".$id_nombre.".jpg";
+            return back()->with('msj', 'error');
         }
-        $image = explode('base64,',$data); 
-        file_put_contents($newname, base64_decode($image[1])); 
-        echo $newname;
+        //echo $newname;
+        // $newname = "C:/xampp/htdocs/sica/storage/app/fotos/".$cedula.".png";
+        //file_put_contents($newname, base64_decode($image[1])); 
+
     }
+
 
     /**
      * Show the form for creating a new resource.

@@ -198,7 +198,7 @@
                            console.log(item.label)
                         }
                 });
-			$('#jqxTree').jqxTree('expandAll');
+			//$('#jqxTree').jqxTree('expandAll');
 		});
 	</script>
 @include('layouts.footer', ['modulo' => 'horarios'])

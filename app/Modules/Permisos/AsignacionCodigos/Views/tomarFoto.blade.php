@@ -1,138 +1,124 @@
 @include('layouts.app', ['modulo' => 'asignacion'])
     <div class="container mt-5">
-        <div class="float-left">
-            <a href="{{'../asigna-codigos'}}" class="btn btn-primary">Vover</a>
+        <div class="float-left mb-5">
+            <form method="POST" action="{{route('consultaVisitante')}}">
+                @csrf
+                <div class="form-group">
+                    <input required id="tx_cedula" name="tx_cedula" type="hidden" class="form-control" value="{{$cedula}}">
+                    <input id="btn_consulta" name="btn_consulta" type="submit" value="Volver" class="btn btn-primary">
+                </div>
+               
+            </form>
         </div>
-        <div class="row">
+        <br>
+        <div class="row mt-5">
             <div class="col-xs-12 col-md-3 col-lg-3">
+                <p>Foto Actual</p>
+                <img class="img-thumbnail" src="{{asset('storage').'/fotos'.'/'.$cedula.'.png'}}" alt="">
             </div>
             <div class="col-xs-12 col-md-6 col-lg-6">
-                <div class="embed-responsive embed-responsive-4by3">
-                    <video class="embed-responsive-item" id="webcam" autoplay></video>
+                @if (Session::has('msj') && Session::has('msj') == 'ok')
+                    <div class="alert alert-success alert-dismissible fade show mb-5 mt-3" role="alert">
+                        <strong>Información!</strong> Foto Gurdada con éxito.
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <br>
+                @elseif(Session::has('msj') && Session::has('msj') == 'error')
+                <div class="alert alert-danger alert-dismissible fade show mb-5 mt-3" role="alert">
+                    <strong>Información!</strong> Ha ocurrido un error al guardar la foto.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-                <form id="form"  method="POST" class="mt-5" style="margin-left:140px">
+                <br>
+                @endif
+                <div class="embed-responsive embed-responsive-4by3">
+                     <video id="theVideo" autoplay></video>
+                     <canvas id="theCanvas" style="position: relative;top: -130px;display: none;"></canvas>
+                     <p id="textoCap" style="display: none;margin-top: 45px;
+                     text-align: center;"><i class="text-success">Foto Capturada<i></p>
+                </div>
+                <form id="form"  method="POST" class="mt-5" style="margin-left:140px" action="{{route('guardarFotoVisitanteTemporal')}}">
                     <div class="">
-                        <input class="btn btn-primary" type="button" id="screenshot-button" value="Capturar"/>
-                        <input class="btn btn-danger" type="button" id="reset-button" value="Resetear"/>
-                        <input class="btn btn-success" type="button" onclick="savePicture()" id="save-info" name="save-info" value="Aceptar"/>
+                        <input class="btn btn-primary" type="button" id="btnCapture" value="Capturar"/>
+                        <input style="display: none" class="btn btn-danger" type="button" id="reset-button" value="Resetear"/>
+                        <input style="display: none" class="btn btn-success" type="button" id="btnGuardar" 
+                        name="save-info" value="Guardar"/>
+                        <input type="submit" id="btnEnviar" style="opacity: 0">
+                        @csrf
+                        <input type="hidden" value="{{$cedula}}" id="cedula" name="cedula">
+                        <input type="hidden" id="txtFoto" name="urlfoto">
                     </div>
                 </form>
             </div>
         </div>
     </div>
  
-	
-
-	<div style="display:none">
-	<canvas id="canvas" ></canvas>
-	</div>
-	</div>
-	<div class="col-md-3">
-	</div>
 </div>
 <script type="text/javascript">
-	var captura=false;
-	var cedula= <?php echo $cedula; ?>;
-	
-        function onFailure(err) {
-            //alert("The following error occured: " + err.name);
-        window.alert("Se debe permitir el uso de la camara");
-		}
-		var video;
-            var button;
-			var button2 ;
-			//var btn_aceptar=document.querySelector('#save-info');
-            var canvas ;
-			var ctx;
-        $(document).ready(function () {
-            video = document.querySelector('#webcam');
-           button = document.querySelector('#screenshot-button');
-			 button2 = document.querySelector('#reset-button');
-			//var btn_aceptar=document.querySelector('#save-info');
-          canvas = document.querySelector('#canvas');
-            ctx = canvas.getContext('2d');
+ 
+        
+            var videoWidth = 320;
+            var videoHeight = 240;
+            var videoTag = document.getElementById('theVideo');
+            var canvasTag = document.getElementById('theCanvas');
+            var btnCapture = document.getElementById("btnCapture");
+            var btnResetCapture = document.getElementById("reset-button");
+            var btnGuardar = document.getElementById("btnGuardar");
+            //var btnDownloadImage = document.getElementById("btnDownloadImage");
+            videoTag.setAttribute('width', videoWidth);
+            videoTag.setAttribute('height', videoHeight);
+            canvasTag.setAttribute('width', videoWidth);
+            canvasTag.setAttribute('height', videoHeight);
+            window.onload = () => {
+                navigator.mediaDevices.getUserMedia({
+                    audio: false,
+                    video: {
+                        width: videoWidth,
+                        height: videoHeight
+                    }
+                }).then(stream => {
+                    videoTag.srcObject = stream;
+                }).catch(e => {
+                    document.getElementById('errorTxt').innerHTML = 'ERROR: ' + e.toString();
+                });
+                var canvasContext = canvasTag.getContext('2d');
 
-            navigator.getUserMedia = (navigator.getUserMedia ||
-                            navigator.webkitGetUserMedia ||
-                            navigator.mozGetUserMedia ||
-                            navigator.msGetUserMedia);
-            if (navigator.getUserMedia) {
-                navigator.getUserMedia
-                            (
-                              { video: true },
-                              function (localMediaStream) {
-                              	    try {
-					 video.srcObject = localMediaStream;
-					} catch (error) {
-					video.src = window.URL.createObjectURL(localMediaStream);
-}
-                              	    video.srcObject = localMediaStream;
-                              //    video.src = window.URL.createObjectURL(localMediaStream);
-                              }, onFailure);
-            }
-            else {
-                onFailure();
-            }
-            button.addEventListener('click',snapshot, false);
-			button2.addEventListener('click',reset, false);
-			//btn_aceptar.addEventListener('click',savePicture,false);
-        });
+                btnCapture.addEventListener("click", () => {
+                    videoTag.pause();
+                    canvasContext.drawImage(videoTag, 0, 0, videoWidth, videoHeight);
+                    $("#textoCap").fadeIn();
+                    $("#reset-button").fadeIn();
+                    $("#btnGuardar").fadeIn();
+                    $("#btnCapture").fadeOut();
+                });
 
-		function reset(){
-		document.getElementById('webcam').play();
-		}
-		 function snapshot() {
-                canvas.width = 400;//video.videoWidth;
-                canvas.height = 300;//video.videoHeight;
-                ctx.drawImage(video, 0, 0,400,300);
-				captura=true;
-				document.getElementById('webcam').pause();
-            }
-		function savePicture(){
-					if(captura){
-							exportAndSaveCanvas(cedula);
-						}else{
-							snapshot();
-							exportAndSaveCanvas(cedula);
-						}
-				captura=false;
-				
-			}
-		
-	function exportAndSaveCanvas(id_archivo)  {
-//window.alert(id_archivo);
-		// Get the canvas screenshot as PNG
-		var screenshot = Canvas2Image.saveAsPNG(canvas, true);
-		//alert("User: "+username);
-		// This is a little trick to get the SRC attribute from the generated <img> screenshot
-		canvas.parentNode.appendChild(screenshot);
-		screenshot.id = "canvasimage";		
-		data = $('#canvasimage').attr('src');
-		canvas.parentNode.removeChild(screenshot);
+                btnResetCapture.addEventListener("click", () => {
+                    videoTag.play();
+                    $("#textoCap").fadeOut();
+                    $("#btnGuardar").fadeOut();
+                    $("#reset-button").fadeOut();
+                    $("#btnCapture").fadeIn();
+                });
 
+               /* btnDownloadImage.addEventListener("click", () => {
+                    var link = document.createElement('a');
+                    link.download = $("#cedula").val()+'.png';
+                    link.href = canvasTag.toDataURL();
+                    link.click();
+                });*/
 
-		// Send the screenshot to PHP to save it on the server
-		var url = 'guardarFoto';
-		var request= $.ajax({ 
-		    //type: "POST", 
-		type: 'GET',
-        async: false,
-        cache: false,
-        timeout: 30000,
-        error: function(){
-           console.log("no "+msg);
-        },
-        success: function(msg){ 
-            console.log("si "+msg);
-        },
-		    url: url,
-		    dataType: 'text',
-		    data: {
-		        base64data : data,
-				nombre_archivo: id_archivo
-		    }
-		});
-	}
+                btnGuardar.addEventListener("click", () => {
+                    var urlFoto = canvasTag.toDataURL();
+                    $("#txtFoto").val(urlFoto);
+                    $("#btnEnviar").click();
+                
+                });
+            };
+        
+
     </script>
 
     @include('layouts.footer', ['modulo' => 'asignacion'])

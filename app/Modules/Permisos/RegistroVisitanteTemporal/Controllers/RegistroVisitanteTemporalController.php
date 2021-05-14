@@ -4,6 +4,7 @@ namespace App\Modules\Permisos\RegistroVisitanteTemporal\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class RegistroVisitanteTemporalController extends Controller
 {
@@ -80,8 +81,9 @@ class RegistroVisitanteTemporalController extends Controller
     
                 //CASO CUANDO NO TIENE FOTO
                 if($row[4]=='N'){
+                    $tabla = 1;
                     //SI TIENE PERMISOS PINTA LA TABLA DE VERDE
-                    $tabla="<table class='table' style='background-color: #00BFFF;
+                    /*$tabla="<table class='table' style='background-color: #00BFFF;
                         border-radius: 10px; 
                         border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                     <tr>	 
@@ -104,11 +106,12 @@ class RegistroVisitanteTemporalController extends Controller
                                 </table>
                             </td> 
                         </tr> 
-                        </table>";
+                        </table>";*/
                     
                 }else if($row[4]=='S'){
                     //pinta tabla con foto
-                $tabla="<table class='table' style='background-color: #00BFFF;
+                    $tabla = 1;
+                /*$tabla="<table class='table' style='background-color: #00BFFF;
                     border-radius: 10px; 
                     border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                 <tr>	 
@@ -129,7 +132,7 @@ class RegistroVisitanteTemporalController extends Controller
                         </table>
                     </td> 
                 </tr> 
-                </table>";
+                </table>";*/
         
                 }else{
                     $tabla="0";
@@ -153,7 +156,7 @@ class RegistroVisitanteTemporalController extends Controller
             $listaEmpresas=RegistroVisitanteTemporalController::getListaEmpresas();
             $listaCiudades=RegistroVisitanteTemporalController::getListaCiudades();
             
-            return view('Permisos::registroTemporal', compact('listaEmpresas', 'listaCiudades', 'id_empresa', 'id_ciudad', 'data_v', 'tabla', 'data_b','cedula'));
+            return view('Permisos::registroTemporal', compact('listaEmpresas', 'listaCiudades', 'id_empresa', 'id_ciudad', 'data_v', 'tabla', 'data_b','cedula', 'row'));
 
         }else {
             if($continuar == 1){
@@ -743,6 +746,25 @@ class RegistroVisitanteTemporalController extends Controller
     public function tomarFotoTemporal($cedula)
     {
         return view('Permisos::tomarfotoTemporal', compact('cedula'));
+    }
+
+    public function guardarFoto(Request $request){
+        $cedula = $request->input('cedula');
+        $url= $request->input('urlfoto');
+        $image = explode('base64,',$url); 
+        $newname = $cedula.".png";
+
+        
+        if(Storage::disk('Permisos')->put($newname,base64_decode($image[1]))){
+                return back()->with('msj', 'ok');
+            
+        }else{
+            return back()->with('msj', 'error');
+        }
+        //echo $newname;
+        // $newname = "C:/xampp/htdocs/sica/storage/app/fotos/".$cedula.".png";
+        //file_put_contents($newname, base64_decode($image[1])); 
+
     }
 
 

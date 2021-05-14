@@ -10,7 +10,7 @@ Route::group(['middleware' => 'web'], function () {
         Route::get('consultaAlClickearTabla', 'AsignacionCodigosController@consultarClickTabla');
         Route::post('registrarCodigos','AsignacionCodigosController@registrarCodigo')->name('registrarCodigos');
         Route::get('tomarFoto/{cedula}', 'AsignacionCodigosController@retornarVistaFoto');
-        Route::get('guardarFoto', 'AsignacionCodigosController@guardarFoto');
+        Route::post('guardarFotoAsignaCodigos', 'AsignacionCodigosController@guardarFoto')->name('guardarFotoAsignaCodigos');
 
     });
 

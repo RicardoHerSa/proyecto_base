@@ -59,7 +59,7 @@
             @endif
             <div class="card">
                 <div class="card-header">
-                    <h2>Gestión de Horario</h2>
+                    <h4>Gestión de Horario</h4>
                 </div>
                 <div class="card-body">
                 

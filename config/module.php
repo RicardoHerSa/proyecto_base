@@ -23,6 +23,7 @@ return  [
             'ReporteIngreso',
             'ReporteParqueadero'
         ],
+        'IngresoVisitante'
       ]
 ];
 ?>
