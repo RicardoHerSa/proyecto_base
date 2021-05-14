@@ -34,91 +34,96 @@ class ReporteParqueaderoController extends Controller
         return view('Reportes::reporteParqueadero', compact('empresas', 'sedes'));
     }
 
-    public function consultarIngresoPersona(Request $request)
+    public function consultarReporteParqueadero(Request $request)
     {
-        $this->cedula = $request->input('cedula');
-        $cedula = $this->cedula;
-        $data = ReporteIngresoController::getData($this->cedula);
-        echo $data;
-        if($data == 0){
-            return redirect('reporte-ingreso')->with('msj', 'No se encontraron registros.');
+        $id_empresa = $request->input("id_empresa");
+        $id_sede = $request->input("id_sede");
+        $tipo_v = $request->input("tipo_vehiculo");
+
+       // echo "<br>ID_EMPRESA: ".$id_empresa."<br>ID_SEDE: ".$id_sede."<BR>tipo: ".$tipo_v."<br><br>";
+        //gerReporte
+        if($id_empresa=='TODOS'){
+            $consulta = DB::table('ohxqc_empresas_parqueaderos as ep')
+            ->select('e.descripcion', 'ep.asignados_fijos', 'ep.ocupados_fijos', 'ep.asignados_temporales', 'ep.ocupados_temporales', 'ep.tipo', DB::raw("(ep.asignados_fijos + ep.asignados_temporales) as total"))
+            ->join('ohxqc_empresas as e', 'e.id_empresa', '=', 'ep.id_empresa')
+            ->where('e.id_sede', '=', 1)
+            ->where('ep.id_sede', '=', $id_sede)
+            ->where('ep.tipo', '=', $tipo_v)
+            ->get();
         }else{
-            return view('Reportes::resultadoReporte', compact('data', 'cedula'));
+            $consulta = DB::table('ohxqc_empresas_parqueaderos as ep')
+            ->select('e.descripcion', 'ep.asignados_fijos', 'ep.ocupados_fijos', 'ep.asignados_temporales', 'ep.ocupados_temporales', 'ep.tipo', DB::raw("(ep.asignados_fijos + ep.asignados_temporales) as total"))
+            ->join('ohxqc_empresas as e', 'e.id_empresa', '=', 'ep.id_empresa')
+            ->where('e.id_empresa', '=', $id_empresa)
+            ->where('e.id_sede', '=', 1)
+            ->where('ep.id_sede', '=', $id_sede)
+            ->where('ep.tipo', '=', $tipo_v)
+            ->get();
         }
+ 
+        $data= array();
+        foreach($consulta as $cons){
+            $data[]= array('empresa'=>$cons->descripcion, 'asignados_f'=>$cons->asignados_fijos, 'ocupados_f'=>$cons->ocupados_fijos,'asignados_t'=>$cons->asignados_temporales, 'ocupados_t'=>$cons->ocupados_temporales, 'tipo'=>$cons->tipo, 'total'=>$cons->total);
+        }
+        $data_rep = json_encode($data);
+
+        //reporteGraficaFijos y  //reporteGraficaTemp
+        if($tipo_v == 'CARRO'){
+            $consultaReport = DB::table('ohxqc_empresas_parqueaderos as ep')
+            ->select('e.descripcion', DB::raw("(ep.asignados_fijos-ep.ocupados_fijos) as disponibles"), 'ep.ocupados_fijos as ocupados')
+            ->join('ohxqc_empresas as e', 'e.id_empresa', '=', 'ep.id_empresa')
+            ->where('e.id_sede', '=', 1)
+            ->where('ep.id_sede', '=', $id_sede)
+            ->where('ep.tipo', '=', 'CARRO')
+            ->get();
+
+            $consultReportTem = DB::table('ohxqc_empresas_parqueaderos as ep')
+            ->select('e.descripcion', DB::raw("(ep.asignados_temporales-ep.ocupados_temporales) as disponibles"), 'ep.ocupados_temporales as ocupados')
+            ->join('ohxqc_empresas as e', 'e.id_empresa', '=', 'ep.id_empresa')
+            ->where('e.id_sede', '=', 1)
+            ->where('ep.id_sede', '=', $id_sede)
+            ->where('ep.tipo', '=', 'CARRO')
+            ->get();
+        }else{
+            $consultaReport = DB::table('ohxqc_empresas_parqueaderos as ep')
+            ->select('e.descripcion', DB::raw("(ep.asignados_fijos-ep.ocupados_fijos) as disponibles"), 'ep.ocupados_fijos as ocupados')
+            ->join('ohxqc_empresas as e', 'e.id_empresa', '=', 'ep.id_empresa')
+            ->where('e.id_sede', '=', 1)
+            ->where('ep.id_sede', '=', $id_sede)
+            ->where('ep.tipo', '=', 'MOTO')
+            ->get();
+
+            $consultReportTem = DB::table('ohxqc_empresas_parqueaderos as ep')
+            ->select('e.descripcion', DB::raw("(ep.asignados_temporales-ep.ocupados_temporales) as disponibles"), 'ep.ocupados_temporales as ocupados')
+            ->join('ohxqc_empresas as e', 'e.id_empresa', '=', 'ep.id_empresa')
+            ->where('e.id_sede', '=', 1)
+            ->where('ep.id_sede', '=', $id_sede)
+            ->where('ep.tipo', '=', 'MOTO')
+            ->get();
+        }
+
+            $dataRepo= array();
+            foreach($consultaReport as $conr){
+            $dataRepo[]= array('empresa'=>$conr->descripcion, 'disponibles'=>$conr->disponibles, 'ocupados'=>$conr->ocupados);
+            }
+            $data_grap = json_encode($dataRepo);
+
+            $dataRepoTemp= array();
+            foreach($consultReportTem as $conrt){
+            $dataRepoTemp[]= array('empresa'=>$conrt->descripcion, 'disponibles'=>$conrt->disponibles, 'ocupados'=>$conrt->ocupados);
+            }
+            $data_temp = json_encode($dataRepoTemp);
+
+            if($data_rep != "" && $data_grap != "" && $data_temp != ""){
+                return view('Reportes::resultadoReporteParqueadero', compact('data_rep', 'data_grap', 'data_temp', 'tipo_v'));
+                
+            }else{
+                return redirect('reporte-parqueadero')->with('msj', 'No se encontraron reportes');
+            }
         
     }
 
-    public function getData($cedula)
-    {
-        $consulta = DB::table('ohxqc_visitantes as v')
-        ->select('v.nombre',
-         'v.identificacion',
-         'ing.tipo_registro', DB::raw("(select u.descripcion
-         from ohxqc_porteros p,ohxqc_porteros_ubicaciones pu, ohxqc_ubicaciones u
-         where p.id = pu.id_portero
-         and pu.id_ubicacion = u.id_ubicacion
-         and p.usuario = ing.usuario_creacion) as porteria"),
-         DB::raw("CAST(ing.fecha_hora as timestamp)"))
-        ->join('ohxqc_trx_ingresos_salidas as ing' , 'ing.id_visitante', '=', 'v.id_visitante')
-        ->where('v.identificacion', '=', $cedula)
-        ->orderBy('ing.fecha_hora', 'DESC')
-        ->get();
-        if(count($consulta) > 0){
-            return json_encode($consulta);
-        }else{
-            return 0;
-        }
-        /*select v.nombre, 
-        v.identificacion, 
-        ing.tipo_registro,
-        (select u.descripcion
-        from ohxqc_porteros p,ohxqc_porteros_ubicaciones pu, ohxqc_ubicaciones u
-        where p.id = pu.id_portero
-        and pu.id_ubicacion = u.id_ubicacion
-        and p.usuario = ing.usuario_creacion) as porteria,  
-        cast (ing.fecha_hora as timestamp(0)), 
-        null as equipo, 
-        null as serial
-                        from ohxqc_visitantes v, 
-                        ohxqc_empresas_visitante ev, 
-                        ohxqc_trx_ingresos_salidas ing 
-                        where v.identificacion = '1130614392' 
-                        and v.id_visitante = ev.id_visitante 
-                        and v.id_visitante::text = ing.id_visitante
-                        order by fecha_hora DESC*/
-       
-    }
-
-    public function descargarExcelReporteIngreso(Request $request)
-    {
-        $cedula = $request->input('cedula');
-
-        if($request->input('btn_reporte')  != null){
-            $consulta = DB::table('ohxqc_visitantes as v')
-            ->select('v.nombre',
-             'v.identificacion',
-             'ing.tipo_registro', DB::raw("(select u.descripcion
-             from ohxqc_porteros p,ohxqc_porteros_ubicaciones pu, ohxqc_ubicaciones u
-             where p.id = pu.id_portero
-             and pu.id_ubicacion = u.id_ubicacion
-             and p.usuario = ing.usuario_creacion) as porteria"),
-             DB::raw("CAST(ing.fecha_hora as timestamp)"))
-            ->join('ohxqc_trx_ingresos_salidas as ing' , 'ing.id_visitante', '=', 'v.id_visitante')
-            ->where('v.identificacion', '=', $cedula)
-            ->orderBy('ing.fecha_hora', 'DESC')
-            ->get();
-            $fp = fopen('php://output','w');
-		   fputcsv($fp, array('NOMBRE','CEDULA','TIPO INGRESO','PORTERO','FECHA REGISTRO','EQUIPO','SERIAL'),'|');
-           foreach($consulta as $con){
-             fputcsv($fp, array(utf8_decode($con->nombre),$con->identificacion,$con->tipo_registro,utf8_decode($con->porteria),'hora',null,null),'|');
-           }
-            header('Content-Type: text/csv; charset=utf-8');
-            header('Content-Disposition: attachment; filename=Reporte-ingreso.csv');
-            exit();	
-        }else{
-            return redirect('reporte-ingreso');
-        }
-    }
+   
 
    
     /**

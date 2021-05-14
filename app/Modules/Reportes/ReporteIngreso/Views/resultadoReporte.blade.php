@@ -1,6 +1,10 @@
 @include('layouts.app', ['modulo' => 'horarios'])
 <div class="container">
+    <div class="float-left ">
+        <a href="{{url('reporte-ingreso')}}" class="btn btn-primary">Volver</a>
+    </div>
     <h3 class="text-center mt-3">Registro de Ingresos y Salidas.</h3>
+    <hr>
     <div class="row mt-5">
         <div class="col-xs-12 col-md-12 col-lg-12">
             <div class="mb-5" id="jqx_reporte"></div>
@@ -47,10 +51,10 @@
         datatype: "json",
         datafields: [
             { name: 'nombre' },
-            { name: 'id' },
-            { name: 'tipo' },
-            { name: 'usr_creacion' },
-            { name: 'fecha_rec' },
+            { name: 'identificacion' },
+            { name: 'tipo_registro' },
+            { name: 'usuario_creacion' },
+            { name: 'fecha_hora' },
             { name: 'equipo' },
             { name: 'serial' }
          
@@ -92,10 +96,10 @@
             columns: [
                
                 { text: 'Nombre', datafield: 'nombre',editable: false, width: 200},
-                { text: 'Cedula', datafield: 'id',editable: false, width: 130 },            
-                { text: 'Tipo Ingreso', datafield: 'tipo',editable: false, width: 200 },
-                { text: 'Portería', datafield: 'usr_creacion',editable: false, width: 200},
-                { text: 'Fecha Registro', datafield: 'fecha_rec',editable: false, width: 180},
+                { text: 'Cedula', datafield: 'identificacion',editable: false, width: 130 },            
+                { text: 'Tipo Ingreso', datafield: 'tipo_registro',editable: false, width: 200 },
+                { text: 'Portería', datafield: 'usuario_creacion',editable: false, width: 200},
+                { text: 'Fecha Registro', datafield: 'fecha_hora',editable: false, width: 180},
                 { text: 'Equipo', datafield: 'equipo',editable: false, width: 180},
                 { text: 'Serial', datafield: 'serial',editable: false, width: 180}
                                                

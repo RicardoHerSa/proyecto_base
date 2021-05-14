@@ -23,8 +23,7 @@ class ReporteIngresoController extends Controller
         $this->cedula = $request->input('cedula');
         $cedula = $this->cedula;
         $data = ReporteIngresoController::getData($this->cedula);
-        echo $data;
-        if($data == 0){
+        if($data == '0'){
             return redirect('reporte-ingreso')->with('msj', 'No se encontraron registros.');
         }else{
             return view('Reportes::resultadoReporte', compact('data', 'cedula'));
@@ -37,7 +36,9 @@ class ReporteIngresoController extends Controller
         $consulta = DB::table('ohxqc_visitantes as v')
         ->select('v.nombre',
          'v.identificacion',
-         'ing.tipo_registro', DB::raw("(select u.descripcion
+         'ing.tipo_registro',
+         'ing.usuario_creacion',
+         DB::raw("(select u.descripcion
          from ohxqc_porteros p,ohxqc_porteros_ubicaciones pu, ohxqc_ubicaciones u
          where p.id = pu.id_portero
          and pu.id_ubicacion = u.id_ubicacion
@@ -52,24 +53,6 @@ class ReporteIngresoController extends Controller
         }else{
             return 0;
         }
-        /*select v.nombre, 
-        v.identificacion, 
-        ing.tipo_registro,
-        (select u.descripcion
-        from ohxqc_porteros p,ohxqc_porteros_ubicaciones pu, ohxqc_ubicaciones u
-        where p.id = pu.id_portero
-        and pu.id_ubicacion = u.id_ubicacion
-        and p.usuario = ing.usuario_creacion) as porteria,  
-        cast (ing.fecha_hora as timestamp(0)), 
-        null as equipo, 
-        null as serial
-                        from ohxqc_visitantes v, 
-                        ohxqc_empresas_visitante ev, 
-                        ohxqc_trx_ingresos_salidas ing 
-                        where v.identificacion = '1130614392' 
-                        and v.id_visitante = ev.id_visitante 
-                        and v.id_visitante::text = ing.id_visitante
-                        order by fecha_hora DESC*/
        
     }
 
@@ -81,12 +64,14 @@ class ReporteIngresoController extends Controller
             $consulta = DB::table('ohxqc_visitantes as v')
             ->select('v.nombre',
              'v.identificacion',
-             'ing.tipo_registro', DB::raw("(select u.descripcion
+             'ing.tipo_registro',
+             'ing.usuario_creacion',
+             DB::raw("(select u.descripcion
              from ohxqc_porteros p,ohxqc_porteros_ubicaciones pu, ohxqc_ubicaciones u
              where p.id = pu.id_portero
              and pu.id_ubicacion = u.id_ubicacion
              and p.usuario = ing.usuario_creacion) as porteria"),
-             DB::raw("CAST(ing.fecha_hora as timestamp)"))
+             DB::raw("CAST(ing.fecha_hora as timestamp) as hora"))
             ->join('ohxqc_trx_ingresos_salidas as ing' , 'ing.id_visitante', '=', 'v.id_visitante')
             ->where('v.identificacion', '=', $cedula)
             ->orderBy('ing.fecha_hora', 'DESC')
@@ -94,7 +79,7 @@ class ReporteIngresoController extends Controller
             $fp = fopen('php://output','w');
 		   fputcsv($fp, array('NOMBRE','CEDULA','TIPO INGRESO','PORTERO','FECHA REGISTRO','EQUIPO','SERIAL'),'|');
            foreach($consulta as $con){
-             fputcsv($fp, array(utf8_decode($con->nombre),$con->identificacion,$con->tipo_registro,utf8_decode($con->porteria),'hora',null,null),'|');
+             fputcsv($fp, array(utf8_decode($con->nombre),$con->identificacion,$con->tipo_registro,utf8_decode($con->usuario_creacion),$con->hora,null,null),'|');
            }
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename=Reporte-ingreso.csv');

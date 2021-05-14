@@ -16,7 +16,7 @@
                    <h2> Reporte de Ingreso </h2>
                 </div>
                 <div class="card-body">
-                    <p class="card-text">Digite la cédula de la persona a consultar</p>
+                    <p class="card-text">Digite la cédula de la persona a consultar.</p>
                     <div class="form-group">
                     <form action="{{route('consultarIngresoPersona')}}" method="POST">
                         @csrf

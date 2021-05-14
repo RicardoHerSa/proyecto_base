@@ -19,9 +19,9 @@
                     <form action="{{route('consultarReporteParqueadero')}}" method="POST">
                         <div class="form-group">
                             @csrf
-                            <label for="cedula">Empresa: </label>
-                            <select name="" id="" class="form-control">
-                                <option value="">TODAS LAS EMPRESAS</option>
+                            <label for="empresa">Empresa: </label>
+                            <select name="id_empresa" id="empresa" class="form-control">
+                                <option value="TODOS">TODAS LAS EMPRESAS</option>
                                 @foreach ($empresas as $emp)
                                     <option value="{{$emp->id_empresa}}">{{$emp->descripcion}}</option>
                                 @endforeach
@@ -29,8 +29,8 @@
                         </div>
                         <div class="form-group">
                             @csrf
-                            <label for="cedula">Sede: </label>
-                            <select name="" id="" class="form-control">
+                            <label for="sede">Sede: </label>
+                            <select name="id_sede" id="sede" class="form-control">
                                 @foreach ($sedes as $sed)
                                     <option value="{{$sed->id}}">{{$sed->descripcion}}</option>
                                 @endforeach
@@ -38,10 +38,10 @@
                         </div>
                         <div class="form-group">
                             @csrf
-                            <label for="cedula">Vehículo: </label>
-                            <select name="" id="" class="form-control">
-                                <option value="CARROS">CARROS</option>
-                                <option value="">MOTOS</option>
+                            <label for="vehi">Vehículo: </label>
+                            <select name="tipo_vehiculo" id="vehi" class="form-control">
+                                <option value="CARRO">CARROS</option>
+                                <option value="MOTO">MOTOS</option>
                             </select>
                         </div>
                 </div>
