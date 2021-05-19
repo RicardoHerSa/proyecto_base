@@ -1,7 +1,15 @@
 @include('layouts.app', ['modulo' => 'asignacion'])
 <div class="container">
+    @if (Session::has('msj'))
+    <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+        <strong>Información!</strong> {{Session::get('msj')}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    @endif
     <div class="row mt-5">
-        <div class="col-xs-12 col-md-{{!isset($tabla)?'12':'3'}} col-lg-{{!isset($tabla)?'12':'3'}}">
+        <div class="col-xs-12 col-md-{{!isset($tabla)?'12':'3'}} col-lg-{{!isset($tabla)?'12':'3'}}" id="rowPrincipal">
             <div class="card">
                 <div class="card-header">
                     <h4>Registro de Visitante</h4>
@@ -11,11 +19,12 @@
                       <div class="form-group">
                           @csrf
                           <label for="tx_cedula">Cédula: </label> 
-                          <input type="text" class="form-control" id="tx_cedula" name="tx_cedula">
-                          <input  id="id_cod" name="id_cod" type="hidden" value = "{{isset($Cedula_aux)?$Cedula_aux:''}}; ?>" />
+                          <input type="number" class="form-control" id="tx_cedula" name="tx_cedula">
+                          <input  id="id_cod" name="id_cod" type="hidden" value = "{{isset($Cedula_aux)?$Cedula_aux:''}}" />
                           <input id="opt_btn" name="opt_btn" type="hidden" value = "ENTRADA" />
+                          <input class="form-control" type="hidden" name="username" value="{{auth()->user()->name}}">
                         
-                           <input id="tipo_ingreso" name="tipo_ingreso" type="hidden" value= "{{isset($tipo_ingreso)?$tipo_ingreso:'PEATON'}}'"/>
+                           <input id="tipo_ingreso" name="tipo_ingreso" type="hidden" value= "{{isset($tipo_ingreso)?$tipo_ingreso:'PEATON'}}"/>
                        
                       </div>
                     </div>
@@ -26,19 +35,22 @@
                  </form>
                 </div>
             </div>
-            <div class="div">
+            <div class="mt-3">
                 <button id="carro"><i class="fa fa-automobile" style="font-size:60px;"></i></button>
                 <button id="moto"><i class="fa fa-motorcycle" style="font-size:60px;"></i></button>
                 <button id="bicy"><i class="fa fa-bicycle" style="font-size:60px;"></i></button>
                 <button type="button" id="peaton"><i class="fa fa-user" style="font-size:60px;width:60px;height: 60px;"></i></button>
             </div>
-            <div class="">
+            <div class="mt-2">
                 <input type="button" onclick="registraEntrada()" style="font-size: 2.5em;width:100%;text-align:center" id="btn_entrada" value="Entrada"/>
                 <input type="button"  onclick="registraSalida()" style="font-size: 2.5em;width:100%;text-align:center" id="btn_salida" value="Salida"/>
             </div>
         </div>
-        <div class="col-xs-12 col-md-{{isset($tabla)?'9':''}} col-lg-{{isset($tabla)?'9':''}}">
+        <div class="col-xs-12 col-md-{{isset($tabla)?'9':''}} col-lg-{{isset($tabla)?'9':''}}" id="rowSecundario">
             <div id="info" name="info" style="visibility: hidden">
+                @php
+                    echo isset($tabla)?$tabla:'';
+                @endphp
         </div>
     </div>
 </div>
@@ -60,8 +72,20 @@
     document.getElementById("tx_cedula").value= cc;
     document.getElementById("opt_btn").value=registro;
     }
+      
         $('#info').css('visibility', 'visible');
         $('#info').show('slow').delay(10000).hide('slow'); //tiempo en el que muestra la info del usuario a registrar
+        setTimeout(function(){ 
+
+            $("#rowPrincipal").removeClass('col-md-3');
+            $("#rowPrincipal").removeClass('col-lg-3');
+            $("#rowPrincipal").addClass('col-md-12');
+            $("#rowPrincipal").addClass('col-lg-12');
+            $("#rowSecundario").removeClass('col-md-9');
+            $("#rowSecundario").removeClass('col-lg-9');
+            
+            }, 10000);
+
    });
    
    function escondeBoton(){

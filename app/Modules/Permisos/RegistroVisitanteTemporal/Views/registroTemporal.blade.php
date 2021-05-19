@@ -58,11 +58,11 @@
                                 <input required id="tx_cedula" name="tx_cedula" type="text" class="form-control">
                             </div>
                             <hr>
-                            <div class="form-group">
+                            <div class="form-group" style="display: flex">
                                 <input id="btn_consulta" name="btn_consulta" type="submit" value="Consultar" class="btn btn-primary">
                                 @if (isset($tabla) && $tabla != "")
                                  <br>
-                                <a href="{{url('tomarfototemporal/'.$cedula)}}" class="btn btn-primary">Tomar Foto</a>
+                                <a style="left: 2px;position: relative;" href="{{url('tomarfototemporal/'.$cedula)}}" class="btn btn-primary">Tomar Foto</a>
                                 @endif
                             </div>
                            
@@ -72,32 +72,27 @@
         </div>
 
         <!--Resultado encabezado info personal-->
-        <div class="col-xs-12 col-md-{{isset($tabla)?'9':''}} col-lg-{{isset($tabla)?'9':''}}">
+        <div class="col-xs-12 col-md-{{isset($tabla)?'9':''}} col-lg-{{isset($tabla)?'9':''}}" style="margin-top: 5%">
             @if (isset($tabla) && $tabla != '0')
-                <table class='table' style='background-color: #00BFFF;
-                            border-radius: 10px; 
-                            border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
-                        <tr>	 
-                            <td> 
-                                <img style="width: 80%" class="img-thumbnail" src="{{asset('storage').'/fotos'.'/'.$cedula.'.png'}}" alt="">
-                            </td> 
-                            <td>
-                            <table>
-                                <tr> <td style="border:none"><label><b>{{$row[0]." ".$row[1]}}</b></label></td></tr> 
-                                <tr><td style="border:none"><label id='cc'><b>{{$row[2]}}</b></label></td></tr> 
-                                <tr> <td style="border:none"><label><b>{{$row[3]}}</b></label></td></tr>
-                               
-                                    @if(trim($row[5])!='' && trim($row[6])!='')
-                                        <tr> <td style="border:none"><label><b>{{$row[5]}}</b></label></td></tr> 
-                                        <tr> <td style="border:none"><label><b>{{$row[6]}}</b></label></td></tr>
-                                    @endif
-                                
-                                    <tr> <td style="border:none"><label><b>Autorizado por:</b></label></td></tr> 
-                                    <tr> <td style="border:none"><label><b>{{$row[7]}}</b></label></td></tr> 
-                                    </table>
-                                </td> 
-                            </tr> 
-                </table>
+                <div class="row" style="background-color: #00BFFF;
+                border-radius: 10px; 
+                border-left:0px; font-size:20px;padding:10px">
+                    <div class="col-xs-12 col-md-6 col-lg-6">
+                        <img style="width: 80%" class="img-thumbnail" src="{{asset('storage').'/fotos'.'/'.$cedula.'.png'}}" alt="">
+                    </div>
+                    <div class="col-xs-12 col-md-6 col-lg-6">
+                        <ul style="list-style: none;margin-top:30px">
+                            <li><b>{{$row[0]." ".$row[1]}}</b></li>
+                            <li id='cc'><b>{{$row[2]}}</b></li>
+                            <li><b>{{$row[3]}}</b></li>
+                            @if(trim($row[5])!='' && trim($row[6])!='')
+                            <li><b>{{$row[5]}}</b></li>
+                            <li><b>{{$row[6]}}</b></li>
+                            @endif
+                            <li><b>Autorizado Por: {{$row[7]}}</b></li>
+                        </ul>
+                    </div>
+                </div>
                 @php
                     //echo $tabla;
                 @endphp
@@ -129,11 +124,8 @@
     @endif
     <!--Formulario de registro de codigo-->
     <div class="row justify-content-center">
-        <div class="col-xs-12 col-md-3 col-lg-3">
-        </div>
-        
         @if (isset($tabla))
-        <div class="col-xs-12 col-md-9 col-lg-9">
+        <div class="col-xs-12 col-md-12 col-lg-12">
             <!-- Letrero de cambio realizado -->
             @if (isset($operacion))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -150,23 +142,15 @@
                     <form  id="formCod" name="formCod" method="POST" action="{{route('registrarVisitante')}}">
                         @csrf
                         <div class="row">
-                            <div class="col-xs-12 col-md-12 col-lg-12">
+                            <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="form-group">
                                     <label for="nombre">Nombre: </label>
                                     <input id="nombre" name="nombre" required value="{{isset($nombre)?$nombre:''}}" type="text" class="form-control">
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <label for="cedula">Cedula: </label>
                                     <input id="cedula" name="cedulaR" required value="{{isset($cedula)?$cedula:''}}" type="text" class="form-control">
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <label for="empresa">Empresa Destino: </label>
                                     <select name="empresa" id="empresa" class="form-control">
@@ -177,9 +161,7 @@
                                     </select>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-12 col-md-12 col-lg-12">
+                            <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="form-group">
                                     <label for="ciudad">Ciudad: </label>
                                     <select name="ciudad" id="ciudad" class="form-control">
@@ -187,58 +169,43 @@
                                         @foreach ($listaCiudades as $lista)
                                             <option {{isset($nombreCiudad) && $nombreCiudad != null && $nombreCiudad == $lista->ciudad?'selected':''}} value="{{$lista->ciudad}}">{{$lista->ciudad}}</option>
                                         @endforeach
-                                </select>
+                                    </select>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <label for="vehiculo">Vehículo: </label>
                                     <input id="vehiculo" name="vehiculo"  type="text" class="form-control" value="{{isset($vehiculo)?$vehiculo:'Sin vehiculo'}}">
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <label for="placa">Placa: </label>
                                     <input id="placa" name="placa"  type="text" class="form-control" value="{{isset($placa)?$placa:''}}">
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-12 col-md-12 col-lg-12">
+                            <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="form-group">
                                     <label for="responsable">Autorizado Por: </label>
                                     <input id="responsable" name="responsable" required type="text" class="form-control" value="{{isset($responsable)?$responsable:''}}">
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="puerta" id="ck_entrada" value="ENTRADA"  {{isset($estado)&&$estado=="ENTRADA"||$estado==""?'checked':''}}>
-                                <label class="form-check-label" for="ck_entrada">
-                                  ENTRADA
-                                </label>
-                              </div>
-                              <br>
-                              <div class="form-check">
-                                <input class="form-check-input" type="radio" name="puerta" id="ck_salida" value="SALIDA" {{isset($estado)&&$estado!="ENTRADA"&&$estado != ""?'checked':''}}>
-                                <label class="form-check-label" for="exampleRadios2">
-                                  SALIDA
-                                </label>
-                              </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-12 col-md-12 col-lg-12">
-                                <div class="form-group">
+                                  <div class="form-check form-check-inline mb-2">
+                                    <input class="form-check-input" type="radio" name="puerta" id="ck_entrada" value="ENTRADA"  {{isset($estado)&&$estado=="ENTRADA"||$estado==""?'checked':''}}>
+                                    <label class="form-check-label" for="ck_entrada">
+                                      ENTRADA
+                                    </label>
+                                  </div>
+                                  <br>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="puerta" id="ck_salida" value="SALIDA" {{isset($estado)&&$estado!="ENTRADA"&&$estado != ""?'checked':''}}>
+                                    <label class="form-check-label" for="exampleRadios2">
+                                      SALIDA
+                                    </label>
+                                  </div>
+                                  <br>
+                                  <div class="form-group mt-4">
                                     <label for="codigo">Código: </label>
                                     <input required id="codigo" name="codigo" type="text" class="form-control" value="{{isset($codigo)?$codigo:''}}">
                                 </div>
                             </div>
                         </div>
-                        
+                      
                         <hr>
                         <div class="form-group">
                             <div class="float-right">
@@ -379,11 +346,12 @@
                      var fecha=rowData.fecha_creacion;
                      var activo=rowData.activo;
                      cedula=$("#cc").text();
+                     var token = '{{csrf_token()}}';
                      var request=$.ajax({
-                                 type:  'GET',
+                                 type:  'POST',
                                  async: false,
                                  url: "consultaAlClickearTabla", 
-                                 data: {'cod':cod, 'cc':cedula, 'fecha':fecha, 'act':activo},
+                                 data: {'cod':cod, 'cc':cedula, 'fecha':fecha, 'act':activo, _token:token},
                                  cache: false,
                                  success: function(response){
                                      console.log(response);

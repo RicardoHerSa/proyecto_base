@@ -1,4 +1,9 @@
 @include('layouts.app', ['modulo' => 'unitario'])
+<style>
+    label{
+        font-size: 15px;
+    }
+</style>
 <div class="container">
     <br>
     
@@ -47,45 +52,34 @@
                 <div class="card-body">
                     <h3 style="color:#666666">Actualización de Visitante</h3>
                     <hr>
-                    @if(isset($_GET['nombre']))
+                    @if(isset($nombre))
                     <form  method="post" id="form_update">
                         @csrf
-                        <input id="cc_visitante2" style="display: none"   name="cc_visitante2"  type="text" value="<?php/* echo $cc;*/ ?>"/>
-                        <div class="form-group">
-                            <label class='title'><B>Nombre:</B> {{isset($_GET['nombre'])?$_GET['nombre']:''}}</label>
-                        </div>
-                        <div class="form-group">
-                            <label id='cc' name='cc' class='title'><B>Cedula:</B>{{isset($_GET['cc'])?$_GET['cc']:''}}</label>
-                        </div>
-                        <div class="form-group">
-                            <label class='title'><B>Cargo:</B> {{isset($_GET['cargo'])?$_GET['cargo']:''}}</label>
-                        </div>
-                        <div class="form-group">
-                            <label class='title'><B>Empresa:</B> {{isset($_GET['empresa'])?$_GET['empresa']:''}}</label>
-                        </div>
-                        <div class="form-group">
-                            <label class='title'><B>Tipo:</B> {{isset($_GET['tipo'])?$_GET['tipo']:''}}</label>
-                        </div>
-                        <div class="form-group">
-                            <label class='title'><B>Jefe:</B> {{isset($_GET['jefe'])?$_GET['jefe']:''}}</label>
-                        </div>
-                        <div class="form-group">
-                            <label class='title'><B>Ciudad:</B> {{isset($_GET['ciudad'])?$_GET['ciudad']:''}}</label>
-                        </div>
-                        <div class="form-group">
-                            <label class='title'><B>Tipo de Contrato:</B> {{isset($_GET['contrato'])?$_GET['contrato']:''}}</label>
-                        </div>
-                        <div class="form-group">
-                            <label class='title'><B>Fecha Inicio:</B> {{isset($_GET['fechaIni'])?$_GET['fechaIni']:''}}</label>
-                        </div>
-                        <div class="form-group">
-                            <label class='title'><B>Fecha Fin:</B> {{isset($_GET['fechaFin'])?$_GET['fechaFin']:''}}</label>
-                        </div>
+                        <input id="cc_visitante2" style="display: none"   name="cc_visitante2"  type="text" value="{{isset($cc)?$cc:''}}"/>
+                          
+                            <label><B>Nombre:</B> {{isset($nombre)?$nombre:''}}</label>
+                        
+                            <label id='cc' name='cc'><B>Cedula:</B>{{isset($cc)?$cc:''}}</label>
+                            <label><B>Cargo:</B> {{isset($cargo)?$cargo:''}}</label>
+                        
+                            <label><B>Empresa:</B> {{isset($empresa)?$empresa:''}}</label>
+                      
+                            <label><B>Tipo:</B> {{isset($tipo)?$tipo:''}}</label>
+                      
+                            <label><B>Jefe:</B> {{isset($jefe)?$jefe:''}}</label>
+                      
+                            <label><B>Ciudad:</B> {{isset($ciudad)?$ciudad:''}}</label>
+                      
+                            <label><B>Tipo de Contrato:</B> {{isset($contrato)?$contrato:''}}</label>
+                      
+                            <label><B>Fecha Inicio:</B> {{isset($fechaIni)?$fechaIni:''}}</label>
+                      
+                            <label><B>Fecha Fin:</B> {{isset($fechaFin)?$fechaFin:''}}</label>
                         
                     <div class="element-checkbox">
                         <label class="title"><B>Estado:</B></label>		
                         <div class="column column1">
-                            <label><input type="checkbox" name="check_estado" id="check_estado" value="inactivo" {{isset($_GET['estado']) && !empty($_GET['estado']) && $_GET['estado'] != 'N' ?'checked':''}} / ><span> Activo</span></label>
+                            <label><input type="checkbox" name="check_estado" id="check_estado" value="inactivo" {{isset($estado) && !empty($estado) && $estado != 'N' ?'checked':''}} / ><span> Activo</span></label>
                         </div>
                         <span class="clearfix"></span>
                     </div>
@@ -94,12 +88,12 @@
                       
                         <select class="form-control" id="horario_sel" name="horario_sel" onchange="getHorario();">
                             @foreach ($listaHorarios as $lista)
-                                    <option {{isset($_GET['horario'])&&$_GET['horario']==$lista->id?'selected':''}} value="{{$lista->id}}">{{$lista->descripcion}}</option>
+                                    <option {{isset($idhorario)&&$idhorario==$lista->id?'selected':''}} value="{{$lista->id}}">{{$lista->descripcion}}</option>
                             @endforeach
                         </select>
                     
                         <div class="submit">
-                                @isset($_GET['btn'])
+                                @isset($btn)
                                     <hr>
                                      <input type="submit" id="btn_actualizar" name="btn_actualizar" value="Guardar" class="btn btn-primary"/>
                                 @endisset
@@ -122,7 +116,7 @@
                 <div class="card-body">
                   <h3 class="card-title" style="color:#666666">Permisos</h3>
                   <hr>
-                  @if (isset($_GET['nombre']))
+                  @if (isset($nombre))
                     <div id="jqxTree"></div>
                     <div id="aprobado" style="visibility: hidden;display:none" class="mt-5">
                      <img src="{{asset('permisosUnitarios/img/aprobado.png')}}" border="0" style="width: 40px">Los cambios fueron guardados
@@ -136,7 +130,7 @@
            
 
         <input type="hidden" id="json" value="{{$dataTree}}">
-        <input type="hidden" id="jsonUser" value="{{isset($_GET['json'])?$_GET['json']:''}}">
+        <input type="hidden" id="jsonUser" value="{{isset($dataTUser)?$dataTUser:''}}">
        
     </div>
 </div>
@@ -168,7 +162,7 @@
  
 <script  type="text/javascript">
     var dataT= $("#json").val();
-    var validaData = <?php echo isset($_GET['json'])?$_GET['json']:0;?>;
+    var validaData = <?php echo isset($dataTUser)?$dataTUser:0;?>;
     var userDataT;
     if(validaData.length > 0){
         userDataT = validaData;
@@ -245,10 +239,11 @@
 				var cedula_u=$("#cc").text().split(":"); 
 				var cc_id=cedula_u[1];
 				if(cc_id != ''){
+                    var token = '{{csrf_token()}}';
 				    var request=$.ajax({
-                            type:  'GET',
+                            type:  'POST',
                             url: "actualizarVisitante",
-                            data: {'cc':cc_id, 'id_t':id_tree, 'id_horario':id_horario, 'activo':check_estado},
+                            data: {'cc':cc_id, 'id_t':id_tree, 'id_horario':id_horario, 'activo':check_estado, _token:token},
                             cache: false,
                             success: function(response){
                                 console.log(response);

@@ -7,7 +7,7 @@ Route::group(['middleware' => 'web'], function () {
         //Route::resource('/', 'PruebaDosController'); 
         Route::get('permisos-unitarios', 'PermisosUnitariosController@permisosUnitarios')->name('permisosUnitarios');
         Route::post('consultarCedula', 'PermisosUnitariosController@consultarCedulaVisitante')->name('consultarCedula');
-        Route::get('actualizarVisitante', 'PermisosUnitariosController@actualizarCliente')->name('actualizarVisitante');
+        Route::post('actualizarVisitante', 'PermisosUnitariosController@actualizarCliente')->name('actualizarVisitante');
 
     });
 

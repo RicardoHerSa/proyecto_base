@@ -111,9 +111,24 @@ class PermisosUnitariosController extends Controller
             $resultado = 0;
         }
 
-      
+        $btn = 1;
+
+        $query = DB::table('ohxqc_ubicaciones')->where('activo', '=', 'S')->get();
+       
+        foreach($query as $q){
+            $treearr[]=array($q->id_ubicacion,$q->id_padre,$q->descripcion);
+        }
+		
+		for($i=0;$i<count($treearr);$i++){
+		$dataT[]=array('id'=>$treearr[$i][0],'parentid'=>$treearr[$i][1],'text'=>$treearr[$i][2],'value'=>$treearr[$i][0]);
+		}
+		
+		$dataTree=json_encode($dataT);
+        $listaHorarios = DB::table('ohxqc_horarios')->get();
+
         if($resultado > 0){
-            return redirect()->route('permisosUnitarios', ['json'=>$dataTUser,'nombre'=>$nombre,'cc'=>$cc,'cargo'=>$cargo,'empresa'=>$empresa,'tipo'=>$tipo,'jefe'=>$jefe,'ciudad'=>$ciudad,'contrato'=>$contrato,'fechaIni'=>$fechaIni,'fechaFin'=>$fechaFin,'estado'=>$estado,'horario'=>$idhorario, 'btn']);
+            return view('Permisos::permisosUnitarios', compact('dataTUser', 'nombre', 'cc', 'cargo', 'empresa', 'tipo', 'jefe', 'ciudad', 'contrato', 'fechaIni', 'fechaFin', 'estado', 'idhorario', 'btn', 'dataTree', 'listaHorarios'));
+            /*return redirect()->route('permisosUnitarios', ['json'=>$dataTUser,'nombre'=>$nombre,'cc'=>$cc,'cargo'=>$cargo,'empresa'=>$empresa,'tipo'=>$tipo,'jefe'=>$jefe,'ciudad'=>$ciudad,'contrato'=>$contrato,'fechaIni'=>$fechaIni,'fechaFin'=>$fechaFin,'estado'=>$estado,'horario'=>$idhorario, 'btn']);*/
         }else{
             return redirect('permisos-unitarios')->with(['mensaje' => 'No se encontraron registros']);
         }

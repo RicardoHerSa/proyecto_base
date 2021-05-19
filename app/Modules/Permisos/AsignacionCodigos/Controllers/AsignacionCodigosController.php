@@ -135,14 +135,14 @@ class AsignacionCodigosController extends Controller
       
     }
 
-    public function consultarClickTabla()
+    public function consultarClickTabla(Request $request)
     {
         //Funcion cundo se da click a un registro de la tabla
         $retorno=0;
-        $codigo = $_GET['cod'];
-        $this->cedula = $_GET['cc'];
-        $fecha = $_GET['fecha'];
-        $act = $_GET['act'];
+        $codigo = $request->input('cod');
+        $this->cedula = $request->input('cc');
+        $fecha = $request->input('fecha');
+        $act = $request->input('act');
 
         if($act == 1){
             $activo= 'S';
@@ -537,7 +537,7 @@ class AsignacionCodigosController extends Controller
         }
       
       }
-        return view('Permisos::asignacionCodigos', compact('tabla', 'dataV', 'dataA', 'cedulVi','operacion'));
+        return view('Permisos::asignacionCodigos', compact('tabla', 'dataV', 'dataA', 'cedulVi','operacion', 'row'));
         
    
     }

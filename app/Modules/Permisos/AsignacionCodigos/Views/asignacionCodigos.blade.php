@@ -29,11 +29,11 @@
                                 <input required id="tx_cedula" name="tx_cedula" type="text" class="form-control">
                             </div>
                             <hr>
-                            <div class="form-group">
+                            <div class="form-group" style="display: flex">
                                 <input id="btn_consulta" name="btn_consulta" type="submit" value="Consultar" class="btn btn-primary">
                                 @if (isset($tabla) && $tabla != "")
                                  <br>
-                                <a  href="{{url('tomarFoto/'.$cedulVi)}}" class="btn btn-primary">Tomar Foto</a>
+                                <a style="position: relative;left:2px"  href="{{url('tomarFoto/'.$cedulVi)}}" class="btn btn-primary">Tomar Foto</a>
                                 @endif
                             </div>
                            
@@ -43,24 +43,23 @@
         </div>
 
         <!--Resultado encabezado info personal-->
-        <div class="col-xs-12 col-md-{{isset($tabla)?'9':''}} col-lg-{{isset($tabla)?'9':''}}">
+        <div class="col-xs-12 col-md-{{isset($tabla)?'9':''}} col-lg-{{isset($tabla)?'9':''}}" style="margin-top: 2%">
             @if (isset($tabla) && $tabla != '0')
-            <table class='table' style='background-color: #00FF1A;
-                   border-radius: 10px; 
-                   border-left:0px; font-size:20px;font-family:'Lato', 'sans-serif'> 
-               <tr>	 
-                   <td> 
+            <div class="row" style="background-color: #00FF1A;
+            border-radius: 10px; 
+            border-left:0px; font-size:20px;padding:10px;margin-top:5%">
+                <div class="col-xs-12 col-md-6 col-lg-6">
                     <img class="img-thumbnail" style="width:80%" src="{{asset('storage').'/fotos'.'/'.$cedulVi.'.png'}}" alt="">
-                   </td> 
-                   <td>
-                       <table>
-                           <tr> <td><label><b>{{$row[0]." ".$row[1]}}<b></label></td></tr> 
-                           <tr><td><label id='cc'><b>{{$row[2]}}<b></label></td></tr> 
-                           <tr> <td><label><b>{{$row[3]}}</b></label></td></tr> 
-                       </table>
-                   </td> 
-               </tr> 
-               </table>
+                </div>
+                <div class="col-xs-12 col-md-6 col-lg-6">
+                    <ul style="list-style: none;margin-top:30px">
+                        <li><b>{{$row[0]." ".$row[1]}}<b></li>
+                        <li id='cc'><b>{{$row[2]}}<b></li>
+                        <li><b>{{$row[3]}}</b></li>
+                    </ul>
+                </div>
+            </div>
+          
                 @php
                     //echo $tabla;
                 @endphp
@@ -82,10 +81,8 @@
     @endif
     <!--Formulario de registro de codigo-->
     <div class="row justify-content-center">
-        <div class="col-xs-12 col-md-3 col-lg-3">
-        </div>
         @if (isset($tabla) && $tabla != null)
-        <div class="col-xs-12 col-md-9 col-lg-9">
+        <div class="col-xs-12 col-md-12 col-lg-12">
             <!-- Letrero de cambio realizado -->
             @if (isset($operacion) && $operacion == true)
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -114,29 +111,16 @@
                                     <label for="tx_cedula">Artículo: </label>
                                     <input required id="articulo" name="articulo" type="text" class="form-control">
                                 </div>
-                            </div>
-                            <div class="col-xs-12 col-md-4 col-lg-4">
-                                <div class="form-group">
-                                    <label for="tx_cedula">Modelo: </label>
-                                    <input required id="modelo" name="modelo" type="text" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-md-4 col-lg-4">
-                                <div class="form-group">
-                                    <label for="tx_cedula">Serial: </label>
-                                    <input required id="serial" name="serial" type="text" class="form-control">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="form-group">
                                     <label for="tx_cedula">Código Visitante: </label>
                                     <input required  id="codigo" name="codigo" type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
+                                <div class="form-group">
+                                    <label for="tx_cedula">Modelo: </label>
+                                    <input required id="modelo" name="modelo" type="text" class="form-control">
+                                </div>
                                 <div class="form-group">
                                     <div class="form-check">
                                         <input  id="activo" name="activo" value="1" checked class="form-check-input" type="checkbox">
@@ -148,6 +132,10 @@
                             </div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="form-group">
+                                    <label for="tx_cedula">Serial: </label>
+                                    <input required id="serial" name="serial" type="text" class="form-control">
+                                </div>
+                                <div class="form-group">
                                     <div class="form-check">
                                         <input id="full_parqueo" name="full_parqueo" value="1" class="form-check-input" type="checkbox">
                                         <label class="form-check-label" for="full_parqueo">
@@ -157,7 +145,6 @@
                                 </div>
                             </div>
                         </div>
-                        
                         <hr>
                         <div class="form-group">
                             <div class="float-right">
@@ -178,11 +165,8 @@
 
     <!--Tabla de codigos -->
     <div class="row justify-content-center">
-        <div class="col-xs-12 col-md-3 col-lg-3">
-        </div>
-
         @if (isset($tabla) && $tabla != null)
-            <div class="col-xs-12 col-md-9 col-lg-9">
+            <div class="col-xs-12 col-md-12 col-lg-12">
                 <hr>
                 <div id='jqxgrid'></div>
             </div>
@@ -190,6 +174,7 @@
 
     </div>
 </div>
+<br>
  <!--CSS y JS PARA EL MÓDULO DE PERMISOS UNITARIOS-->
  <script src="{{ asset('permisosUnitarios/js/jquery.min.js')}}"></script> 
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/formoid-flat-blue.js')}}"></script>
@@ -311,11 +296,12 @@
                      var fecha=rowData.fecha_creacion;
                      var activo=rowData.activo;
                      cedula=$("#cc").text();
+                     var token = '{{csrf_token()}}';
                      var request=$.ajax({
-                                 type:  'GET',
+                                 type:  'POST',
                                  async: false,
                                  url: "consultaAlClickearTabla", 
-                                 data: {'cod':cod, 'cc':cedula, 'fecha':fecha, 'act':activo},
+                                 data: {'cod':cod, 'cc':cedula, 'fecha':fecha, 'act':activo, _token:token},
                                  cache: false,
                                  success: function(response){
                                      console.log(response);
