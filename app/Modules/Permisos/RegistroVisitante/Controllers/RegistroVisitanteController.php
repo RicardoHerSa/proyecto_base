@@ -46,6 +46,72 @@ class RegistroVisitanteController extends Controller
         }
     }
 
+    public function registrarVisitante(Request $request)
+    {
+
+        // Recibe información del solicitante
+        $solicitante = $request->input('solicitante');
+        $tipoIngreso = $request->input('tipoIngreso');
+        $tipoId = $request->input('tipoId');
+        if($request->input('empresaContratista') != null){
+         $empresaContratista = $request->input('empresaContratista');
+        }else{
+            $empresaContratista = 0;
+        }
+        $arraySolicitantes[] = array('solicitante'=>$solicitante,'tipoIngreso'=>$tipoIngreso,'tipoId'=>$tipoId,'empresaContratista'=>$empresaContratista);
+        echo "<br><hr>".json_encode($arraySolicitantes);
+
+        //Recibe información de anexos
+        $cantidadAnexos = $request->input('cantR');
+        if($cantidadAnexos > 0){
+            //se recibe el primer registro que es obligatorio
+            $arrayRegistros[] = array('cedula'=>$request->input('cedula'), 'nombre'=>$request->input('nombre'), 'anexo'=> $request->input('anexo'));
+
+            for($i=1; $i <= $cantidadAnexos; $i++){
+                //Mientras sea diferente de null los registros, los guardo en el array
+                if($request->input('cedula'.$i) != null){
+                    $arrayRegistros[] = array('cedula'=> $request->input('cedula'.$i),  'nombre'=>$request->input('nombre'.$i), 'anexo'=> $request->input('anexo'.$i));
+                }
+            }
+            echo "<br><hr>LISTADO DE REGISTROS: <br>".json_encode($arrayRegistros);
+        }else{
+            echo "<br><hr>Entra por else, por ende hay un solo registro:<br>";
+            $arrayRegistros[] = array('cedula'=> $request->input('cedula'), 'nombre'=>$request->input('nombre'), 'anexo'=> $request->input('anexo'));
+            echo json_encode($arrayRegistros);
+        }
+
+        //Recibe informacion de fechas de ingreso y final
+        $fechaInicio = $request->input('fechaIngreso');
+        $fechaFin = $request->input('fechaFin');
+        $horario = $request->input('horario');
+        $hora = $request->input('hora');
+        $empVisi = $request->input('empVisi');
+        $ciudad = $request->input('ciudad');
+        $arrayFechas[] = array('fechaIngreso'=>$fechaInicio,'fechaFin'=>$fechaFin,'horario'=>$horario,'hora'=>$hora,'empVisi'=>$empVisi,'ciudad'=>$ciudad);
+        echo "<br><hr>".json_encode($arrayFechas);
+
+
+        //Recibe información de las sedes
+        $cantidadSedes = $request->input('cantRSelects');
+        if($cantidadSedes > 0){
+           //Se recibe la primer sede que es obligatoria
+            $arraySedes[] = array('id_sede'=>$request->input('sede'));
+            for($i=1; $i <= $cantidadSedes; $i++){
+                $arraySedes[] = array('id_sede'=>$request->input('sede'.$i));
+            }
+            echo "<br><hr>".json_encode($arraySedes);
+        }else{
+            echo "<br><hr>Entra por else, por ende hay un solo registro: <br> ";
+            $arraySedes[] = array('id_sede'=>$request->input('sede'));
+            echo json_encode($arraySedes);
+        }
+
+        //Recibe labor a realizar
+        $labor = $request->input('labor');
+        echo "<br><hr>".json_encode($labor);
+
+    }
+
    
     /**
      * Show the form for creating a new resource.
