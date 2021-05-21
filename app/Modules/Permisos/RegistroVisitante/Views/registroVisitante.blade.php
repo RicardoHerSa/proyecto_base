@@ -1,5 +1,23 @@
 @include('layouts.app', ['modulo' => 'unitario'])
 <div class="container">
+    @if (Session::has('msj'))
+        <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
+            <strong>Información!</strong> {{Session::get('msj')}}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+    @if (Session::has('errCorreo'))
+    <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert">
+        <strong>Información!</strong> {{Session::get('errCorreo')}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    @endif
+
     <div class="row mt-3">
         <div class="col-xs-12 col-md-12 col-lg-12">
             <div class="card">
@@ -22,7 +40,7 @@
         </div>
     </div> 
 
-    <form action="{{route('registraranexos')}}" method="POST">
+    <form action="{{route('registraranexos')}}" method="POST" enctype="multipart/form-data">
 
         <!--Solicitante-->
         <div class="row mt-2">
@@ -320,6 +338,7 @@
         var opcion = $("#muestraOculta").val();
         if(opcion == 1){
             $("#contenedorContratista").hide();
+            $("#empresaContratista").val('')
             $("#muestraOculta").val(0);
         }else{
             $("#contenedorContratista").fadeIn();
