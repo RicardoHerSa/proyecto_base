@@ -69,14 +69,16 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row" id="empContra">
-                            <div class="col-xs-12 col-md-6 col-lg-6">
-                                <div class="form-group" id="contenedorContratista">
-                                    <label for="empresaContratista">Empresa Contratista: </label>
-                                    <input id="empresaContratista" class="form-control" type="text" name="empresaContratista" value="{{$arrayInfo[0]['empresaC']}}" readonly>
+                        @if ($arrayInfo[0]['empresaC'] != 0)
+                            <div class="row" id="empContra">
+                                <div class="col-xs-12 col-md-6 col-lg-6">
+                                    <div class="form-group" id="contenedorContratista">
+                                        <label for="empresaContratista">Empresa Contratista: </label>
+                                        <input id="empresaContratista" class="form-control" type="text" name="empresaContratista" value="{{$arrayInfo[0]['empresaC']}}" readonly>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        @endif
                     
                     </div>
                 </div>
@@ -274,7 +276,7 @@
                                 <td>{{$det->usuario}}</td>
                                 <td>{{$det->nivel}}</td>
                                 <td>{{$det->fecha}}</td>
-                                <td>{{$det->estado=='A'?'Aprobado':'Rechazado'}}</td>
+                                <td><span class="badge badge-{{$det->estado=='A'?'success':'danger'}}">{{$det->estado=='A'?'Aprobado':'Rechazado'}}</span></td>
                                 <td>{{$det->comentario}}</td>
                             </tr>
                         @endforeach
@@ -317,7 +319,7 @@
                                 <td>{{$det->usuario}}</td>
                                 <td>{{$det->nivel}}</td>
                                 <td>{{$det->fecha}}</td>
-                                <td>{{$det->estado=='A'?'Aprobado':'Rechazado'}}</td>
+                                <td><span class="badge badge-{{$det->estado=='A'?'success':'danger'}}">{{$det->estado=='A'?'Aprobado':'Rechazado'}}</span></td>
                                 <td>{{$det->comentario}}</td>
                             </tr>
                         @endforeach
