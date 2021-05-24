@@ -205,7 +205,7 @@ class RegistroVisitanteController extends Controller
                                 //Hasta aqui ya tendriamos la info importante, podemos notificar el registro
 
                                 //Enviar el correo con esta solicitud, y la url
-                                 $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi);
+                                 $enviar =1;// RegistroVisitanteController::enviarCorreo($token, $empVisi);
 
                                 if($enviar){
                                     return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
@@ -215,7 +215,7 @@ class RegistroVisitanteController extends Controller
 
                             }else{
                                 //si no se guarda la solicitud, redireccionamos el error
-                                return redirect()->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
+                                return redirect('registro-visitante')->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
                             }
 
                            
@@ -223,7 +223,7 @@ class RegistroVisitanteController extends Controller
 
                         }else{
                             //si no se encuentran resultados, hay que configurar la empresa en la maestra
-                            return redirect()->with('errConfig', 'Por favor agregue la empresa visitante en la configuración ohxqc_config_solicitud_empresas');
+                            return redirect('registro-visitante')->with('errConfig', 'Por favor agregue la empresa visitante en la configuración ohxqc_config_solicitud_empresas');
                         }
 
 
@@ -262,31 +262,88 @@ class RegistroVisitanteController extends Controller
             abort(403);
         }
 
-        //Consultar si la solicitud ya ha sido aprobada, para no mostrar los botones de accion
-        //O tambien se podria abort(403)
-        
-        $consultaAprobacion = DB::table('ohxqc_solicitud_por_aprobar')
+        //Consultar si la solicitud fue rechazada
+        $consultaRechazado = DB::table('ohxqc_solicitud_por_aprobar')
         ->where('id_solicitud', '=', $solicitud)
-        ->where('estado', '=', 'Aprobado')
+        ->where('estado', '=', 'Rechazado')
         ->get();
-        if(count($consultaAprobacion) > 0){
+        if(count($consultaRechazado) > 0){
             $botonesAccion = false;
-        }else{
-            //Si aún la solicitud está pendiente, entonces se consulta en el histórico para saber si
-            //el nivel al que pertenece este usuario ya ha aprobado o no la solicitud.
-            $consultaAprobacionHistorico = DB::table('ohxqc_historico_solicitud')
-            ->where('id_solicitud', '=', $solicitud)
-            ->where('estado', '=', 'A')
-            ->whereIn('nivel_aprobador', function($query){
-                $query->select('nivel')
-                ->from('ohxqc_config_solicitud_empresas')
-                ->where('usuario_aprobador_id', '=', auth()->user()->id);
-             })
+            $msjRechazo = true;
+            $detalles = DB::table('ohxqc_historico_solicitud as hs')
+            ->select('nivel_aprobador as nivel', 'username as usuario', 'fecha_diligenciado as fecha','estado' ,'comentario')
+            ->join('jess_users as j', 'j.id', '=', 'hs.usuario_aprobador')
+            ->where('hs.id_solicitud', '=', $solicitud)
             ->get();
-            if(count($consultaAprobacionHistorico) > 0){
+        }else{
+            $detalles = "";
+            $msjRechazo = false;
+            //Consultar si la solicitud ya ha sido aprobada, para no mostrar los botones de accion
+            //O tambien se podria abort(403)
+            
+            $consultaAprobacion = DB::table('ohxqc_solicitud_por_aprobar')
+            ->where('id_solicitud', '=', $solicitud)
+            ->where('estado', '=', 'Aprobado')
+            ->get();
+            if(count($consultaAprobacion) > 0){
                 $botonesAccion = false;
+                 $detalles = DB::table('ohxqc_historico_solicitud as hs')
+                ->select('nivel_aprobador as nivel', 'username as usuario', 'fecha_diligenciado as fecha','estado' ,'comentario')
+                ->join('jess_users as j', 'j.id', '=', 'hs.usuario_aprobador')
+                ->where('hs.id_solicitud', '=', $solicitud)
+                ->get();
             }else{
-                $botonesAccion = true;
+                //Si aún la solicitud está pendiente, entonces se consulta en el histórico para saber si
+                //el nivel al que pertenece este usuario ya ha aprobado o no la solicitud.
+                $consultaAprobacionHistorico = DB::table('ohxqc_historico_solicitud')
+                ->where('id_solicitud', '=', $solicitud)
+                ->where('estado', '=', 'A')
+                ->whereIn('nivel_aprobador', function($query){
+                    $query->select('nivel')
+                    ->from('ohxqc_config_solicitud_empresas')
+                    ->where('usuario_aprobador_id', '=', auth()->user()->id);
+                })
+                ->get();
+                if(count($consultaAprobacionHistorico) > 0){
+                    $botonesAccion = false;
+                     $detalles = DB::table('ohxqc_historico_solicitud as hs')
+                ->select('nivel_aprobador as nivel', 'username as usuario', 'fecha_diligenciado as fecha','estado' ,'comentario')
+                ->join('jess_users as j', 'j.id', '=', 'hs.usuario_aprobador')
+                ->where('hs.id_solicitud', '=', $solicitud)
+                ->get();
+                }else{
+                    /***Si la consulta devuelve 0, pueden ocurrir dos situaciones,
+                     *  1: que ningun usuario del nivel actual ha validado la solicitud.
+                     *  2: que ni siquiera el nivel anterior al del usuario actual la ha validado
+                     * Por esta razón al tener el nivel del usuario actual, le restamos 1 para comparar si
+                     * el nivel anterior ya ha validado o si definitamente no, así sabremos si halitar los botones***/
+                    $consultaNivelActual = DB::table('ohxqc_config_solicitud_empresas')
+                    ->select('nivel')
+                    ->where('usuario_aprobador_id', '=', auth()->user()->id)
+                    ->get();
+                    foreach($consultaNivelActual as $nivelA){
+                        $nivelUsuario = $nivelA->nivel;
+                    }
+                    /***Si el nivel actual del usuario es igual a 1, y al saber que no hubieron registros, quiere decir
+                    que se cumple el punto (1), el NIVEL 1, no ha validado la solicitud, entonces se habilita botones***/
+                    if($nivelUsuario == 1){
+                        $botonesAccion = true;
+                    }else{
+                        //se consulta  si el nivel anterior al actual ya aprobó la solicitud
+                        $consAproNivelAnterior = DB::table('ohxqc_historico_solicitud')
+                        ->where('id_solicitud', '=', $solicitud)
+                        ->where('estado', '=', 'A')
+                        ->where('nivel_aprobador', '=', $nivelUsuario-1)
+                        ->get();
+                        if(count($consAproNivelAnterior) > 0){
+                            $botonesAccion = true;
+                        }else{
+                            //Si nisiquiera el nivel anterior ha validado, entonces a los demas niveles le restringimos acceso
+                            abort(403);
+                        }
+
+                    }
+                }
             }
         }
 
@@ -345,7 +402,7 @@ class RegistroVisitanteController extends Controller
        ->where('usuario_aprobador_id', '=', auth()->user()->id)
        ->get();
         if(count($consultaPermiso) > 0){
-            return view('Permisos::validacionSolicitud', compact('solicitud', 'arrayInfo', 'documentos', 'sedesVisitar' ,'empresas', 'horarios', 'sedes', 'botonesAccion'));
+            return view('Permisos::validacionSolicitud', compact('solicitud', 'arrayInfo', 'documentos', 'sedesVisitar' ,'empresas', 'horarios', 'sedes', 'botonesAccion', 'msjRechazo', 'detalles'));
         }else{
             abort(403);
         }
@@ -379,6 +436,7 @@ class RegistroVisitanteController extends Controller
     public function validarSolicitud(Request $request)
     {
         $idSolicitud = $request->input('idsolicitud');
+        $this->solicitudID = $idSolicitud;
         $comentario = $request->input('comentario');
         $empresaId = $request->input('idempresa');
 
@@ -429,7 +487,7 @@ class RegistroVisitanteController extends Controller
                                 'token'=> null
                         ]);
 
-                        return redirect()->back()->with('msj', 'Flujo terminado');
+                        return redirect()->back()->with('msj', 'Solicitud aprobada y Flujo terminado.');
                 }else{
 
 
@@ -453,28 +511,50 @@ class RegistroVisitanteController extends Controller
                     ->where('nivel', '=', $siguienteNivel)
                     ->get();
             
-                    foreach($infoEmpresa as $inf){
+                   /* foreach($infoEmpresa as $inf){
                         try{
                             mail($inf->correo_usuario, 'Solicitud Para Aprobar', $token);
                             $envio = 1;
                         }catch(Exception $s){
                             $envio = 0;
                         }
-                    }
+                    }*/
 
-                    if($envio){
-                        echo "CORREO ENVIADO AL NIVEL: ".$siguienteNivel;
+                    if($infoEmpresa){
+                        return redirect()->back()->with('corrEnv', 'Solicitud aprobada y enviada al nivel: '.$siguienteNivel);
                     }else{
-                        echo "NO SE ENVIO EL CORREO  AL NIVEL: ".$siguienteNivel." Pero se registro.";
+                        return redirect()->back()->with('corrErr', 'NO SE ENVIO EL CORREO  AL NIVEL:'.$siguienteNivel.' Pero se registró la aprobación.');
                     }
                     
                    
                 }
             }else{
                 //si no registra historico
+                
             }
         }else{
             //si no fue aprobada
+             //Insertamos la información en el histórico
+             $guardaHistorico = DB::table('ohxqc_historico_solicitud')->insert([
+                'id_his' => DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
+                'id_solicitud' => $idSolicitud,
+                'nivel_aprobador' => $nivel,
+                'usuario_aprobador' =>  auth()->user()->id,
+                'fecha_diligenciado' => now(),
+                'comentario' => $comentario,
+                'estado' => 'R'
+            ]);
+            
+            //Cambiamos el estado de la solicitud por aprobar, comentario y token
+            DB::table('ohxqc_solicitud_por_aprobar')
+            ->where('id_solicitud', '=', $idSolicitud)
+            ->update([
+                    'estado' => 'Rechazado',
+                    'comentario' => $comentario,
+                    'token'=> null
+            ]);
+
+            return redirect()->back()->with('soliRech', 'La solicitud #'.$idSolicitud.', ha sido rechazada.');
             
         }
     }

@@ -1,20 +1,38 @@
 @include('layouts.app', ['modulo' => 'unitario'])
 <div class="container">
-    @if (Session::has('msj'))
-        <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
-            <strong>Información!</strong> {{Session::get('msj')}}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-            </button>
+    @if ($msjRechazo)
+        <div class="alert alert-danger  fade show mt-2" role="alert">
+            <strong>Información!</strong> Esta Solicitud ha sido rechazada.  <b> <a  data-toggle="modal" data-target="#modalRechazo" href="#">Ver Detalles</a></b>.
+        
         </div>
-    @endif
+    @else
+        @if (!$botonesAccion && !Session::has('corrEnv') && !Session::has('msj'))
+        <div class="alert alert-warning  fade show mt-2" role="alert">
+            <strong>Información!</strong> Esta Solicitud ya ha sido aprobada. <b> <a  data-toggle="modal" data-target="#modalDetalles" href="#">Ver Detalles</a></b>.
+        
+        </div>
+        @endif
 
-    @if (!$botonesAccion)
-    <div class="alert alert-warning  fade show mt-2" role="alert">
-        <strong>Información!</strong> Esta Solicitud ya ha sido aprobada.
-       
-    </div>
+        @if (!$botonesAccion && Session::has('corrEnv'))
+        <div class="alert alert-success  fade show mt-2" role="alert">
+            <strong>Información!</strong> {{Session::get('corrEnv')}}.
+        </div>
+        @endif
+
+        @if (!$botonesAccion && Session::has('msj'))
+        <div class="alert alert-success  fade show mt-2" role="alert">
+            <strong>Información!</strong> {{Session::get('msj')}}
+        </div>
+        @endif
+
+        @if (!$botonesAccion && Session::has('soliRech'))
+        <div class="alert alert-info  fade show mt-2" role="alert">
+            <strong>Información!</strong> {{Session::get('soliRech')}}
+        </div>
+        @endif
     @endif
+   
+
     <div class="row mt-3">
         <div class="col-xs-12 col-md-12 col-lg-12">
             <div class="card">
@@ -226,6 +244,93 @@
         </div>
     
 </div>
+
+  
+  <!-- Modal Rechazo-->
+  @if($msjRechazo)
+    <div class="modal fade" id="modalRechazo" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Detalles del Rechazo, Solicitud # {{$solicitud}}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">Usuario</th>
+                        <th scope="col">Nivel</th>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Comentario</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($detalles as $det)
+                            <tr style="background: {{$det->estado=='R'?'#f8d7da':''}};font-weight:{{$det->estado=='R'?'600':''}}; color:{{$det->estado=='R'?'darkred':''}}">
+                                <td>{{$det->usuario}}</td>
+                                <td>{{$det->nivel}}</td>
+                                <td>{{$det->fecha}}</td>
+                                <td>{{$det->estado=='A'?'Aprobado':'Rechazado'}}</td>
+                                <td>{{$det->comentario}}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+        </div>
+    </div>
+  @endif
+
+    <!-- Modal Rechazo-->
+    @if(!$botonesAccion)
+    <div class="modal fade" id="modalDetalles" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Detalles de la Solicitud # {{$solicitud}}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">Usuario</th>
+                        <th scope="col">Nivel</th>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Comentario</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($detalles as $det)
+                            <tr>
+                                <td>{{$det->usuario}}</td>
+                                <td>{{$det->nivel}}</td>
+                                <td>{{$det->fecha}}</td>
+                                <td>{{$det->estado=='A'?'Aprobado':'Rechazado'}}</td>
+                                <td>{{$det->comentario}}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+        </div>
+    </div>
+  @endif
 
 
 @include('layouts.footer', ['modulo' => 'unitario'])

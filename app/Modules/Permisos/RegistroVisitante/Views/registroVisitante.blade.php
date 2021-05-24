@@ -18,6 +18,51 @@
     </div>
     @endif
 
+    @if (Session::has('errSoliApro'))
+    <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert">
+        <strong>Información!</strong> {{Session::get('errSoliApro')}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    @endif
+
+    @if (Session::has('errConfig'))
+    <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert">
+        <strong>Información!</strong> {{Session::get('errConfig')}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    @endif
+
+    @if (Session::has('errSedes'))
+    <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+        <strong>Información!</strong> {{Session::get('errSedes')}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    @endif
+
+    @if (Session::has('errDocu'))
+    <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+        <strong>Información!</strong> {{Session::get('errDocu')}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    @endif
+
+    @if (Session::has('errSoli'))
+    <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+        <strong>Información!</strong> {{Session::get('errSoli')}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    @endif
+
     <div class="row mt-3">
         <div class="col-xs-12 col-md-12 col-lg-12">
             <div class="card">
