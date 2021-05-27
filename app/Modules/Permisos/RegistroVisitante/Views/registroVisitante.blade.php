@@ -1,4 +1,5 @@
 @include('layouts.app', ['modulo' => 'unitario'])
+
 <div class="container">
     @if (Session::has('msj'))
         <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
@@ -27,9 +28,9 @@
     </div>
     @endif
 
-    @if (Session::has('errConfig'))
-    <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert">
-        <strong>Información!</strong> {{Session::get('errConfig')}}
+    @if (Session::has('aproYa'))
+    <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
+        <strong>Información!</strong> {{Session::get('aproYa')}}
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
         </button>
@@ -103,10 +104,10 @@
                                 <div class="form-group">
                                     <label for="tipoIngreso">Tipo de Ingreso: <span style="color:red">*</span></label>
                                     <select name="tipoIngreso" id="tipoIngreso" class="form-control" onchange="ocultaInput()" required>
-                                        <option value="PROVEEDOR">Contratista</option>
-                                        <option value="VISITANTE">Visitante</option>
+                                        @foreach ($tiposVisitante as $tipos)
+                                            <option value="{{$tipos->id_tipo_visitante}}">{{$tipos->nombre}}</option>
+                                        @endforeach
                                     </select>
-                                    <input type="hidden" id="muestraOculta" value="1">
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
@@ -163,7 +164,8 @@
                                     <div class="col-xs-12 col-md-4 col-lg-4">
                                         <div class="form-group">
                                             <label for="anexo">Anexo: </label>
-                                            <input required id="anexo" class="form-control" type="file" name="anexo">
+                                            <input required id="anexo" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo">
+                                            <small class="ml-2">Sólo archivos pdf, word, png, jpg, zip, rar</small>
                                         </div>
                                     </div>
                                     <div class="col-xs-12 col-md-3 col-lg-1">
@@ -190,7 +192,7 @@
                                         <div class="col-xs-12 col-md-4 col-lg-4">
                                             <div class="form-group">
                                                 <label for="anexo1">Anexo: </label>
-                                                <input id="anexo1" class="form-control" type="file" name="anexo1">
+                                                <input id="anexo1" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo1">
                                             </div>
                                         </div>
                                         <div class="col-xs-12 col-md-3 col-lg-1">
@@ -380,15 +382,17 @@
 
     function ocultaInput()
     {
-        var opcion = $("#muestraOculta").val();
-        if(opcion == 1){
-            $("#contenedorContratista").hide();
-            $("#empresaContratista").val('')
-            $("#muestraOculta").val(0);
-        }else{
-            $("#contenedorContratista").fadeIn();
-            $("#muestraOculta").val(1);
-        }
+        var texto = $('select[name="tipoIngreso"] option:selected').text();
+        var txt = texto.substr(0,3);
+        console.log(txt);
+        if(txt != "CON"){
+                $("#contenedorContratista").hide();
+                $("#empresaContratista").val('')
+            }else{
+                $("#contenedorContratista").fadeIn();
+            }
+
+        
     }
 
     //agregar mas inputs
@@ -528,5 +532,6 @@
         $("#anexo").val('');
     }
 
+      
 </script>
 @include('layouts.footer', ['modulo' => 'unitario'])

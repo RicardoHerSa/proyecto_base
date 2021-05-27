@@ -59,7 +59,7 @@
                             <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="form-group">
                                     <label for="tipoIngreso">Tipo de Ingreso: </label>
-                                    <input type="text" readonly class="form-control" value="{{$arrayInfo[0]['tipoIngreso'] == 'PROVEEDOR'?'Contratista':'Visitante'}}">
+                                    <input type="text" readonly class="form-control" value="{{$arrayInfo[0]['tipoIngreso']}}">
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
@@ -69,7 +69,7 @@
                                 </div>
                             </div>
                         </div>
-                        @if ($arrayInfo[0]['empresaC'] != 0)
+                        @if ($arrayInfo[0]['empresaC'] != "0")
                             <div class="row" id="empContra">
                                 <div class="col-xs-12 col-md-6 col-lg-6">
                                     <div class="form-group" id="contenedorContratista">
@@ -106,7 +106,7 @@
                                         <tr>
                                             <td>{{$docu->identificacion}}</td>
                                             <td>{{$docu->nombre}}</td>
-                                            <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank">Ver Adjunto</a></td>
+                                            <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
                                         </tr>
                                 @endforeach
                             </tbody>
@@ -227,12 +227,19 @@
                                         <div class="form-group">
                                             @csrf
                                             <input type="hidden" name="idsolicitud" value="{{$solicitud}}">
+                                            <input type="hidden" name="idtipovisitante" value="{{$ideIngreso}}">
                                             <input type="hidden" name="idempresa" value="{{$arrayInfo[0]['empVisitar']}}">
                                             <label for="">Digite un comentario antes de validar</label>
                                             <textarea required placeholder="Digite aqui..." name="comentario" cols="8" rows="5" class="form-control"></textarea>
                                             <br>
                                             <input onclick="return confirm('¿Está seguro de aprobar esta solicitud?')" name="aprobar" type="submit" class="btn btn-success" value="Aprobar">
                                             <input onclick="return confirm('¿Está seguro de rechazar esta solicitud?')" name="rechazar" type="submit" class="btn btn-danger" value="Rechazar">
+                                            @if (count($detalles) > 0)
+                                                <a class="btn btn-primary" href="#" data-toggle="modal" data-target="#modalDetallesDos" href="#">Ver Flujo</a>  
+                                                </div>
+                                                
+                                            @endif
+
                                         </div>
                                     </form>
                                 @endif
@@ -251,7 +258,7 @@
   <!-- Modal Rechazo-->
   @if($msjRechazo)
     <div class="modal fade" id="modalRechazo" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLongTitle">Detalles del Rechazo, Solicitud # {{$solicitud}}</h5>
@@ -264,7 +271,6 @@
                     <thead>
                     <tr>
                         <th scope="col">Usuario</th>
-                        <th scope="col">Nivel</th>
                         <th scope="col">Fecha</th>
                         <th scope="col">Estado</th>
                         <th scope="col">Comentario</th>
@@ -274,7 +280,6 @@
                         @foreach ($detalles as $det)
                             <tr style="background: {{$det->estado=='R'?'#f8d7da':''}};font-weight:{{$det->estado=='R'?'600':''}}; color:{{$det->estado=='R'?'darkred':''}}">
                                 <td>{{$det->usuario}}</td>
-                                <td>{{$det->nivel}}</td>
                                 <td>{{$det->fecha}}</td>
                                 <td><span class="badge badge-{{$det->estado=='A'?'success':'danger'}}">{{$det->estado=='A'?'Aprobado':'Rechazado'}}</span></td>
                                 <td>{{$det->comentario}}</td>
@@ -291,10 +296,10 @@
     </div>
   @endif
 
-    <!-- Modal Rechazo-->
+    <!-- Modal DETALLES-->
     @if(!$botonesAccion)
-    <div class="modal fade" id="modalDetalles" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+    <div class="modal fade " id="modalDetalles" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLongTitle">Detalles de la Solicitud # {{$solicitud}}</h5>
@@ -307,7 +312,6 @@
                     <thead>
                     <tr>
                         <th scope="col">Usuario</th>
-                        <th scope="col">Nivel</th>
                         <th scope="col">Fecha</th>
                         <th scope="col">Estado</th>
                         <th scope="col">Comentario</th>
@@ -317,7 +321,6 @@
                         @foreach ($detalles as $det)
                             <tr>
                                 <td>{{$det->usuario}}</td>
-                                <td>{{$det->nivel}}</td>
                                 <td>{{$det->fecha}}</td>
                                 <td><span class="badge badge-{{$det->estado=='A'?'success':'danger'}}">{{$det->estado=='A'?'Aprobado':'Rechazado'}}</span></td>
                                 <td>{{$det->comentario}}</td>
@@ -332,7 +335,49 @@
         </div>
         </div>
     </div>
-  @endif
+    @endif
+
+     <!-- Modal DETALLES-->
+     @if($botonesAccion)
+     <div class="modal fade " id="modalDetallesDos" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+         <div class="modal-dialog modal-lg" role="document">
+         <div class="modal-content">
+             <div class="modal-header">
+             <h5 class="modal-title" id="exampleModalLongTitle">Detalles de la Solicitud # {{$solicitud}}</h5>
+             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                 <span aria-hidden="true">&times;</span>
+             </button>
+             </div>
+             <div class="modal-body">
+                
+                 <table class="table table-hover">
+                     <thead>
+                     <tr>
+                         <th scope="col">Usuario</th>
+                         <th scope="col">Fecha</th>
+                         <th scope="col">Estado</th>
+                         <th scope="col">Comentario</th>
+                     </tr>
+                     </thead>
+                     <tbody>
+                         @foreach ($detalles as $det)
+                             <tr>
+                                 <td>{{$det->usuario}}</td>
+                                 <td>{{$det->fecha}}</td>
+                                 <td><span class="badge badge-{{$det->estado=='A'?'success':'danger'}}">{{$det->estado=='A'?'Aprobado':'Rechazado'}}</span></td>
+                                 <td>{{$det->comentario}}  </td>
+                             </tr>
+                         @endforeach
+                     </tbody>
+                 </table>
+             </div>
+             <div class="modal-footer">
+             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+             </div>
+         </div>
+         </div>
+     </div>
+     @endif
 
 
 @include('layouts.footer', ['modulo' => 'unitario'])
