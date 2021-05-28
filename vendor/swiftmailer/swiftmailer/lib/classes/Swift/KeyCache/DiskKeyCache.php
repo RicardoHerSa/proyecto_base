@@ -223,7 +223,7 @@ class Swift_KeyCache_DiskKeyCache implements Swift_KeyCache
                 $this->clearKey($nsKey, $itemKey);
             }
             if (is_dir($this->path.'/'.$nsKey)) {
-                rmdir($this->path.'/'.$nsKey);
+               // rmdir($this->path.'/'.$nsKey);
             }
             unset($this->keys[$nsKey]);
         }
