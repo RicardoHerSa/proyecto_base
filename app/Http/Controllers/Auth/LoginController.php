@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Adldap\Laravel\Facades\Adldap;
-
+use Illuminate\Http\Request;
+use Session;
 class LoginController extends Controller
 {
     /*
@@ -27,7 +28,7 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = RouteServiceProvider::HOME;
+    //protected $redirectTo = "";//RouteServiceProvider::HOME;
 
     /**
      * Create a new controller instance.
@@ -42,6 +43,29 @@ class LoginController extends Controller
     public function username()
     {
         return 'username';
+    }
+
+    //Creación de metodos para redirigir a la ruta que intentaba ver el usuario antes de loguearse
+    public function showLoginForm(Request $request)
+    {
+        if ($request->has('redirect_to')) {
+            Session::put('redirect_to', $request->input('redirect_to'));
+        }
+        
+        return view('auth.login');
+    }
+
+    public function redirectTo()
+    {
+       return Session::get('redirect_to');
+        /*if (session()->has('redirect_to')){
+            return session()->pull('redirect_to');
+
+        }else{
+
+            return $this->redirectTo;
+        }*/
+
     }
 
 }

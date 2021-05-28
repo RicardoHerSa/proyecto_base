@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Adldap\Laravel\Facades\Adldap;
 use App\Models\User\User;
 use Carbon\Carbon;
+use Session;
 
 class authorization
 {
@@ -46,11 +47,15 @@ class authorization
             $request->session()->put('user', $userAuth);
             $_SESSION['user'] = serialize(Auth::user());
             return $next($request);
-
         }else{
         
             Auth::logout();   
-            return redirect('/login');
+            if(isset($_GET['signature'])){
+                $complemento = "?signature=".$_GET['signature'];
+            }else{
+                $complemento = "";
+            }
+            return redirect('/login?redirect_to='.url()->current().$complemento);
         }
             
     }

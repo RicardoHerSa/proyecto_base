@@ -9,26 +9,28 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 use Illuminate\Support\Facades\DB;
 
-class enviarSolicitud extends Notification implements ShouldQueue
+class notificaSolicitud extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    protected $token;
     protected $idSolicitud;
     protected $solicitante;
     protected $labor;
+    protected $tipoValidacion;
+    protected $causa;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($token,$idSolicitud,$solicitante,$labor)
+    public function __construct($idSolicitud,$solicitante,$labor,$tipoValidacion, $causa)
     {
-        $this->token = $token;
         $this->idSolicitud = $idSolicitud;
         $this->solicitante = $solicitante;
         $this->labor = $labor;
+        $this->tipoValidacion = $tipoValidacion;
+        $this->causa = $causa;
     }
 
     /**
@@ -51,17 +53,29 @@ class enviarSolicitud extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {   //Ruta de estructura de mail resources/views/vendor/notifications/email.blade.php
         //$url = route('reset.token'.$this->token);
-         $url = url($this->token);
+         if($this->tipoValidacion == "A"){
+            return (new MailMessage)
+            ->subject('Solicitud #'.$this->idSolicitud.' Aprobada.')
+            ->greeting('Hola')
+            ->line('Le informamos que la solicitud de ingreso #'.$this->idSolicitud.' ha sido aprobada.')
+            ->line('Detalles de la solicitud: ')
+            ->line('Solicitante: '.$this->solicitante)
+            ->line('Labor a realizar: '.$this->labor)
+            ->salutation('Cordialmente:');
+         }else{
+            return (new MailMessage)
+            ->subject('Solicitud #'.$this->idSolicitud.' Rechazada.')
+            ->greeting('Hola')
+            ->line('Le informamos que la solicitud de ingreso #'.$this->idSolicitud.' ha sido rechazada.')
+            ->line('Detalles de la solicitud: ')
+            ->line('Solicitante: '.$this->solicitante)
+            ->line('Labor a realizar: '.$this->labor)
+            ->line('')
+            ->line('Causa: '.$this->causa)
+            ->salutation('Cordialmente:');
+         }
 
-        return (new MailMessage)
-        ->subject('Solicitud para aprobar nuevo visitante')
-        ->greeting('Hola')
-        ->line('Según el flujo al que perteneces, has recibido este correo para poder validar la solicitud número: '.$this->idSolicitud)
-        ->line('Solicitante: '.$this->solicitante)
-        ->line('Labor a realizar: '.$this->labor)
-        ->line('Para ver mas detalles, pulsa a continuación:')
-        ->action('Validar solicitud ', url($url))
-        ->salutation('Cordialmente:');
+     
     }
 
     /**

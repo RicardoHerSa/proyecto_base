@@ -10,6 +10,7 @@ use \Illuminate\Support\Facades\URL;
 use Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 use App\Notifications\enviarSolicitud;
+use App\Notifications\notificaSolicitud;
 use App\Models\User\User;
 
 
@@ -91,6 +92,11 @@ class RegistroVisitanteController extends Controller
 
         //Guardar en la tabla ohxqc_solicitud_ingreso
         $idSolicitud =  DB::table('ohxqc_solicitud_ingreso')->max('id_solicitud')+1;
+
+        $correoSolicitante = DB::table('jess_users')->select('email')->where('id', auth()->user()->id)->get();
+        foreach($correoSolicitante as $corr){
+            $correoSolicitante = $corr->email;
+        }
         $guardaSolicitud = DB::table('ohxqc_solicitud_ingreso')->insert([
             'id_solicitud' => $idSolicitud,
             'empresa_id' =>  $empVisi,
@@ -102,7 +108,8 @@ class RegistroVisitanteController extends Controller
             'tipo_ingreso' => $nombreIngreso,
             'tipo_identidad' => $tipoId,
             'empresa_contratista' => $empresaContratista,
-            'labor_realizar' => $labor
+            'labor_realizar' => $labor,
+            'correo_solicitante' =>  $correoSolicitante
         ]);
 
         if($guardaSolicitud){
@@ -224,15 +231,9 @@ class RegistroVisitanteController extends Controller
                                 //Hasta aqui ya tendriamos la info importante, podemos notificar el registro
 
                                 //Enviar el correo con esta solicitud, y la url
-                                 $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi);
-                                 var_dump($enviar);
-
-                               /* if($enviar){
-                                    return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
-                                }else{
-                                   return redirect('registro-visitante')->with('errCorreo', 'La Solicitud fue registrada correctamente con Número del caso: '.$idSolicitud.', pero el correo no ha sido enviado');
-                                }*/
-
+                                 $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso, $idSolicitud, $solicitante, $labor);
+                                return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
+                                
                             }else{
                                 //si no se guarda la solicitud, redireccionamos el error
                                 return redirect('registro-visitante')->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
@@ -255,7 +256,7 @@ class RegistroVisitanteController extends Controller
                                'niveles' => 1,
                                'nivel_actual' => 1,
                                'estado' => 'Aprobado',
-                               'comentario' => 'Aprobado inmediatmente porque no hay configuración de flujos posteriores.',
+                               'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
                                'token' => $token,
                                'tipo_visitante'=> $tipoIngreso
 
@@ -269,18 +270,14 @@ class RegistroVisitanteController extends Controller
                                 'nivel_aprobador' => 1,
                                 'usuario_aprobador' => auth()->user()->id,
                                 'fecha_diligenciado' => now(),
-                                'comentario' => 'Aprobado inmediatmente porque no hay configuración de flujos posteriores.',
+                                'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
                                 'estado' => 'A'
                             ]);
+                                //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
 
-                               //Enviar el correo con esta solicitud, y la url
-                                $enviar =1;// RegistroVisitanteController::enviarCorreo($token, $empVisi);
-
-                               if($enviar){
+                               $correo = User::where('id',auth()->user()->id)->get();
+                               Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", ""));
                                    return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
-                               }else{
-                                  return redirect('registro-visitante')->with('errCorreo', 'La Solicitud fue registrada correctamente con Número del caso: '.$idSolicitud.', pero el correo no ha sido enviado');
-                               }
 
                            }else{
                                //si no se guarda la solicitud, redireccionamos el error
@@ -511,13 +508,14 @@ class RegistroVisitanteController extends Controller
        
     }   
 
-    public function enviarCorreo($url, $empVisi)
+    public function enviarCorreo($url, $empVisi, $tipoIngreso,$idSolicitud, $solicitante, $labor)
     {
         //var_dump($this->infoDeEmpresa);
         
         $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
         ->select('nivel','correo_usuario')
         ->where('empresa_id', '=', $empVisi)
+        ->where('tipo_visitante', '=', $tipoIngreso)
         ->get();
 
         $users = Array();
@@ -528,11 +526,14 @@ class RegistroVisitanteController extends Controller
                 $i++;
             }
         }
-        $user = User::where('id', '=', 44)->get();
-        $correos =User::whereIn('email', $users)->get();
-        //var_dump($correos);
-        Notification::send($correos, new enviarSolicitud($url));
-        
+        //var_dump($users);
+        //echo "<br><br><br>";
+       
+        $correos = User::whereIn('email', $users)->limit(1)->get();
+        //echo "<pre>";
+        //print_r($correos);
+        Notification::send($correos, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor));
+        echo true;
     }
 
     public function validarSolicitud(Request $request)
@@ -591,6 +592,38 @@ class RegistroVisitanteController extends Controller
                                 'token'=> null
                         ]);
 
+                          //Enviar correo a todos los del flujo para informar aprobacion
+                            $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
+                            ->select('correo_usuario')
+                            ->where('empresa_id', '=', $empresaId)
+                            ->where('tipo_visitante', '=', $tipoVisi)
+                            ->get();
+                        
+                            $users = Array();
+                            $i = 0;
+                        foreach($infoEmpresa as $inf){
+                                $users[$i] = $inf->correo_usuario;
+                                $i++;
+                            }
+                        
+                        $correos = User::whereIn('email',$users)->get();
+                        //consulto la info de esta solicitud para enviar por correo al nuevo nivel.
+                        $infSolicitud = DB::table('ohxqc_solicitud_ingreso')->select('solicitante','labor_realizar')->where('id_solicitud',$idSolicitud)->get();
+                        foreach($infSolicitud as $info){
+                            $solicitante = $info->solicitante;
+                            $labor = $info->labor_realizar;
+                        }
+                        
+                        Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", ""));
+
+                        //Envia correo tambien al solicitante
+                          $correo = DB::table('ohxqc_solicitud_ingreso')->select('correo_solicitante')->where('id_solicitud',$idSolicitud)->get();
+                          foreach($correo as $corr){
+                              $correo = $corr->correo_solicitante;
+                          }
+                          $user = User::where('email',$correo)->get();
+                          Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", ""));
+
                         return redirect()->back()->with('msj', 'Solicitud aprobada y Flujo terminado.');
                 }else{
 
@@ -614,15 +647,27 @@ class RegistroVisitanteController extends Controller
                     ->where('nivel', '=', $siguienteNivel)
                     ->where('tipo_visitante', '=', $tipoVisi)
                     ->get();
-            
-                   /* foreach($infoEmpresa as $inf){
-                        try{
-                            mail($inf->correo_usuario, 'Solicitud Para Aprobar', $token);
-                            $envio = 1;
-                        }catch(Exception $s){
-                            $envio = 0;
-                        }
-                    }*/
+                   
+                    $users = Array();
+                    $i = 0;
+                   foreach($infoEmpresa as $inf){
+                        $users[$i] = $inf->correo_usuario;
+                        $i++;
+                    }
+
+                    $correos = User::whereIn('email',$users)->get();
+                    //consulto la info de esta solicitud para enviar por correo al nuevo nivel.
+                    $infSolicitud = DB::table('ohxqc_solicitud_ingreso')->select('solicitante','labor_realizar')->where('id_solicitud',$idSolicitud)->get();
+                    foreach($infSolicitud as $info){
+                        $solicitante = $info->solicitante;
+                        $labor = $info->labor_realizar;
+                    }
+                    //Obtengo nuevamente el token de esta solicitud
+                    $infoToken = DB::table('ohxqc_solicitud_por_aprobar')->select('token')->where('id_solicitud',$idSolicitud)->get();
+                    foreach($infoToken as $tok){
+                        $token = $tok->token;
+                    }
+                    Notification::send($correos, new enviarSolicitud($token,$idSolicitud, $solicitante, $labor));
 
                     if($infoEmpresa){
                         return redirect()->back()->with('corrEnv', 'Solicitud aprobada y enviada al siguiente aprobador');
@@ -657,6 +702,38 @@ class RegistroVisitanteController extends Controller
                     'comentario' => $comentario,
                     'token'=> null
             ]);
+
+              //Enviar correo a todos los del flujo para informar rechazo
+              $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
+              ->select('correo_usuario')
+              ->where('empresa_id', '=', $empresaId)
+              ->where('tipo_visitante', '=', $tipoVisi)
+              ->get();
+          
+              $users = Array();
+              $i = 0;
+             foreach($infoEmpresa as $inf){
+                  $users[$i] = $inf->correo_usuario;
+                  $i++;
+              }
+          
+            $correos = User::whereIn('email',$users)->get();
+            //consulto la info de esta solicitud para enviar por correo al nuevo nivel.
+            $infSolicitud = DB::table('ohxqc_solicitud_ingreso')->select('solicitante','labor_realizar')->where('id_solicitud',$idSolicitud)->get();
+            foreach($infSolicitud as $info){
+                $solicitante = $info->solicitante;
+                $labor = $info->labor_realizar;
+            }
+            
+            Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", $comentario));
+
+            //Envia correo tambien al solicitante
+            $correo = DB::table('ohxqc_solicitud_ingreso')->select('correo_solicitante')->where('id_solicitud',$idSolicitud)->get();
+            foreach($correo as $corr){
+                $correo = $corr->correo_solicitante;
+            }
+            $user = User::where('email',$correo)->get();
+            Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", ""));
 
             return redirect()->back()->with('soliRech', 'La solicitud #'.$idSolicitud.', ha sido rechazada.');
             
