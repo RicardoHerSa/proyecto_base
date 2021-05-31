@@ -40,11 +40,11 @@
             <h4>Cargue de Colaboradores</h4>
           </div>
           <div class="card-body">
-            <p class="card-text">Suba un archivo excel con las características indicadas: .lsx, .xlsx.</p>
+            <p class="card-text">Suba un archivo excel con las características indicadas: .csv delimitado por (;) punto y coma.</p>
           <form method="POST" action="{{route('cargarColborador')}}" enctype="multipart/form-data">
             @csrf
             <div class="form-group">
-              <input type="file" class="form-control" name="archivo" accept=".xls,.xlsx" required>
+              <input type="file" class="form-control" name="archivo" accept=".csv" required>
             </div>
           </div>
           <div class="card-footer">
