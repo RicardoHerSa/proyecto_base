@@ -19,14 +19,13 @@
                     <div class="form-group">
                         <div class="col-md-10">
                             <div class="input-group flex-nowrap">
-                                    <input placeholder="Usuario" id="username" type="text" class="form-control @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" required autocomplete="username" autofocus>
-                                    @error('username')
-
-                                    <span class="invalid-feedback" role="alert">
+                                    <input placeholder="Usuario" id="username" type="text" class="form-control @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" required autocomplete="username" autofocus/>
+                            </div>
+                                @error('username')
+                                    <span class="invalid-feedback {{isset($message)?'d-block':''}}" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>
-                                    @enderror
-                            </div>
+                                @enderror
                         </div>
                     </div>
                     <div class="form-group">
@@ -63,14 +62,8 @@
                 </form>
             </div>
             <div class="col-md-4 ">
-                <div class="parent">
-                    <div class="image1"></div>
-                    <img class="image3" src="{{ asset('/resources/tema1/Bubble 1.png') }}" />
-                    <img class="image4" src="{{ asset('/resources/tema1/Bubble 4.png') }}" />
-                    <img class="image5" src="{{ asset('/resources/tema1/Bubble 3.png') }}" />
-
-                    <img class="image2" src="{{ asset('/resources/tema1/Persona 3.png') }}" />
-                  </div>
+                   
+                    <img id="logoLogin" class="" src="{{ asset('/resources/logo.png') }}" />
             </div> 
         </div>
        </div>
@@ -102,6 +95,8 @@
         </div>-->
 </div>
 </div>
+
+
 
 <script>
     $(document).ready(function() {

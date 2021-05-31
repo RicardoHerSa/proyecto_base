@@ -50,6 +50,8 @@
                             </div>
                         </div>
                     </form>
+                    <hr>
+                    <a href="{{url('inicio')}}" class="btn btn-primary"><i class="fa fa-arrow-left"></i> Volver al Login</a>
                 </div>
             </div>
         </div>

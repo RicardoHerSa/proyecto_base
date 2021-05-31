@@ -857,3 +857,9 @@ i.fa.fa-download {
     background-color: #17a2b8!important;
     color: #FFFF !important;
 }
+
+#logoLogin{
+    width: 80%;
+    padding: 5px;
+    margin-left: 20%;
+}
