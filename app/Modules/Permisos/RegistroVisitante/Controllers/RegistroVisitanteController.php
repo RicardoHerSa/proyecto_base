@@ -37,7 +37,7 @@ class RegistroVisitanteController extends Controller
        ->select('id', 'descripcion')
        ->get(); 
 
-       $sedes = DB::table('ohxqc_sedes')
+       $sedes = DB::table('ohxqc_sede_fisica')
        ->get();
 
        $tiposVisitante = DB::table('ohxqc_tipos_visitante')
@@ -197,95 +197,183 @@ class RegistroVisitanteController extends Controller
                     if($guardaSedes){
                         //teniendo la documentacion correcta, se registraria en la tabla ohxqc_solicitud_por_aprobar
 
-                        //Se consulta en la tabla de configuración ohxqc_config_solicitud_empresas, el max nivel
-                        //para conocer el flujo maximo por el cual viajará la solicitud
+                        /**Se consulta en la tabla de configuración ohxqc_config_solicitud_empresas, el max nivel
+                        para conocer el flujo maximo por el cual viajará la solicitud. Si hay mas de una sede, se insertará en la tabla ohxqc_solicitud_por_aprobar, la cantidad de solicitudes  para c/u de las sedes
+                        **/
+                        if($cantidadSedes > 0){
+                            $j = ""; //la primer sede tiene como name="sede", la segunda name="sede1"
+                            $entraSede = 0;
+                            for($i = 0; $i <= $cantidadSedes; $i++){
+                                $infoNivel = DB::table('ohxqc_config_solicitud_empresas')
+                                ->where('empresa_id', '=', $empVisi)
+                                ->where('tipo_visitante', '=', $tipoIngreso)
+                                ->where('sede_id', '=', $request->input('sede'.$j))
+                                ->max('nivel');
+                               // echo $infoNivel." ---> ".$request->input('sede'.$j)."->fin<br> ";
+                                if($infoNivel > 0){
+                                    $niveles = $infoNivel;
+                                    //al obtener resultados se debe insertar en la tabla ohxqc_solicitud_por_aprobar
+        
+                                     //se llama a un metodo el cual sea el que genere la URL TOKEN
+                                     $this->solicitudID = $idSolicitud;
+                                     $this->tipoIngres = $tipoIngreso;
+                                     $token = RegistroVisitanteController::getLinkSubscribe();
+        
+                                    $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
+                                        'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
+                                        'id_solicitud' => $idSolicitud,
+                                        'fecha_registro' => now(),
+                                        'niveles' => $niveles,
+                                        'nivel_actual' => 1,
+                                        'estado' => 'Pendiente',
+                                        'token' => $token,
+                                        'tipo_visitante'=> $tipoIngreso,
+                                        'sede_id'=> $request->input('sede'.$j),
+        
+                                    ]);
+                                        //Enviar el correo con esta solicitud, y la url
+                                         $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso, $request->input('sede'.$j),$idSolicitud, $solicitante, $labor);
+                                       
+                                    
+                                }else{
+                                    $entraSede++;
+                                    //si no hay info de esta sede, se debe aprobar  inmediatamente
+                                        $this->solicitudID = $idSolicitud;
+                                        $this->tipoIngres = $tipoIngreso;
+                                        $token = RegistroVisitanteController::getLinkSubscribe();
 
-                        $infoNivel = DB::table('ohxqc_config_solicitud_empresas')
-                        ->where('empresa_id', '=', $empVisi)
-                        ->where('tipo_visitante', '=', $tipoIngreso)
-                        ->max('nivel');
+                                        $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
+                                            'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
+                                            'id_solicitud' => $idSolicitud,
+                                            'fecha_registro' => now(),
+                                            'niveles' => 1,
+                                            'nivel_actual' => 1,
+                                            'estado' => 'Aprobado',
+                                            'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                            'token' => $token,
+                                            'tipo_visitante'=> $tipoIngreso,
+                                            'sede_id'=> $request->input('sede'.$j)
 
-                        if($infoNivel > 0){
-                            $niveles = $infoNivel;
-                            //al obtener resultados se debe insertar en la tabla ohxqc_solicitud_por_aprobar
+                                        ]);
+                           
+                       
+                                        //se actualiza de una vez la aprobacion
+                                        DB::table('ohxqc_historico_solicitud')->insert([
+                                            'id_his' =>  DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
+                                            'id_solicitud' => $idSolicitud,
+                                            'nivel_aprobador' => 1,
+                                            'usuario_aprobador' => auth()->user()->id,
+                                            'fecha_diligenciado' => now(),
+                                            'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                            'estado' => 'A'
+                                        ]);
+                                        //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
 
-                             //se llama a un metodo el cual sea el que genere la URL TOKEN y actualice esta tabla
-                             //con el campo que falta (token)
-                             $this->solicitudID = $idSolicitud;
-                             $this->tipoIngres = $tipoIngreso;
-                             $token = RegistroVisitanteController::getLinkSubscribe();
-
-                            $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
-                                'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
-                                'id_solicitud' => $idSolicitud,
-                                'fecha_registro' => now(),
-                                'niveles' => $niveles,
-                                'nivel_actual' => 1,
-                                'estado' => 'Pendiente',
-                                'token' => $token,
-                                'tipo_visitante'=> $tipoIngreso
-
-                            ]);
-                            
-                            if($guardarSolicitudPorAprobar){
-                                //Hasta aqui ya tendriamos la info importante, podemos notificar el registro
-
-                                //Enviar el correo con esta solicitud, y la url
-                                 $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso, $idSolicitud, $solicitante, $labor);
-                                return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
-                                
-                            }else{
-                                //si no se guarda la solicitud, redireccionamos el error
-                                return redirect('registro-visitante')->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
+                                    $correo = User::where('id',auth()->user()->id)->get();
+                                    Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", ""));
+                                }
+                                if($i == 0 ){$j = 1;}else{$j = $i+1;}
                             }
 
-                           
-
-
+                                //se valida si todas las sedes fueron aprobadas inmediatamente porque no tenian config en la maestra, y de ser asi, retornamos avisando
+                                 if($entraSede == $cantidadSedes+1){
+                                    // echo "<br> AMBAS ENTRARON SIN CONFIG";
+                                    return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
+                                 }else{
+                                    return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
+                                 }
+                            
                         }else{
-                            //si no se encuentran resultados, hay que configurar la empresa en la maestra o
-                            //se aprueba de una vez
-                            $this->solicitudID = $idSolicitud;
-                            $this->tipoIngres = $tipoIngreso;
-                            $token = RegistroVisitanteController::getLinkSubscribe();
-
-                           $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
-                               'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
-                               'id_solicitud' => $idSolicitud,
-                               'fecha_registro' => now(),
-                               'niveles' => 1,
-                               'nivel_actual' => 1,
-                               'estado' => 'Aprobado',
-                               'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
-                               'token' => $token,
-                               'tipo_visitante'=> $tipoIngreso
-
-                           ]);
-                           
-                           if($guardarSolicitudPorAprobar){
-                               //se actualiza de una vez la aprobacion
-                               DB::table('ohxqc_historico_solicitud')->insert([
-                                'id_his' =>  DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
-                                'id_solicitud' => $idSolicitud,
-                                'nivel_aprobador' => 1,
-                                'usuario_aprobador' => auth()->user()->id,
-                                'fecha_diligenciado' => now(),
-                                'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
-                                'estado' => 'A'
-                            ]);
-                                //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
-
-                               $correo = User::where('id',auth()->user()->id)->get();
-                               Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", ""));
-                                   return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
-
-                           }else{
-                               //si no se guarda la solicitud, redireccionamos el error
-                               return redirect('registro-visitante')->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
-                           }
+                            //si solo tenemos una sede pues entonces vemos el max nivel del flujo de acuerdo a la empresa
+                            $infoNivel = DB::table('ohxqc_config_solicitud_empresas')
+                            ->where('empresa_id', '=', $empVisi)
+                            ->where('tipo_visitante', '=', $tipoIngreso)
+                            ->max('nivel');
+    
+                            if($infoNivel > 0){
+                                $niveles = $infoNivel;
+                                //al obtener resultados se debe insertar en la tabla ohxqc_solicitud_por_aprobar
+    
+                                 //se llama a un metodo el cual sea el que genere la URL TOKEN
+                                 $this->solicitudID = $idSolicitud;
+                                 $this->tipoIngres = $tipoIngreso;
+                                 $token = RegistroVisitanteController::getLinkSubscribe();
+    
+                                $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
+                                    'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
+                                    'id_solicitud' => $idSolicitud,
+                                    'fecha_registro' => now(),
+                                    'niveles' => $niveles,
+                                    'nivel_actual' => 1,
+                                    'estado' => 'Pendiente',
+                                    'token' => $token,
+                                    'tipo_visitante'=> $tipoIngreso,
+                                    'sede_id' => $request->input('sede')
+    
+                                ]);
+                                
+                                if($guardarSolicitudPorAprobar){
+                                    //Hasta aqui ya tendriamos la info importante, podemos notificar el registro
+    
+                                    //Enviar el correo con esta solicitud, y la url
+                                     $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso,$request->input('sede'), $idSolicitud, $solicitante, $labor);
+                                    return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
+                                    
+                                }else{
+                                    //si no se guarda la solicitud, redireccionamos el error
+                                    return redirect('registro-visitante')->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
+                                }
+    
+                               
+    
+    
+                            }else{
+                                //si no se encuentran resultados, hay que configurar la empresa en la maestra o
+                                //se aprueba de una vez
+                                $this->solicitudID = $idSolicitud;
+                                $this->tipoIngres = $tipoIngreso;
+                                $token = RegistroVisitanteController::getLinkSubscribe();
+    
+                               $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
+                                   'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
+                                   'id_solicitud' => $idSolicitud,
+                                   'fecha_registro' => now(),
+                                   'niveles' => 1,
+                                   'nivel_actual' => 1,
+                                   'estado' => 'Aprobado',
+                                   'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                   'token' => $token,
+                                   'tipo_visitante'=> $tipoIngreso,
+                                   'sede_id' => $request->input('sede')
+    
+                               ]);
+                               
+                               if($guardarSolicitudPorAprobar){
+                                   //se actualiza de una vez la aprobacion
+                                   DB::table('ohxqc_historico_solicitud')->insert([
+                                    'id_his' =>  DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
+                                    'id_solicitud' => $idSolicitud,
+                                    'nivel_aprobador' => 1,
+                                    'usuario_aprobador' => auth()->user()->id,
+                                    'fecha_diligenciado' => now(),
+                                    'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                    'estado' => 'A'
+                                ]);
+                                    //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
+    
+                                   $correo = User::where('id',auth()->user()->id)->get();
+                                   Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", ""));
+                                       return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
+    
+                               }else{
+                                   //si no se guarda la solicitud, redireccionamos el error
+                                   return redirect('registro-visitante')->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
+                               }
+                            }
+    
+    
                         }
-
-
+                       
                     }else{
                         //si no guardó las sedes se redirige el error
                         return redirect('registro-visitante')->with('errSedes', 'No se pudieron registrar las sedes');
@@ -471,8 +559,8 @@ class RegistroVisitanteController extends Controller
         ->get();
 
         $sedesVisitar = DB::table('ohxqc_sedes_solicitud as sol')
-        ->select('sede.descripcion')
-        ->join('ohxqc_sedes as sede', 'sede.id', 'sol.id_sede')
+        ->select('sede.nombre')
+        ->join('ohxqc_sede_fisica as sede', 'sede.id_sedef', 'sol.id_sede')
         ->where('sol.id_solicitud', '=', $solicitud)
         ->get();
 
@@ -508,7 +596,7 @@ class RegistroVisitanteController extends Controller
        
     }   
 
-    public function enviarCorreo($url, $empVisi, $tipoIngreso,$idSolicitud, $solicitante, $labor)
+    public function enviarCorreo($url, $empVisi, $tipoIngreso,$sedeId,$idSolicitud, $solicitante, $labor)
     {
         //var_dump($this->infoDeEmpresa);
         
@@ -516,6 +604,7 @@ class RegistroVisitanteController extends Controller
         ->select('nivel','correo_usuario')
         ->where('empresa_id', '=', $empVisi)
         ->where('tipo_visitante', '=', $tipoIngreso)
+        ->where('sede_id', '=', $sedeId)
         ->get();
 
         $users = Array();
@@ -526,13 +615,13 @@ class RegistroVisitanteController extends Controller
                 $i++;
             }
         }
-        //var_dump($users);
-        //echo "<br><br><br>";
-       
         $correos = User::whereIn('email', $users)->limit(1)->get();
-        //echo "<pre>";
-        //print_r($correos);
-        Notification::send($correos, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor));
+        
+        //envía correo a los del primer flujo
+        Notification::send($correos, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor, 1));
+        //envía correo al solicitante avisando el registro de la solicitud
+        $correo = User::where('id', auth()->user()->id)->limit(1)->get();
+        Notification::send($correo, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor, 2));
         echo true;
     }
 
@@ -667,7 +756,7 @@ class RegistroVisitanteController extends Controller
                     foreach($infoToken as $tok){
                         $token = $tok->token;
                     }
-                    Notification::send($correos, new enviarSolicitud($token,$idSolicitud, $solicitante, $labor));
+                    Notification::send($correos, new enviarSolicitud($token,$idSolicitud, $solicitante, $labor, 1));
 
                     if($infoEmpresa){
                         return redirect()->back()->with('corrEnv', 'Solicitud aprobada y enviada al siguiente aprobador');

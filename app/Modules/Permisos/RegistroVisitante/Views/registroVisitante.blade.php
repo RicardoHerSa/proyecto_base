@@ -292,7 +292,7 @@
                                 <select name="sede" id="sede" class="form-control">
                                     
                                     @foreach ($sedes as $sede)
-                                    <option value="{{$sede->id}}">{{$sede->descripcion}}</option>
+                                    <option value="{{$sede->id_sedef}}">{{$sede->nombre}}</option>
                                     @endforeach
                                 </select>
                                     <input type="hidden" id="primerEliminadoSelect" value="n">
@@ -311,7 +311,7 @@
                                         <select name="sede1" id="sede1" class="form-control">
                                             
                                             @foreach ($sedes as $sede)
-                                            <option value="{{$sede->id}}">{{$sede->descripcion}}</option>
+                                            <option value="{{$sede->id_sedef}}">{{$sede->nombre}}</option>
                                             @endforeach
                                         </select>
                                     </div>

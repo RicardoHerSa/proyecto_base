@@ -188,7 +188,7 @@
                             <tbody>
                                 @foreach ($sedesVisitar as $sede)
                                         <tr>
-                                            <td>{{$sede->descripcion}}</td>
+                                            <td>{{$sede->nombre}}</td>
                                           
                                         </tr>
                                 @endforeach
