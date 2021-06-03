@@ -11,6 +11,7 @@ use Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 use App\Notifications\enviarSolicitud;
 use App\Notifications\notificaSolicitud;
+use App\Notifications\porterias;
 use App\Models\User\User;
 
 
@@ -19,6 +20,7 @@ class RegistroVisitanteController extends Controller
     public $solicitudID = "";
     public $infoDeEmpresa  = "";
     public $tipoIngres = "";
+    public $sedeId = "";
     /**
      * Display a listing of the resource.
      *
@@ -28,8 +30,11 @@ class RegistroVisitanteController extends Controller
     {
         $empresas = DB::table('ohxqc_empresas')
         ->select('codigo_empresa', 'descripcion')
-        ->whereIn('codigo_empresa', ['42681','119','24305','27027','130','21679','115','128','32506','701','702','703','705','706','707','708','709','710','711','713','714','716','718','720','721','722','723','724','725','726','727','728','729','730','732','733','734','735','736','737','738','739','740','742','743','744',
-        '745','129','132'])
+        ->distinct('descripcion')
+        /*->whereIn('codigo_empresa', ['42681','119','24305','27027','130','21679','115','128','32506','701','702','703','705','706','707','708','709','710','711','713','714','716','718','720','721','722','723','724','725','726','727','728','729','730','732','733','734','735','736','737','738','739','740','742','743','744',
+        '745','129','132'])*/
+        ->where('descripcion','LIKE','%CARVAJAL%')
+        ->where('activo', 'S')
         ->orderBy('descripcion')
         ->get();
 
@@ -38,6 +43,7 @@ class RegistroVisitanteController extends Controller
        ->get(); 
 
        $sedes = DB::table('ohxqc_sede_fisica')
+       ->orderBy('nombre')
        ->get();
 
        $tiposVisitante = DB::table('ohxqc_tipos_visitante')
@@ -81,13 +87,15 @@ class RegistroVisitanteController extends Controller
         //Recibe informacion de fechas de ingreso y final
         $fechaInicio = $request->input('fechaIngreso');
         $fechaFin = $request->input('fechaFin');
-        $horario = $request->input('horario');
-        $hora = $request->input('hora');
+        $horario = 8; //ID Horario especial
         $empVisi = $request->input('empVisi');
-        $ciudad = $request->input('ciudad');
+        //$ciudad = $request->input('ciudad');
 
         //Recibe labor a realizar
         $labor = $request->input('labor');
+
+        //Recibe el tipo de registro de visitantes para saber si fueron escritos o masivos(excel)
+        $tipoRegistroV = $request->input('tipoRegistroVisi');
 
 
         //Guardar en la tabla ohxqc_solicitud_ingreso
@@ -103,7 +111,7 @@ class RegistroVisitanteController extends Controller
             'fecha_ingreso' =>  $fechaInicio,
             'fecha_fin' =>  $fechaFin,
             'horario_id' => $horario,
-            'ciudad_id' => $ciudad,
+            'ciudad_id' => null,
             'solicitante' => $solicitante,
             'tipo_ingreso' => $nombreIngreso,
             'tipo_identidad' => $tipoId,
@@ -217,6 +225,7 @@ class RegistroVisitanteController extends Controller
                                      //se llama a un metodo el cual sea el que genere la URL TOKEN
                                      $this->solicitudID = $idSolicitud;
                                      $this->tipoIngres = $tipoIngreso;
+                                     $this->sedeId = $request->input('sede'.$j);
                                      $token = RegistroVisitanteController::getLinkSubscribe();
         
                                     $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
@@ -229,6 +238,7 @@ class RegistroVisitanteController extends Controller
                                         'token' => $token,
                                         'tipo_visitante'=> $tipoIngreso,
                                         'sede_id'=> $request->input('sede'.$j),
+                                        'tipo_registro' => $tipoRegistroV
         
                                     ]);
                                         //Enviar el correo con esta solicitud, y la url
@@ -240,6 +250,7 @@ class RegistroVisitanteController extends Controller
                                     //si no hay info de esta sede, se debe aprobar  inmediatamente
                                         $this->solicitudID = $idSolicitud;
                                         $this->tipoIngres = $tipoIngreso;
+                                        $this->sedeId = $request->input('sede'.$j);
                                         $token = RegistroVisitanteController::getLinkSubscribe();
 
                                         $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
@@ -252,7 +263,8 @@ class RegistroVisitanteController extends Controller
                                             'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
                                             'token' => $token,
                                             'tipo_visitante'=> $tipoIngreso,
-                                            'sede_id'=> $request->input('sede'.$j)
+                                            'sede_id'=> $request->input('sede'.$j),
+                                            'tipo_registro' => $tipoRegistroV
 
                                         ]);
                            
@@ -265,12 +277,13 @@ class RegistroVisitanteController extends Controller
                                             'usuario_aprobador' => auth()->user()->id,
                                             'fecha_diligenciado' => now(),
                                             'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
-                                            'estado' => 'A'
+                                            'estado' => 'A',
+                                            'sede_id' => $request->input('sede'.$j)
                                         ]);
                                         //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
 
                                     $correo = User::where('id',auth()->user()->id)->get();
-                                    Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", ""));
+                                    Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede'.$j) ));
                                 }
                                 if($i == 0 ){$j = 1;}else{$j = $i+1;}
                             }
@@ -288,6 +301,7 @@ class RegistroVisitanteController extends Controller
                             $infoNivel = DB::table('ohxqc_config_solicitud_empresas')
                             ->where('empresa_id', '=', $empVisi)
                             ->where('tipo_visitante', '=', $tipoIngreso)
+                            ->where('sede_id', '=', $request->input('sede'))
                             ->max('nivel');
     
                             if($infoNivel > 0){
@@ -297,6 +311,7 @@ class RegistroVisitanteController extends Controller
                                  //se llama a un metodo el cual sea el que genere la URL TOKEN
                                  $this->solicitudID = $idSolicitud;
                                  $this->tipoIngres = $tipoIngreso;
+                                 $this->sedeId = $request->input('sede');
                                  $token = RegistroVisitanteController::getLinkSubscribe();
     
                                 $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
@@ -308,7 +323,8 @@ class RegistroVisitanteController extends Controller
                                     'estado' => 'Pendiente',
                                     'token' => $token,
                                     'tipo_visitante'=> $tipoIngreso,
-                                    'sede_id' => $request->input('sede')
+                                    'sede_id' => $request->input('sede'),
+                                    'tipo_registro' => $tipoRegistroV
     
                                 ]);
                                 
@@ -332,6 +348,7 @@ class RegistroVisitanteController extends Controller
                                 //se aprueba de una vez
                                 $this->solicitudID = $idSolicitud;
                                 $this->tipoIngres = $tipoIngreso;
+                                $this->sedeId = $request->input('sede');
                                 $token = RegistroVisitanteController::getLinkSubscribe();
     
                                $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
@@ -344,7 +361,8 @@ class RegistroVisitanteController extends Controller
                                    'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
                                    'token' => $token,
                                    'tipo_visitante'=> $tipoIngreso,
-                                   'sede_id' => $request->input('sede')
+                                   'sede_id' => $request->input('sede'),
+                                   'tipo_registro' => $tipoRegistroV
     
                                ]);
                                
@@ -357,12 +375,13 @@ class RegistroVisitanteController extends Controller
                                     'usuario_aprobador' => auth()->user()->id,
                                     'fecha_diligenciado' => now(),
                                     'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
-                                    'estado' => 'A'
+                                    'estado' => 'A',
+                                    'sede_id' => $request->input('sede')
                                 ]);
                                     //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
     
                                    $correo = User::where('id',auth()->user()->id)->get();
-                                   Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", ""));
+                                   Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede')));
                                        return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
     
                                }else{
@@ -398,12 +417,12 @@ class RegistroVisitanteController extends Controller
         return URL::signedRoute(
             'event.subscribe', 
             //now()->addMinutes(5), 
-            ['solicitud' => $this->solicitudID, 'ingreso'=> $this->tipoIngres]
+            ['solicitud' => $this->solicitudID, 'ingreso'=> $this->tipoIngres, 'sede'=> $this->sedeId]
         );
     }
 
     //Este metodo se ejecuta cuando el usuario de click en el enlace generado arriba
-    public function subscribe(Request $request, $solicitud, $ideIngreso)
+    public function subscribe(Request $request, $solicitud, $ideIngreso, $sedeID)
     {
         if (! $request->hasValidSignature()) {
             abort(403);
@@ -434,12 +453,13 @@ class RegistroVisitanteController extends Controller
         ->select('usuario_aprobador_id')
         ->where('empresa_id', '=', $idEmpresa)
         ->where('tipo_visitante', '=', $ideIngreso)
+        ->where('sede_id', '=', $sedeID)
         ->where('usuario_aprobador_id', '=', auth()->user()->id)
         ->get();
         if(count($consultaPermiso) > 0){
             $accede = true;
         }else{
-            //Si existe la empresa, entonces bortamos porque quiere decir que no existe el usuario o el tipo
+            //Si existe la empresa, entonces abortamos porque quiere decir que no existe el usuario o el tipo
             $consultaExistenciaEmpresa = DB::table('ohxqc_config_solicitud_empresas')
             ->select('usuario_aprobador_id')
             ->where('empresa_id', '=', $idEmpresa)
@@ -457,6 +477,7 @@ class RegistroVisitanteController extends Controller
         //Consultar si la solicitud fue rechazada
         $consultaRechazado = DB::table('ohxqc_solicitud_por_aprobar')
         ->where('id_solicitud', '=', $solicitud)
+        ->where('sede_id', '=', $sedeID)
         ->where('estado', '=', 'Rechazado')
         ->get();
         if(count($consultaRechazado) > 0){
@@ -466,6 +487,7 @@ class RegistroVisitanteController extends Controller
             ->select('nivel_aprobador as nivel', 'name as usuario', 'fecha_diligenciado as fecha','estado' ,'comentario')
             ->join('jess_users as j', 'j.id', '=', 'hs.usuario_aprobador')
             ->where('hs.id_solicitud', '=', $solicitud)
+            ->where('hs.sede_id', '=', $sedeID)
             ->get();
         }else{
             $detalles = "";
@@ -475,6 +497,7 @@ class RegistroVisitanteController extends Controller
             
             $consultaAprobacion = DB::table('ohxqc_solicitud_por_aprobar')
             ->where('id_solicitud', '=', $solicitud)
+            ->where('sede_id', '=', $sedeID)
             ->where('estado', '=', 'Aprobado')
             ->get();
             if(count($consultaAprobacion) > 0){
@@ -483,12 +506,14 @@ class RegistroVisitanteController extends Controller
                 ->select('nivel_aprobador as nivel', 'name as usuario', 'fecha_diligenciado as fecha','estado' ,'comentario')
                 ->join('jess_users as j', 'j.id', '=', 'hs.usuario_aprobador')
                 ->where('hs.id_solicitud', '=', $solicitud)
+                ->where('hs.sede_id', '=', $sedeID)
                 ->get();
             }else{
                 //Si aún la solicitud está pendiente, entonces se consulta en el histórico para saber si
                 //el nivel al que pertenece este usuario ya ha aprobado o no la solicitud.
                 $consultaAprobacionHistorico = DB::table('ohxqc_historico_solicitud')
                 ->where('id_solicitud', '=', $solicitud)
+                ->where('sede_id', '=', $sedeID)
                 ->where('estado', '=', 'A')
                 ->whereIn('nivel_aprobador', function($query){
                     $query->select('nivel')
@@ -502,6 +527,7 @@ class RegistroVisitanteController extends Controller
                     ->select('nivel_aprobador as nivel', 'name as usuario', 'fecha_diligenciado as fecha','estado' ,'comentario')
                     ->join('jess_users as j', 'j.id', '=', 'hs.usuario_aprobador')
                     ->where('hs.id_solicitud', '=', $solicitud)
+                    ->where('hs.sede_id', '=', $sedeID)
                     ->get();
                 }else{
                     /***Si la consulta devuelve 0, pueden ocurrir dos situaciones,
@@ -511,6 +537,7 @@ class RegistroVisitanteController extends Controller
                      * el nivel anterior ya ha validado o si definitamente no, así sabremos si halitar los botones***/
                     $consultaNivelActual = DB::table('ohxqc_config_solicitud_empresas')
                     ->select('nivel')
+                    ->where('sede_id', '=', $sedeID)
                     ->where('tipo_visitante', '=' , $ideIngreso)
                     ->where('empresa_id', '=' , $idEmpresa)
                     ->where('usuario_aprobador_id', '=', auth()->user()->id)
@@ -526,11 +553,13 @@ class RegistroVisitanteController extends Controller
                         ->select('nivel_aprobador as nivel', 'name as usuario', 'fecha_diligenciado as fecha','estado' ,'comentario')
                         ->join('jess_users as j', 'j.id', '=', 'hs.usuario_aprobador')
                         ->where('hs.id_solicitud', '=', $solicitud)
+                        ->where('hs.sede_id', '=', $sedeID)
                         ->get();
                     }else{
                         //se consulta  si el nivel anterior al actual ya aprobó la solicitud
                         $consAproNivelAnterior = DB::table('ohxqc_historico_solicitud')
                         ->where('id_solicitud', '=', $solicitud)
+                        ->where('sede_id', '=', $sedeID)
                         ->where('estado', '=', 'A')
                         ->where('nivel_aprobador', '=', $nivelUsuario-1)
                         ->get();
@@ -540,6 +569,7 @@ class RegistroVisitanteController extends Controller
                         ->select('nivel_aprobador as nivel', 'name as usuario', 'fecha_diligenciado as fecha','estado' ,'comentario')
                         ->join('jess_users as j', 'j.id', '=', 'hs.usuario_aprobador')
                         ->where('hs.id_solicitud', '=', $solicitud)
+                        ->where('hs.sede_id', '=', $sedeID)
                         ->get();
                         }else{
                             //Si nisiquiera el nivel anterior ha validado, entonces a los demas niveles le restringimos acceso
@@ -578,7 +608,7 @@ class RegistroVisitanteController extends Controller
        ->select('id', 'descripcion')
        ->get(); 
 
-       $sedes = DB::table('ohxqc_sedes')
+       $sedes = DB::table('ohxqc_sede_fisica')
        ->get();
 
        $tiposVisitante = DB::table('ohxqc_tipos_visitante')
@@ -589,7 +619,7 @@ class RegistroVisitanteController extends Controller
 
      
         if($accede){
-            return view('Permisos::validacionSolicitud', compact('solicitud','ideIngreso', 'arrayInfo', 'documentos', 'sedesVisitar' ,'empresas', 'horarios', 'sedes', 'tiposVisitante', 'botonesAccion', 'msjRechazo', 'detalles'));
+            return view('Permisos::validacionSolicitud', compact('solicitud','ideIngreso','sedeID','arrayInfo', 'documentos', 'sedesVisitar' ,'empresas', 'horarios', 'sedes', 'tiposVisitante', 'botonesAccion', 'msjRechazo', 'detalles'));
         }
 
 
@@ -629,15 +659,17 @@ class RegistroVisitanteController extends Controller
     {
         $idSolicitud = $request->input('idsolicitud');
         $tipoVisi = $request->input('idtipovisitante');
+        $sedeID = $request->input('idsede');
         $comentario = $request->input('comentario');
         $empresaId = $request->input('idempresa');
-
+            
         //consultar nivel de este usuario
         $consultNivel = DB::table('ohxqc_config_solicitud_empresas')
                                     ->select('nivel')
                                     ->where('usuario_aprobador_id', '=', auth()->user()->id)
                                     ->where('empresa_id', '=', $empresaId)
                                     ->where('tipo_visitante', '=', $tipoVisi)
+                                    ->where('sede_id', '=', $sedeID)
                                     ->get();
                                     
         foreach($consultNivel as $consul){
@@ -654,7 +686,8 @@ class RegistroVisitanteController extends Controller
                 'usuario_aprobador' =>  auth()->user()->id,
                 'fecha_diligenciado' => now(),
                 'comentario' => $comentario,
-                'estado' => 'A'
+                'estado' => 'A',
+                'sede_id' => $sedeID
             ]);
 
             if($guardaHistorico){
@@ -664,6 +697,7 @@ class RegistroVisitanteController extends Controller
                 $nivelFinal = DB::table('ohxqc_solicitud_por_aprobar')
                 ->select('niveles')
                 ->where('id_solicitud', '=', $idSolicitud)
+                ->where('sede_id', '=', $sedeID)
                 ->get();
                 foreach($nivelFinal as $f){
                     $ultimoNivel = $f->niveles;
@@ -674,6 +708,7 @@ class RegistroVisitanteController extends Controller
                         //si es mayor, entonces se hace la actualizacion del nivel_actual,estado,comentario y token 
                         DB::table('ohxqc_solicitud_por_aprobar')
                         ->where('id_solicitud', '=', $idSolicitud)
+                        ->where('sede_id', '=', $sedeID)
                         ->update([
                                 'nivel_actual' => $ultimoNivel,
                                 'estado' => 'Aprobado',
@@ -681,11 +716,32 @@ class RegistroVisitanteController extends Controller
                                 'token'=> null
                         ]);
 
+                        /**Despues de ser aprobada, se deben registrar los visitantes, la empresa visitante, los permisos etc
+                         * Se debe saber si los visitantes fueron escritos en el formulario(RI) o fueron por adjunto(RM)
+                         * RI : Registro Individual
+                         * RM: Registro Masivo
+                         ***/
+                            $tipoRegistro = DB::table('ohxqc_solicitud_por_aprobar')
+                            ->select('tipo_registro')
+                            ->where('id_solicitud',$idSolicitud)
+                            ->where('sede_id',$sedeID)
+                            ->get(); 
+                            foreach($tipoRegistro as $r){
+                                $tipoRegistro = $r->tipo_registro;
+                            }
+
+                            if($tipoRegistro == "RI"){
+                                RegistroVisitanteController::agregarVisitantes($idSolicitud,$empresaId,$sedeID);
+                            }else{
+
+                            }
+
                           //Enviar correo a todos los del flujo para informar aprobacion
                             $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
                             ->select('correo_usuario')
                             ->where('empresa_id', '=', $empresaId)
                             ->where('tipo_visitante', '=', $tipoVisi)
+                            ->where('sede_id', '=', $sedeID)
                             ->get();
                         
                             $users = Array();
@@ -696,14 +752,14 @@ class RegistroVisitanteController extends Controller
                             }
                         
                         $correos = User::whereIn('email',$users)->get();
-                        //consulto la info de esta solicitud para enviar por correo al nuevo nivel.
+                        //consulto la info de esta solicitud 
                         $infSolicitud = DB::table('ohxqc_solicitud_ingreso')->select('solicitante','labor_realizar')->where('id_solicitud',$idSolicitud)->get();
                         foreach($infSolicitud as $info){
                             $solicitante = $info->solicitante;
                             $labor = $info->labor_realizar;
                         }
                         
-                        Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", ""));
+                        Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID));
 
                         //Envia correo tambien al solicitante
                           $correo = DB::table('ohxqc_solicitud_ingreso')->select('correo_solicitante')->where('id_solicitud',$idSolicitud)->get();
@@ -711,20 +767,23 @@ class RegistroVisitanteController extends Controller
                               $correo = $corr->correo_solicitante;
                           }
                           $user = User::where('email',$correo)->get();
-                          Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", ""));
+                          Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID));
+
+                        //Enviar correo a las porterias de la sede: ohxqc_correos_porterias
+                        $consultaCorreosPorterias = DB::table('ohxqc_correos_porterias')->select('correo')->where('sede_id', $sedeID)->get();
+                        foreach($consultaCorreosPorterias as $porteros){
+                            Notification::route('mail', $porteros->correo)
+                            ->notify(new porterias($idSolicitud,$solicitante,$sedeID, $labor));
+                        }
 
                         return redirect()->back()->with('msj', 'Solicitud aprobada y Flujo terminado.');
                 }else{
 
 
                     //si no es mayor, entonces se hace la actualizacion del nivel_actual y token
-
-                     //reasigno un id de solicitud para generar un nuevo token
-                     //$this->solicitudID = $idSolicitud;
-                     //$token = RegistroVisitanteController::getLinkSubscribe();
-
                     DB::table('ohxqc_solicitud_por_aprobar')
                     ->where('id_solicitud', '=', $idSolicitud)
+                    ->where('sede_id', '=', $sedeID)
                     ->update([
                             'nivel_actual' => $siguienteNivel
                     ]);
@@ -735,6 +794,7 @@ class RegistroVisitanteController extends Controller
                     ->where('empresa_id', '=', $empresaId)
                     ->where('nivel', '=', $siguienteNivel)
                     ->where('tipo_visitante', '=', $tipoVisi)
+                    ->where('sede_id', '=', $sedeID)
                     ->get();
                    
                     $users = Array();
@@ -752,7 +812,7 @@ class RegistroVisitanteController extends Controller
                         $labor = $info->labor_realizar;
                     }
                     //Obtengo nuevamente el token de esta solicitud
-                    $infoToken = DB::table('ohxqc_solicitud_por_aprobar')->select('token')->where('id_solicitud',$idSolicitud)->get();
+                    $infoToken = DB::table('ohxqc_solicitud_por_aprobar')->select('token')->where('id_solicitud',$idSolicitud)->where('sede_id', '=', $sedeID)->get();
                     foreach($infoToken as $tok){
                         $token = $tok->token;
                     }
@@ -780,12 +840,14 @@ class RegistroVisitanteController extends Controller
                 'usuario_aprobador' =>  auth()->user()->id,
                 'fecha_diligenciado' => now(),
                 'comentario' => $comentario,
-                'estado' => 'R'
+                'estado' => 'R',
+                'sede_id' => $sedeID
             ]);
             
             //Cambiamos el estado de la solicitud por aprobar, comentario y token
             DB::table('ohxqc_solicitud_por_aprobar')
             ->where('id_solicitud', '=', $idSolicitud)
+            ->where('sede_id', '=', $sedeID)
             ->update([
                     'estado' => 'Rechazado',
                     'comentario' => $comentario,
@@ -797,6 +859,7 @@ class RegistroVisitanteController extends Controller
               ->select('correo_usuario')
               ->where('empresa_id', '=', $empresaId)
               ->where('tipo_visitante', '=', $tipoVisi)
+              ->where('sede_id', '=', $sedeID)
               ->get();
           
               $users = Array();
@@ -814,7 +877,7 @@ class RegistroVisitanteController extends Controller
                 $labor = $info->labor_realizar;
             }
             
-            Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", $comentario));
+            Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", $comentario, $sedeID));
 
             //Envia correo tambien al solicitante
             $correo = DB::table('ohxqc_solicitud_ingreso')->select('correo_solicitante')->where('id_solicitud',$idSolicitud)->get();
@@ -822,77 +885,143 @@ class RegistroVisitanteController extends Controller
                 $correo = $corr->correo_solicitante;
             }
             $user = User::where('email',$correo)->get();
-            Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", ""));
+            Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", "", $sedeID));
 
             return redirect()->back()->with('soliRech', 'La solicitud #'.$idSolicitud.', ha sido rechazada.');
             
         }
     }
 
+    public function agregarVisitantes($idSolicitud,$idempresa,$sedeID)
+    {
+        $usuarioCreador =  substr(auth()->user()->name , 0,25);
+
+        //obtener todas las porterias de la sede, para asignar los permisos
+        $arrayPermisos = array();
+        $ubicaciones = DB::table('ohxqc_ubicaciones')->select('id_ubicacion')->where('id_padre', $sedeID)->get();
+        $i=0;
+        foreach($ubicaciones as $per){
+            $arrayPermisos[$i] = $per->id_ubicacion;
+            $i++;
+        }
+        //consultamos los datos relevantes de la tabla: ohxqc_solicitud_ingreso, para insertar en visitantes
+        $solicitudIngreso = DB::table('ohxqc_solicitud_ingreso')
+        ->select('fecha_ingreso', 'fecha_fin', 'tipo_identidad', 'tipo_ingreso')
+        ->where('id_solicitud', $idSolicitud)
+        ->get();
+        foreach($solicitudIngreso as $soli){
+            $fechaIn = $soli->fecha_ingreso;
+            $fechaFi = $soli->fecha_fin;
+            $tipoIdent = $soli->tipo_identidad;
+            $tipoIngr = $soli->tipo_ingreso;
+        }
+
+        $idTipoIngreso = DB::table('ohxqc_tipos_visitante')->select('id_tipo_visitante')->where('nombre',  $tipoIngr)->get();
+        foreach($idTipoIngreso as $tip){
+            $idTipoVisi = $tip->id_tipo_visitante;
+        }
+        //consultamos los visitantes que fueron guardados en la tabla: ohxqc_documentos_solicitud
+        $listadoVisitantes = DB::table('ohxqc_documentos_solicitud')
+        ->select('identificacion', 'nombre')
+        ->where('solicitud_id', $idSolicitud)
+        ->get();
+        foreach($listadoVisitantes as $v){
+            //consulto si el visitante ya estaba registrado para simplemente actualizarlo
+            $consultVisitante = DB::table('ohxqc_visitantes')->select('id_visitante')->where('identificacion',$v->identificacion)->get();
+            if(count($consultVisitante) > 0){
+                foreach($consultVisitante as $id){
+                    $idNuevoVisitante = $id->id_visitante;
+                }
+                //actualiza
+                DB::table('ohxqc_visitantes')->where('id_visitante', $idNuevoVisitante)->update([
+                    'fecha_ingreso' =>  $fechaIn,
+                    'fecha_fin' => $fechaFi,
+                    'tipo_visitante' =>  $idTipoVisi,
+                    'cargo' =>  $tipoIngr,
+                    'usuario_creacion' =>  $usuarioCreador,
+                    'fecha_creacion' => now(),
+                    'usuario_actualizacion' =>  $usuarioCreador,
+                    'fecha_actualizacion' => now(),
+                    'responsable' => $usuarioCreador,
+                ]);
+                  //Actualiza la empresa visitante
+                DB::table('ohxqc_empresas_visitante')->where('id_visitante', $idNuevoVisitante)->update([
+                    'id_empresa' => $idempresa,
+                    'activo' => 'S',
+                    'usuario_creacion' =>  $usuarioCreador,
+                    'fecha_creacion' => now(),
+                    'usuario_actualizacion' =>  $usuarioCreador,
+                    'fecha_actualizacion' => now()
+                ]);
+                
+              
+
+            }else{
+                //Registro nuevo
+                $idNuevoVisitante = DB::table('ohxqc_visitantes')->max('id_visitante')+1;
+                DB::table('ohxqc_visitantes')->insert([
+                    'id_visitante' => $idNuevoVisitante,
+                    'identificacion_jefe' => null,
+                    'tipo_identificacion' =>  $tipoIdent,
+                    'identificacion' => $v->identificacion,
+                    'nombre' =>  $v->nombre,
+                    'apellido' => null,
+                    'fecha_ingreso' =>  $fechaIn,
+                    'fecha_fin' => $fechaFi,
+                    'tipo_contrato' => null,
+                    'foto' => 'N',
+                    'email' => null,
+                    'telefono1' => null,
+                    'telefono2' => null,
+                    'telefono3' => null,
+                    'tipo_visitante' =>  $idTipoVisi,
+                    'cargo' =>  $tipoIngr,
+                    'ciudad' => 0,
+                    'activo' => 'S',
+                    'usuario_creacion' =>  $usuarioCreador,
+                    'fecha_creacion' => now(),
+                    'usuario_actualizacion' =>  $usuarioCreador,
+                    'fecha_actualizacion' => now(),
+                    'parqueadero' => 0,
+                    'responsable' => $usuarioCreador,
+                    'usr_dominio' => null
+                ]);
+                     //Insertamos en la empresa visitante: ohxqc_empresas_visitante
+                    DB::table('ohxqc_empresas_visitante')->insert([
+                        'id_empresa_visitante' => $idNuevoVisitante,
+                        'id_visitante' => $idNuevoVisitante,
+                        'id_empresa' => $idempresa,
+                        'activo' => 'S',
+                        'usuario_creacion' =>  $usuarioCreador,
+                        'fecha_creacion' => now(),
+                        'usuario_actualizacion' =>  $usuarioCreador,
+                        'fecha_actualizacion' => now()
+                    ]);
+            
+            }
+
+            //insertamos los permisos para cada visitante en la sede actual
+            for($j = 0; $j < count($arrayPermisos); $j++){
+                    DB::table('ohxqc_permisos')->insert([
+                    'id_permiso' => DB::table('ohxqc_permisos')->max('id_permiso')+1,
+                    'id_empresa_visitante' => $idempresa,
+                    'id_ubicacion' =>  $arrayPermisos[$j],
+                    'id_horario' => 8, //DIA HORARIO ESPECIAL
+                    'identificacion_responsable' =>  $v->identificacion,
+                    'fecha_inicio' => $fechaIn,
+                    'fecha_fin' => $fechaFi,
+                    'activo' => 'S',
+                    'usuario_creacion' => 'admin',
+                    'fecha_creacion' => now(),
+                    'usuario_actualizacion' => 'admin',
+                    'fecha_actualizacion' => now()
+                ]);
+               
+            }
+        }
+    }
+
    
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\visitante  $visitante
-     * @return \Illuminate\Http\Response
-     */
-    public function show(visitante $visitante)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\visitante  $visitante
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(visitante $visitante)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\visitante  $visitante
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, visitante $visitante)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\visitante  $visitante
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(visitante $visitante)
-    {
-        //
-    }
+   
+    
 }

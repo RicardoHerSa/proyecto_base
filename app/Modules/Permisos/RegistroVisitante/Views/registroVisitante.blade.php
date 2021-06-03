@@ -142,7 +142,15 @@
             <div class="col-xs-12 col-md-12 col-lg-12">
                 <div class="card">
                     <div class="float-left ml-3 mt-2">
-                        <button type="button" onclick="nuevo();" class="btn btn-primary">Añadir</button>
+                        <button type="button" id="btnAñadirRegistro" onclick="nuevo();" class="btn btn-primary">Añadir</button>
+                        <div class="form-check form-check-inline">
+                            <input onchange="tipoRegistroV(this.value)" class="form-check-input" checked type="radio" name="tipoRegistroVisi" id="inlineRadio1" value="RI">
+                            <label class="form-check-label"  for="inlineRadio1">Registro individual</label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <input onchange="tipoRegistroV(this.value)" class="form-check-input" type="radio" name="tipoRegistroVisi" id="inlineRadio2" value="RM">
+                            <label class="form-check-label" for="inlineRadio2">Registro masivo</label>
+                          </div>
                         <input type="hidden" id="primerEliminado" value="n">
                     </div>
                             <div class="card-body" id="anexos">
@@ -204,6 +212,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <p class="ml-3"><i>Sólo se permite el registro de hasta 10 visitantes de manera individual.</i></p>
                     <!-- <input type="submit" value="enviar">
                     </form>-->
                 </div>
@@ -222,12 +231,8 @@
                                     <input id="fechaIngreso" class="form-control" type="date" name="fechaIngreso" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="horario">Horario: <span style="color:red">*</span></label>
-                                    <select name="horario" id="horario" class="form-control" onchange="consultarHora()">
-                                        @foreach ($horarios as $horar)
-                                            <option value="{{$horar->id}}">{{$horar->descripcion}}</option>
-                                        @endforeach
-                                    </select>
+                                    <label for="horario">Horario:</label>
+                                   <input type="text" class="form-control" readonly value="Horario Especial Lunes a Domingo 00:00 - 23:59">
                                 </div>
                                 <div class="form-group">
                                     <label for="empVisi">Empresa a Visitar: <span style="color:red">*</span></label>
@@ -245,9 +250,10 @@
                                     <input id="fechaFin" class="form-control" type="date" name="fechaFin" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="hora">Horario: </label>
-                                    <input id="hora" class="form-control" type="text" name="hora" readonly>
+                                    <label for="hora">Hora: </label>
+                                    <input id="hora" class="form-control" type="text" name="hora" readonly value="00:00 - 23:59">
                                 </div>
+                                <!--
                                 <div class="form-group">
                                     <label for="ciudad">Ciudad: <span style="color:red">*</span></label>
                                     <select name="ciudad" id="ciudad" class="form-control" required>
@@ -261,7 +267,7 @@
                                         <option value="12">Tocancipa</option>
                                         <option value="13">Ginebra</option></es>
                                     </select>
-                                </div>
+                                </div>-->
                             </div>
                         </div>
                     </div>
@@ -532,6 +538,17 @@
         $("#anexo").val('');
     }
 
-      
+    function tipoRegistroV($event)
+    {
+        if($event == "RM"){
+            $("#btnAñadirRegistro").hide();
+            $("#clonado").css({'display':'none'});
+        }else{
+            $("#btnAñadirRegistro").show();
+            $("#clonado").css({'display':'flex'});
+        }
+    }
+
+
 </script>
 @include('layouts.footer', ['modulo' => 'unitario'])

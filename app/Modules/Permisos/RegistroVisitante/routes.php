@@ -9,7 +9,7 @@ Route::group(['middleware' => 'web'], function () {
         Route::post('registraranexos', 'RegistroVisitanteController@registrarVisitante')->name('registraranexos')->middleware('authorization');
         
         //Firma de URL
-        Route::get('solicitud/{solicitud}/{ingreso}', 'RegistroVisitanteController@subscribe')->name('event.subscribe')->middleware('authorization');
+        Route::get('solicitud/{solicitud}/{ingreso}/{sede}', 'RegistroVisitanteController@subscribe')->name('event.subscribe')->middleware('authorization');
         Route::get('solicitud/link', 'RegistroVisitanteController@getLinkSubscribe')->name('event.getLinkSubscribe')->middleware('authorization');
 
         Route::post('validarSolicitud', 'RegistroVisitanteController@validarSolicitud')->name('validarSolicitud')->middleware('authorization');

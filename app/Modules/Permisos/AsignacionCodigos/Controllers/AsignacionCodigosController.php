@@ -106,7 +106,7 @@ class AsignacionCodigosController extends Controller
                $dataV = json_encode($datosV);
                //echo "<br><br>".$dataV;
            }else{
-   
+                $dataV = "";
            }
          
            //Consulta todos los activos del visitante
@@ -124,7 +124,8 @@ class AsignacionCodigosController extends Controller
                $dataA = json_encode($datosV);
               // echo "<br><br>".$dataA;
            }else{
-   
+            $datosV = "";
+            $dataA = "";
            }
            return view('Permisos::asignacionCodigos', compact('tabla', 'dataV', 'dataA', 'cedulVi', 'row'));
         }else{

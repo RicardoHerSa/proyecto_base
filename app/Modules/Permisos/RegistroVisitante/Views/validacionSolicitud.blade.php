@@ -127,14 +127,7 @@
                                     <label for="fechaIngreso">Fecha Inicio Ingreso: </label>
                                     <input id="fechaIngreso" class="form-control" type="date" name="fechaIngreso" readonly value="{{$arrayInfo[0]['fechaIni']}}">
                                 </div>
-                                <div class="form-group">
-                                    <label for="horario">Horario: </label>
-                                    <select disabled name="horario" id="horario" class="form-control" >
-                                        @foreach ($horarios as $horar)
-                                            <option {{$arrayInfo[0]['horario']==$horar->id?'selected':''}} value="{{$horar->id}}">{{$horar->descripcion}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                              
                                 <div class="form-group">
                                     <label for="empVisi">Empresa a Visitar: </label>
                                     <select disabled name="empVisi" id="empVisi" class="form-control" readonly>
@@ -151,6 +144,15 @@
                                     <input id="fechaFin" class="form-control" type="date" name="fechaFin" readonly value="{{$arrayInfo[0]['fechaFinal']}}">
                                 </div>
                                 <div class="form-group">
+                                    <label for="horario">Horario: </label>
+                                    <select disabled name="horario" id="horario" class="form-control" >
+                                        @foreach ($horarios as $horar)
+                                            <option {{$arrayInfo[0]['horario']==$horar->id?'selected':''}} value="{{$horar->id}}">{{$horar->descripcion}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <!--
+                                <div class="form-group">
                                     <label for="ciudad">Ciudad: </label>
                                     <select disabled name="ciudad" id="ciudad" class="form-control" readonly>
                                         
@@ -163,7 +165,7 @@
                                         <option {{$arrayInfo[0]['ciudad']==12?'selected':''}} value="12">Tocancipa</option>
                                         <option {{$arrayInfo[0]['ciudad']==13?'selected':''}} value="13">Ginebra</option></es>
                                     </select>
-                                </div>
+                                </div>-->
                             </div>
                         </div>
                     </div>
@@ -228,6 +230,7 @@
                                             @csrf
                                             <input type="hidden" name="idsolicitud" value="{{$solicitud}}">
                                             <input type="hidden" name="idtipovisitante" value="{{$ideIngreso}}">
+                                            <input type="hidden" name="idsede" value="{{$sedeID}}">
                                             <input type="hidden" name="idempresa" value="{{$arrayInfo[0]['empVisitar']}}">
                                             <label for="">Digite un comentario antes de validar</label>
                                             <textarea required placeholder="Digite aqui..." name="comentario" cols="8" rows="5" class="form-control"></textarea>
