@@ -17,18 +17,20 @@ class enviarSolicitud extends Notification implements ShouldQueue
     protected $idSolicitud;
     protected $solicitante;
     protected $labor;
+    protected $tipo;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($token,$idSolicitud,$solicitante,$labor)
+    public function __construct($token,$idSolicitud,$solicitante,$labor,$tipo)
     {
         $this->token = $token;
         $this->idSolicitud = $idSolicitud;
         $this->solicitante = $solicitante;
         $this->labor = $labor;
+        $this->tipo = $tipo;                    //indicará si el correo es para los del flujo o el solicitante
     }
 
     /**
@@ -53,15 +55,26 @@ class enviarSolicitud extends Notification implements ShouldQueue
         //$url = route('reset.token'.$this->token);
          $url = url($this->token);
 
-        return (new MailMessage)
-        ->subject('Solicitud para aprobar nuevo visitante')
-        ->greeting('Hola')
-        ->line('Según el flujo al que perteneces, has recibido este correo para poder validar la solicitud número: '.$this->idSolicitud)
-        ->line('Solicitante: '.$this->solicitante)
-        ->line('Labor a realizar: '.$this->labor)
-        ->line('Para ver mas detalles, pulsa a continuación:')
-        ->action('Validar solicitud ', url($url))
-        ->salutation('Cordialmente:');
+        if($this->tipo == 1){
+            return (new MailMessage)
+            ->subject('Solicitud para aprobar nuevo visitante')
+            ->greeting('Hola')
+            ->line('Según el flujo al que perteneces, has recibido este correo para poder validar la solicitud número: '.$this->idSolicitud)
+            ->line('Solicitante: '.$this->solicitante)
+            ->line('Labor a realizar: '.$this->labor)
+            ->line('Para ver mas detalles, pulsa a continuación:')
+            ->action('Validar solicitud ', url($url))
+            ->salutation('Cordialmente:');
+        }else{
+            return (new MailMessage)
+            ->subject('Solicitud Enviada a Aprobación')
+            ->greeting('Hola')
+            ->line('Su solicitud de número: '.$this->idSolicitud.', ha sido enviada para la respectiva validación; le estaremos notificando por este mismo medio el estado de la misma.')
+            ->line('Solicitante: '.$this->solicitante)
+            ->line('Labor a realizar: '.$this->labor)
+            ->salutation('Cordialmente:');
+        }
+      
     }
 
     /**

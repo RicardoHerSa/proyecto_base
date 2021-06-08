@@ -64,6 +64,15 @@
     </div>
     @endif
 
+    @if (Session::has('errExcel'))
+    <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+        <strong>Información!</strong> {{Session::get('errExcel')}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    @endif
+
     <div class="row mt-3">
         <div class="col-xs-12 col-md-12 col-lg-12">
             <div class="card">
@@ -159,7 +168,7 @@
                                 <div class="row">
                                     <div class="col-xs-12 col-md-3 col-lg-3">
                                         <div class="form-group">
-                                            <label for="cedula">Indetificación: </label>
+                                            <label for="cedula">Identificación: </label>
                                             <input required id="cedula" class="form-control" type="number" name="cedula">
                                         </div>
                                     </div>
@@ -173,7 +182,7 @@
                                         <div class="form-group">
                                             <label for="anexo">Anexo: </label>
                                             <input required id="anexo" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo">
-                                            <small class="ml-2">Sólo archivos pdf, word, png, jpg, zip, rar</small>
+                                            <small id="txtAnexo" class="ml-2">Sólo archivos pdf, word, png, jpg, zip, rar</small>
                                         </div>
                                     </div>
                                     <div class="col-xs-12 col-md-3 col-lg-1">
@@ -212,7 +221,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="ml-3"><i>Sólo se permite el registro de hasta 10 visitantes de manera individual.</i></p>
+                            <p  class="ml-3"><i>Sólo se permite el registro de hasta 10 visitantes de manera individual.</i></p>
                     <!-- <input type="submit" value="enviar">
                     </form>-->
                 </div>
@@ -415,6 +424,7 @@
                 $('#inputs').show();
                 $("#clonado").find("button").attr("onclick", "eliminar(this,1)");
                 $("#clonado").find("button").attr('name', 'btnEliminar'+cantidadRegistro);
+                $("#clonado").attr('id', 'clonado'+cantidadRegistro);
                 //para los input cc, nombre, anexo
                 $('#cedula'+cantidadRegistro).attr('name', 'cedula'+cantidadRegistro);
 
@@ -425,16 +435,19 @@
                 //.insertBefore("[name='borrar']")    // insértala antes del botón de enviar (para que se vayan añadiendo en orden)
                  .append($("#inputs").html()
                  );        // añádele el código con los campos de .inputs
-                    
-                    $("#clonado").find("button").attr('name', 'btnEliminar'+cantidadRegistro);
-                    $("#clonado").find("button").attr("onclick", "eliminar(this,"+cantidadRegistro+")");
+
+                    $("#inputs").find($("#clonado"+cantidadRegistroActual)).attr('id', 'clonado'+cantidadRegistro);
+                   // $("#clonado").attr('id', 'clonado'+cantidadRegistro);
+                   // $("#clonado").removeAttr('id', 'clonado');
+                    $("#clonado"+cantidadRegistro).find("button").attr('name', 'btnEliminar'+cantidadRegistro);
+                    $("#clonado"+cantidadRegistro).find("button").attr("onclick", "eliminar(this,"+cantidadRegistro+")");
                     //para los input cc, nombre, anexo
-                    $("#clonado").find($('#cedula'+cantidadRegistroActual)).attr("name", "cedula"+cantidadRegistro);
-                    $("#clonado").find($('#cedula'+cantidadRegistroActual)).attr("id", "cedula"+cantidadRegistro);
-                    $("#clonado").find($('#nombre'+cantidadRegistroActual)).attr("name", "nombre"+cantidadRegistro);
-                    $("#clonado").find($('#nombre'+cantidadRegistroActual)).attr("id", "nombre"+cantidadRegistro);
-                    $("#clonado").find($('#anexo'+cantidadRegistroActual)).attr("name", "anexo"+cantidadRegistro);
-                    $("#clonado").find($('#anexo'+cantidadRegistroActual)).attr("id", "anexo"+cantidadRegistro);
+                    $("#clonado"+cantidadRegistro).find($('#cedula'+cantidadRegistroActual)).attr("name", "cedula"+cantidadRegistro);
+                    $("#clonado"+cantidadRegistro).find($('#cedula'+cantidadRegistroActual)).attr("id", "cedula"+cantidadRegistro);
+                    $("#clonado"+cantidadRegistro).find($('#nombre'+cantidadRegistroActual)).attr("name", "nombre"+cantidadRegistro);
+                    $("#clonado"+cantidadRegistro).find($('#nombre'+cantidadRegistroActual)).attr("id", "nombre"+cantidadRegistro);
+                    $("#clonado"+cantidadRegistro).find($('#anexo'+cantidadRegistroActual)).attr("name", "anexo"+cantidadRegistro);
+                    $("#clonado"+cantidadRegistro).find($('#anexo'+cantidadRegistroActual)).attr("id", "anexo"+cantidadRegistro);
                                                     
             }
         
@@ -542,10 +555,38 @@
     {
         if($event == "RM"){
             $("#btnAñadirRegistro").hide();
-            $("#clonado").css({'display':'none'});
+            
+            var hasta = parseInt($("#cantRegis").val());
+            console.log(hasta);
+            if(hasta > 1){
+                for (let i = 1; i < hasta; i++) {
+                    console.log(i);
+                    $("#clonado"+i).remove();
+                    
+                }
+                $("#inputs").hide();
+                $("#clonado"+hasta).find($('#cedula'+hasta)).attr("name", "cedula1");
+                $("#clonado"+hasta).find($('#cedula'+hasta)).attr("id", "cedula1");
+                $("#clonado"+hasta).find($('#nombre'+hasta)).attr("name", "nombre1");
+                $("#clonado"+hasta).find($('#nombre'+hasta)).attr("id", "nombre1");
+                $("#clonado"+hasta).find($('#anexo'+hasta)).attr("name", "anexo1");
+                $("#clonado"+hasta).find($('#anexo'+hasta)).attr("id", "anexo1");
+                $("#clonado"+hasta).attr('id', 'clonado');
+                $("#cantRegis").val(0);
+
+            }else if(hasta == 1){
+                $("#inputs").hide();
+            }
+            //$("#clonado").css({'display':'none'});
+            $("#txtAnexo").text('Sólo archivo .Xlsx');
+            $("#anexo").removeAttr('accept');
+            $("#anexo").attr('accept', '.xlsx');
         }else{
             $("#btnAñadirRegistro").show();
             $("#clonado").css({'display':'flex'});
+            $("#txtAnexo").text('Sólo archivos pdf, word, png, jpg, zip, rar');
+            $("#anexo").removeAttr('accept');
+            $("#anexo").attr('accept', 'image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar');
         }
     }
 

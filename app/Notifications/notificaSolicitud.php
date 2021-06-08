@@ -18,19 +18,21 @@ class notificaSolicitud extends Notification implements ShouldQueue
     protected $labor;
     protected $tipoValidacion;
     protected $causa;
+    protected $sede;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($idSolicitud,$solicitante,$labor,$tipoValidacion, $causa)
+    public function __construct($idSolicitud,$solicitante,$labor,$tipoValidacion, $causa, $sede)
     {
         $this->idSolicitud = $idSolicitud;
         $this->solicitante = $solicitante;
         $this->labor = $labor;
         $this->tipoValidacion = $tipoValidacion;
         $this->causa = $causa;
+        $this->sede = $sede;
     }
 
     /**
@@ -53,20 +55,25 @@ class notificaSolicitud extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {   //Ruta de estructura de mail resources/views/vendor/notifications/email.blade.php
         //$url = route('reset.token'.$this->token);
+        $consultanombreSede = DB::table('ohxqc_sede_fisica')->select('nombre')->where('id_sedef',$this->sede)->get();
+        foreach($consultanombreSede as $sed){
+            $nombreSede = $sed->nombre;
+        }
+
          if($this->tipoValidacion == "A"){
             return (new MailMessage)
-            ->subject('Solicitud #'.$this->idSolicitud.' Aprobada.')
+            ->subject('Solicitud #'.$this->idSolicitud.' Aprobada - Sede: '.$nombreSede.'.')
             ->greeting('Hola')
-            ->line('Le informamos que la solicitud de ingreso #'.$this->idSolicitud.' ha sido aprobada.')
+            ->line('Le informamos que la solicitud de ingreso #'.$this->idSolicitud.' para la sede '.$nombreSede.' ha sido aprobada.')
             ->line('Detalles de la solicitud: ')
             ->line('Solicitante: '.$this->solicitante)
             ->line('Labor a realizar: '.$this->labor)
             ->salutation('Cordialmente:');
          }else{
             return (new MailMessage)
-            ->subject('Solicitud #'.$this->idSolicitud.' Rechazada.')
+            ->subject('Solicitud #'.$this->idSolicitud.' Rechazada - Sede: '.$nombreSede.'.')
             ->greeting('Hola')
-            ->line('Le informamos que la solicitud de ingreso #'.$this->idSolicitud.' ha sido rechazada.')
+            ->line('Le informamos que la solicitud de ingreso #'.$this->idSolicitud.' para la sede '.$nombreSede.' ha sido rechazada.')
             ->line('Detalles de la solicitud: ')
             ->line('Solicitante: '.$this->solicitante)
             ->line('Labor a realizar: '.$this->labor)

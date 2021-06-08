@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Modules\Permisos\RegistroVisitante\Controllers;
+require 'C:\xampp\htdocs\sica\vendor\autoload.php';
 use DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -21,6 +22,9 @@ class RegistroVisitanteController extends Controller
     public $infoDeEmpresa  = "";
     public $tipoIngres = "";
     public $sedeId = "";
+    
+    
+   
     /**
      * Display a listing of the resource.
      *
@@ -97,10 +101,29 @@ class RegistroVisitanteController extends Controller
         //Recibe el tipo de registro de visitantes para saber si fueron escritos o masivos(excel)
         $tipoRegistroV = $request->input('tipoRegistroVisi');
 
-
-        //Guardar en la tabla ohxqc_solicitud_ingreso
+        
+        //ide de la solicitud para guardar en la tabla ohxqc_solicitud_ingreso
         $idSolicitud =  DB::table('ohxqc_solicitud_ingreso')->max('id_solicitud')+1;
 
+        //validar si el registro es masivo, para comprobar que el excel sea correcto y si no, devolver
+        if($tipoRegistroV == "RM"){
+            $cantidadAnexos = $request->input('cantR');
+            if($cantidadAnexos == 0){ //Solo debemos tener un documento para valdar como masivo
+                $urlDocumento = $request->file('anexo')->store('documentosSolicitud', 'public'); //se sube para poder leerlo
+                $msj = RegistroVisitanteController::validarExcel($urlDocumento, $idSolicitud);
+                
+                if(substr($msj,0,5) == "error"){
+                    echo "Retornaria con el mensaje: ".$msj;
+                    return redirect()->back()->with('errExcel',$msj);
+                }else{
+                    echo $msj;
+                }
+                
+
+            }
+
+        }
+        
         $correoSolicitante = DB::table('jess_users')->select('email')->where('id', auth()->user()->id)->get();
         foreach($correoSolicitante as $corr){
             $correoSolicitante = $corr->email;
@@ -208,6 +231,7 @@ class RegistroVisitanteController extends Controller
                         /**Se consulta en la tabla de configuración ohxqc_config_solicitud_empresas, el max nivel
                         para conocer el flujo maximo por el cual viajará la solicitud. Si hay mas de una sede, se insertará en la tabla ohxqc_solicitud_por_aprobar, la cantidad de solicitudes  para c/u de las sedes
                         **/
+                        
                         if($cantidadSedes > 0){
                             $j = ""; //la primer sede tiene como name="sede", la segunda name="sede1"
                             $entraSede = 0;
@@ -280,6 +304,10 @@ class RegistroVisitanteController extends Controller
                                             'estado' => 'A',
                                             'sede_id' => $request->input('sede'.$j)
                                         ]);
+                                        //se agregan a la tabla visitantes y se asigna permisos
+
+                                        RegistroVisitanteController::agregarVisitantes($idSolicitud,$empVisi,$request->input('sede'.$j));
+
                                         //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
 
                                     $correo = User::where('id',auth()->user()->id)->get();
@@ -378,6 +406,9 @@ class RegistroVisitanteController extends Controller
                                     'estado' => 'A',
                                     'sede_id' => $request->input('sede')
                                 ]);
+                                    //se agregan a la tabla visitantes y se asignan permisos
+                                     RegistroVisitanteController::agregarVisitantes($idSolicitud,$empVisi,$request->input('sede'));
+
                                     //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
     
                                    $correo = User::where('id',auth()->user()->id)->get();
@@ -717,25 +748,11 @@ class RegistroVisitanteController extends Controller
                         ]);
 
                         /**Despues de ser aprobada, se deben registrar los visitantes, la empresa visitante, los permisos etc
-                         * Se debe saber si los visitantes fueron escritos en el formulario(RI) o fueron por adjunto(RM)
-                         * RI : Registro Individual
-                         * RM: Registro Masivo
+                        
                          ***/
-                            $tipoRegistro = DB::table('ohxqc_solicitud_por_aprobar')
-                            ->select('tipo_registro')
-                            ->where('id_solicitud',$idSolicitud)
-                            ->where('sede_id',$sedeID)
-                            ->get(); 
-                            foreach($tipoRegistro as $r){
-                                $tipoRegistro = $r->tipo_registro;
-                            }
-
-                            if($tipoRegistro == "RI"){
-                                RegistroVisitanteController::agregarVisitantes($idSolicitud,$empresaId,$sedeID);
-                            }else{
-
-                            }
-
+                        
+                        RegistroVisitanteController::agregarVisitantes($idSolicitud,$empresaId,$sedeID);
+                     
                           //Enviar correo a todos los del flujo para informar aprobacion
                             $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
                             ->select('correo_usuario')
@@ -1018,6 +1035,108 @@ class RegistroVisitanteController extends Controller
                 ]);
                
             }
+        }
+    }
+
+    public function validarExcel($urlDocumento, $idSolicitud)
+    {
+        
+        $ruta = storage_path('app\public/'.$urlDocumento);
+       
+        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
+        $reader->setReadDataOnly(TRUE);
+        
+        $spreadsheet = $reader->load($ruta);
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        $cantFilas = $worksheet->getHighestRow();
+
+
+        $arrayColumnas = ['C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+
+        //validar que no estén escritas las otras columnas
+        for ($i=0; $i < count($arrayColumnas) ; $i++) { 
+            for ($j=1; $j <= $cantFilas ; $j++) { 
+                //echo $arrayColumnas[$i].$j."<br>";
+                if(strlen($worksheet->getCell($arrayColumnas[$i].$j)) > 0){
+                    if($j == 1){
+                        return "error, la columna: ".$arrayColumnas[$i].$j.", NO debe contener cabeceras ni registros.";
+                         break;
+                    }else{
+                        return "error, la columna: ".$arrayColumnas[$i].$j.", NO debe contener registros.";
+                         break;
+                    }
+                   
+                }
+            }
+        }
+
+        //solo recibo la columna A = Identificacion 
+        $conA = 1;
+        $noEsNumero = true;
+        $celdasNoEsNumero = array();
+        $arrayIdentidades = array();
+        $arrayNombres = array();
+        while (strlen($worksheet->getCell('A'.$conA)) > 0) {
+            if(strtoupper($worksheet->getCell('A1')->getValue()) != "IDENTIFICACION"){
+                return "error, no se encuentra la cabecera para la columna A: IDENTIFICACION";
+                break;
+            }
+            if(gettype($worksheet->getCell('A'.$conA)->getValue()) != "integer"){
+                if($conA != 1){
+                    $noEsNumero = false;   //validar que la identificacion sea numero.
+                    array_push($celdasNoEsNumero, "A".$conA);
+                }
+            }else{
+                //voy guardando los documentos de identificación para asociarlos a los nombres.
+                $arrayIdentidades[$conA] = $worksheet->getCell('A'.$conA)->getValue();
+            }
+            $conA++;
+        }
+
+        //solo recibo la columna B = Nombre
+        $conB = 1;
+        while (strlen($worksheet->getCell('B'.$conB)) > 0) {
+            if(strtoupper($worksheet->getCell('B1')->getValue()) != "NOMBRE"){
+                return "error, no se encuentra la cabecera para la columna B: NOMBRE";
+                break;
+            }
+            if($conB != 1){
+                $arrayNombres[$conB] = $worksheet->getCell('B'.$conB)->getValue();
+
+            }
+            $conB++;
+        }
+
+        //valido si ambas columnas tienen la misma cantidad de resgistros
+        if($conA == $conB){
+            //validar si algun registro de identificacion no fue numero
+            if($noEsNumero == false){
+                $listaCeldas = implode(",", $celdasNoEsNumero);
+
+                return "error, las celdas: [ ".$listaCeldas." ] de la columna Identificación no tiene el formato válido: Número.";
+            }else{
+                //se asocian identidades con nombres Y se guardan en la tabla ohxqc_documentos_solicitud
+                $guardado = false;
+                for ($i=2; $i < count($arrayIdentidades)+2 ; $i++) { 
+                   $inserta = DB::table('ohxqc_documentos_solicitud')->insert([
+                        'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
+                        'identificacion' => $arrayIdentidades[$i],
+                        'nombre' => $arrayNombres[$i],
+                        'url_documento' => null,
+                        'solicitud_id' => $idSolicitud
+                    ]);
+                    if($inserta){ $guardado = true;}else{ $guardado = false; }
+                    //echo $arrayIdentidades[$i]." - ".$arrayNombres[$i]."<br>";
+                }
+                if($guardado){
+                    return "ok, los visitantes han sido guardados.";
+                }else{
+                    return "error, ha ocurrido un problema al guardar los visitantes.";
+                }
+            }
+        }else{
+            return "error, las columnas Identificación y Nombre, no tienen la misma cantidad de registros.";
         }
     }
 

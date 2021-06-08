@@ -106,7 +106,11 @@
                                         <tr>
                                             <td>{{$docu->identificacion}}</td>
                                             <td>{{$docu->nombre}}</td>
-                                            <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
+                                            @if (strlen($docu->url_documento) > 0)
+                                              <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
+                                            @else
+                                            <td><span class="badge badge-secondary">Sin Documento</span></td>
+                                            @endif
                                         </tr>
                                 @endforeach
                             </tbody>
