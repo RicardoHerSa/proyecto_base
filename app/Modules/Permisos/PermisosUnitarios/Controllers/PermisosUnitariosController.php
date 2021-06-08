@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class PermisosUnitariosController extends Controller
 {
     public $cedula = "";
+   
     /**
      * Display a listing of the resource.
      *
@@ -39,6 +40,7 @@ class PermisosUnitariosController extends Controller
     public function consultarCedulaVisitante(Request $request)
     {
         $this->cedula = $request->input('cc_visitante');
+      
        // echo $cedula;
         $query = DB::table('ohxqc_visitantes as v')
         ->select('v.nombre', 
@@ -57,7 +59,8 @@ class PermisosUnitariosController extends Controller
         ->join('ohxqc_empresas_visitante as ev', 'ev.id_visitante', '=', 'v.id_visitante')
         ->join('ohxqc_empresas as e', 'e.id_empresa', '=', 'ev.id_empresa')
         ->join('ohxqc_tipos_visitante as tv', 'tv.id_tipo_visitante', '=', 'v.tipo_visitante')
-        ->join('ohxqc_permisos as per', 'per.id_empresa_visitante', '=', 'ev.id_empresa_visitante')
+        ->join('ohxqc_permisos as per', 'per.id_empresa_visitante', '=', DB::raw("cast(ev.id_empresa as numeric)"))
+                                                                    //ev.id_empresa_visitante
         ->where('v.identificacion', '=', $this->cedula)
         ->limit(1)
         ->orderBy('v.fecha_ingreso', 'desc')
@@ -87,19 +90,22 @@ class PermisosUnitariosController extends Controller
                 $consulta = DB::table('ohxqc_ubicaciones')->whereIn('id_ubicacion', function($query){
                     $query->select('id_ubicacion')
                     ->from('ohxqc_permisos') 
-                    ->whereIn('id_empresa_visitante', function($queryDos){
-                        $queryDos->select('id_empresa_visitante')
+                    ->where('identificacion_responsable',$this->cedula) //modificado de acuerdo a registro-visitante
+                    ->whereIn('id_empresa_visitante', function($queryDos){ //id empresa de este visitante 128
+                        $queryDos->select(DB::raw("cast(id_empresa as numeric)")) //id_empresa_visitante
                         ->from('ohxqc_empresas_visitante')
                         ->whereIn('id_visitante',function($queryTres){
                             $queryTres->select('id_visitante')
                             ->from('ohxqc_visitantes') 
-                            ->where('identificacion', '=', $this->cedula);  
+                            ->where('identificacion', '=', $this->cedula);  //id visitante = 352961
                         });
                     });
                     
                 })
                 ->get();
                 if(count($consulta) > 0){
+                   // echo "<pre>";
+                   // print_r($consulta);
                     foreach($consulta as $c){
                         $dataTU[]=array($c->id_ubicacion,$c->id_padre,$c->descripcion);
                     }
@@ -123,7 +129,7 @@ class PermisosUnitariosController extends Controller
         }
 		
 		for($i=0;$i<count($treearr);$i++){
-		$dataT[]=array('id'=>$treearr[$i][0],'parentid'=>$treearr[$i][1],'text'=>$treearr[$i][2],'value'=>$treearr[$i][0]);
+		    $dataT[]=array('id'=>$treearr[$i][0],'parentid'=>$treearr[$i][1],'text'=>$treearr[$i][2],'value'=>$treearr[$i][0]);
 		}
 		
 		$dataTree=json_encode($dataT);
@@ -168,7 +174,8 @@ class PermisosUnitariosController extends Controller
             if($permisos[0]!="" && $activo=='S'){
                     //Elimina primero los permisos
                     //echo "<br><br>THIS CEDULA:".$this->cedula;
-                    $delete = DB::table('ohxqc_permisos')->whereIn('id_empresa_visitante', function($query){
+                    $delete = DB::table('ohxqc_permisos')->where('identificacion_responsable',$this->cedula)
+                    ->whereIn('id_empresa_visitante', function($query){
                         $query->select('id_empresa_visitante')
                         ->from('ohxqc_empresas_visitante') 
                         ->whereIn('id_visitante', function($queryDos){
