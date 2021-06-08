@@ -14,7 +14,7 @@
         <div class="row mt-5">
             <div class="col-xs-12 col-md-3 col-lg-3">
                 <p>Foto Actual</p>
-                <img class="img-thumbnail" src="{{asset('storage').'/fotos'.'/'.$cedula.'.png'}}" alt="">
+                <img class="img-thumbnail" src="{{ asset('../storage/app/public/fotos/'.$cedula.'.jpg') }}" alt="">
             </div>
             <div class="col-xs-12 col-md-6 col-lg-6">
                 @if (Session::has('msj') && Session::has('msj') == 'ok')
@@ -112,6 +112,7 @@
 
                 btnGuardar.addEventListener("click", () => {
                     var urlFoto = canvasTag.toDataURL();
+                    console.log(urlFoto);
                     $("#txtFoto").val(urlFoto);
                     $("#btnEnviar").click();
                 

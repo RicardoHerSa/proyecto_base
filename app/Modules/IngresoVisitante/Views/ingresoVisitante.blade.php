@@ -8,53 +8,67 @@
         </button>
     </div>
     @endif
-    <div class="row mt-5">
-        <div class="col-xs-12 col-md-{{!isset($tabla)?'12':'3'}} col-lg-{{!isset($tabla)?'12':'3'}}" id="rowPrincipal">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Registro de Visitante</h4>
-                </div>
-                <div class="card-body">
-                  <form method="POST" action="{{route('consultarRegistroIngreso')}}">
-                      <div class="form-group">
-                          @csrf
-                          <label for="tx_cedula">Cédula: </label> 
-                          <input type="number" class="form-control" id="tx_cedula" name="tx_cedula">
-                          <input  id="id_cod" name="id_cod" type="hidden" value = "{{isset($Cedula_aux)?$Cedula_aux:''}}" />
-                          <input id="opt_btn" name="opt_btn" type="hidden" value = "ENTRADA" />
-                          <input class="form-control" type="hidden" name="username" value="{{auth()->user()->name}}">
-                        
-                           <input id="tipo_ingreso" name="tipo_ingreso" type="hidden" value= "{{isset($tipo_ingreso)?$tipo_ingreso:'PEATON'}}"/>
-                       
-                      </div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="float-left">
-                            <input type="submit" class="btn btn-primary"id="btn_consulta" name="btn_consulta" value="Registrar">
-                        </div>
-                 </form>
-                </div>
-            </div>
-            <div class="mt-3">
-                <button id="carro"><i class="fa fa-automobile" style="font-size:60px;"></i></button>
-                <button id="moto"><i class="fa fa-motorcycle" style="font-size:60px;"></i></button>
-                <button id="bicy"><i class="fa fa-bicycle" style="font-size:60px;"></i></button>
-                <button type="button" id="peaton"><i class="fa fa-user" style="font-size:60px;width:60px;height: 60px;"></i></button>
-            </div>
-            <div class="mt-2">
-                <input type="button" onclick="registraEntrada()" style="font-size: 2.5em;width:100%;text-align:center" id="btn_entrada" value="Entrada"/>
-                <input type="button"  onclick="registraSalida()" style="font-size: 2.5em;width:100%;text-align:center" id="btn_salida" value="Salida"/>
-            </div>
-        </div>
-        <div class="col-xs-12 col-md-{{isset($tabla)?'9':''}} col-lg-{{isset($tabla)?'9':''}}" id="rowSecundario">
-            <div id="info" name="info" style="visibility: hidden">
-                @php
-                    echo isset($tabla)?$tabla:'';
-                @endphp
-        </div>
-    </div>
-</div>
 
+    
+    <div class="container">
+        <br>
+
+        <div class="row justify-content-md-center">
+                <div class="col-md-auto">
+                    <div class="" id="rowSecundario">
+                        <div id="info" name="info" style="visibility: hidden">
+                        
+                            @php
+                                
+                                echo isset($tabla)?$tabla:'';
+                            @endphp
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-auto">
+                
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Registro de Visitante</h5>
+                        </div>
+                        <div class="card-body">
+                        <form method="POST" action="{{route('consultarRegistroIngreso')}}">
+                            <div class="form-group">
+                                @csrf
+                                <label for="tx_cedula">Cédula: </label> 
+                                <input type="text" class="form-control" id="tx_cedula" name="tx_cedula">
+                                <input  id="id_cod" name="id_cod" type="hidden" value = "{{isset($Cedula_aux)?$Cedula_aux:''}}" />
+                                <input id="opt_btn" name="opt_btn" type="hidden" value = "ENTRADA" />
+                                <input class="form-control" type="hidden" name="username" value="{{auth()->user()->username}}">
+                                
+                                <input id="tipo_ingreso" name="tipo_ingreso" type="hidden" value= "{{isset($tipo_ingreso)?$tipo_ingreso:'PEATON'}}"/>
+                            
+                            </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="float-left">
+                                    <input type="submit" class="btn btn-primary"id="btn_consulta" name="btn_consulta" value="Registrar">
+                                </div>
+                        </form>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button id="carro"><i class="fa fa-automobile" style="font-size:60px;"></i></button>
+                        <button id="moto"><i class="fa fa-motorcycle" style="font-size:60px;"></i></button>
+                        <button id="bicy"><i class="fa fa-bicycle" style="font-size:60px;"></i></button>
+                        <button type="button" id="peaton"><i class="fa fa-user" style="font-size:60px;width:60px;height: 60px;"></i></button>
+                    </div>
+                    <div class="mt-2">
+                        <input type="button" onclick="registraEntrada()" style="font-size: 1.5em;width:100%;text-align:center" id="btn_entrada" value="Entrada"/>
+                        <input type="button"  onclick="registraSalida()" style="font-size: 1.5em;width:100%;text-align:center" id="btn_salida" value="Salida"/>
+                    </div>
+                </div>
+                
+
+        </div>
+     </div>
+</div>
+<hr>
 <script type="text/javascript">
     $(document).ready(function () {
     var opt=<?php echo isset($opcion)?$opcion:"'s'"; ?>;
@@ -105,6 +119,7 @@
       // window.history.replaceState({"html":response.html,"pageTitle":response.pageTitle},"", "http://172.16.108.78/control_ingreso");
        return vars;
    }   
+
    function cortaEntrada(){
         var tipo_script=<?php echo isset($tipo_script)?$tipo_script:"'g'"; ?>;
        if(tipo_script=="0"){

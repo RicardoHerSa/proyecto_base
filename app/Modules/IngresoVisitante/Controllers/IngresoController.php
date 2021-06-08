@@ -4,6 +4,8 @@ namespace App\Modules\IngresoVisitante\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
 
 class IngresoController extends Controller
 {
@@ -24,13 +26,15 @@ class IngresoController extends Controller
     public function consultarRegistroIngreso(Request $request)
     {
         $cedula = $request->input("tx_cedula");
-        if(!is_numeric($cedula)){
+      /* if(!is_numeric($cedula)){
             return redirect('ingreso-visitante')->with('msj', 'Por favor digite un documento válido');
-        }
+        }*/
         $id_cod = $request->input("id_cod");
         $tipo_ingreso = $request->input("tipo_ingreso");
         $user_log = substr($request->input("username"), 0,25);
         $user = substr($request->input("username"), 0,25);
+
+
         $opcion=$request->input("opt_btn");
 	    if($opcion == null){$opcion="0";}
 
@@ -45,6 +49,8 @@ class IngresoController extends Controller
 
         $Cedula_aux=IngresoController::getCedula($cedula);
 
+       
+
         //echo $cedula." ".$id_cod." ".$tipo_ingreso;
 
         return view('IngresoVisitante::ingresoVisitante', compact('tabla', 'Cedula_aux'));
@@ -54,6 +60,7 @@ class IngresoController extends Controller
     {
             
            $ini_cod_vis=substr($cod_vis,0,1); //iniciales del codigo de visitante
+           
            $genera_reg= IngresoController::generaRegistro($usuario); //Valida si genera registro como portero
 
            if($ini_cod_vis=='R' || $ini_cod_vis=='V' || $ini_cod_vis=='C'){
@@ -61,11 +68,11 @@ class IngresoController extends Controller
                ->select('id_equipo', 'id_visitante')
                ->where('codigo', '=', $cod_equipo)
                ->where('activo', '=', 'S')
-               ->whereIn('id_visitante', function($query){
+               ->whereIn('id_visitante', function($query) use ($cod_vis){
                 $query->select('v.id_visitante')
                 ->from('ohxqc_codigobidimensional as cb')
                 ->join('ohxqc_visitantes as v', 'v.id_visitante', '=', 'cb.id_visitante')
-                ->where('cb.codigo', '=', $cod_vis)
+                ->where('cb.codigo', '=',$cod_vis)
                 ->limit(1);
                })
                ->get();
@@ -82,11 +89,12 @@ class IngresoController extends Controller
                 ->where('cb.codigo', '=', $cod_vis)
                 ->get();
            }else{
+
                 $consulta = DB::table('ohxqc_codigobidimensional')
                 ->select('id_equipo', 'id_visitante')
                 ->where('codigo', '=', $cod_equipo)
                 ->where('activo', '=', 'S')
-                ->whereIn('id_visitante', function($query){
+                ->whereIn('id_visitante', function($query) use ($cod_vis){
                 $query->select('v.id_visitante')
                 ->from('ohxqc_codigobidimensional as cb')
                 ->join('ohxqc_visitantes as v', 'v.id_visitante', '=', 'cb.id_visitante')
@@ -95,7 +103,7 @@ class IngresoController extends Controller
                 })
                 ->get();
                 
-                $id_equipo=$row[0];
+              
                 $id_equipo = "";
                 foreach($consulta as $cons){
                     $id_equipo = $cons->id_equipo;
@@ -104,7 +112,7 @@ class IngresoController extends Controller
                 $consultaDos = DB::table('ohxqc_codigobidimensional as cb')
                 ->select('v.identificacion','v.id_visitante', 'cb.codigo')
                 ->join('ohxqc_visitantes as v', 'v.id_visitante', '=', 'cb.id_visitante')
-                ->where('v.identificacion', '=', $cod_vis)
+                ->where('v.identificacion', '=',$cod_vis)
                 ->get();
            }
             $cedula = "";
@@ -135,20 +143,27 @@ class IngresoController extends Controller
            }
        
            $id_ub= IngresoController::getIDUbicacionDis($mac);
+
+
            if($ini_cod_vis=='R' || $ini_cod_vis=='V' || $ini_cod_vis=='C'){
+              
+            
+           
                $sql = DB::table('ohxqc_visitantes as v')
                ->select(DB::raw("MAX(ins.id_ingreso_salida)"))
                ->join('ohxqc_empresas_visitante as ev', 'ev.id_visitante', '=', 'v.id_visitante')
                ->join('ohxqc_permisos as p', 'p.id_empresa_visitante', '=', 'ev.id_empresa_visitante')
                ->join('ohxqc_ingresos_salidas as ins', 'ins.id_permiso', '=', 'p.id_permiso')
-               ->whereIn('v.id_visitante', function($query){
+               ->whereIn('v.id_visitante', function($query) use ($cod_vis){
                     $query->select('id_visitante')
-                    -from('ohxqc_codigobidimensional')
+                    ->from('ohxqc_codigobidimensional')
                     ->where('codigo', '=', $cod_vis);
                })
                ->get();
               
            }else{
+              
+               
                 $sql = DB::table('ohxqc_visitantes as v')
                 ->select(DB::raw("MAX(ins.id_ingreso_salida)"))
                 ->join('ohxqc_empresas_visitante as ev', 'ev.id_visitante', '=', 'v.id_visitante')
@@ -156,11 +171,16 @@ class IngresoController extends Controller
                 ->join('ohxqc_ingresos_salidas as ins', 'ins.id_permiso', '=', 'p.id_permiso')
                 ->where('v.identificacion', '=', $cod_vis)
                 ->get();
+
+               
            }
 
-                foreach($sql as $sq){
-                    $id_ingreso_salida = $sq->id_ingreso_salida;
-                }
+         
+                 foreach($sql as $sq){
+                     $id_ingreso_salida = $sq->max;
+                 }
+
+           
        
                //CONSULTA EL ID DEL VISITANTE A PARTIR DEL CODIGO
                if($ini_cod_vis=='R' || $ini_cod_vis=='V' || $ini_cod_vis=='C'){
@@ -211,16 +231,18 @@ class IngresoController extends Controller
        
            
                if($id_equipo!='' && $id_ingreso_salida!='' && $id_relacion!='' && ($genera_reg==true)){
-                   $inserta = DB::table('ohxqc_i_s_equipos')->insert([
+                
+            
+                $inserta = DB::table('ohxqc_i_s_equipos')->insert([
                     'id_ingreso_salida' => $id_ingreso_salida,
                     'id_equipo_visitante' => $id_equipo,
                     'usuario_creacion' => 'admin',
-                    'fecha_creacion' => now(),
+                    'fecha_creacion' =>  now(),
                     'usuario_actualizacion' => 'admin',
                     'fecha_actualizacion' => now()
                    ]);
 
-                    $tabla="<table class='table' style='background-color: #00FF1A; border-radius: 10px; border-left:0px; font-size:24px;font-family:'Lato', sans-serif'> 
+                    $tabla="<table class='' style='width: 100%; background-color: #00FF1A; border-radius: 10px; border-left:0px;  text-align: center;  font-weight: bold; font-size:20px;font-family:'Lato', sans-serif'> 
                         <tr> 
                             <td><label>".$nombre_v." ".$apellido_v." </label></td> 
                         </tr> 
@@ -239,7 +261,7 @@ class IngresoController extends Controller
                     </table>";
                         //REPRODUCE SONIDO DE ACEPTADO
                        $tabla.="<script> 
-                       var audio = new Audio('sonido/beep.mp3');  
+                       var audio = new Audio('".asset('/resources/sound')."/beep.mp3');  
                        audio.play(); 
                        </script>";
                        $sonido = "beep.mp3";
@@ -251,12 +273,12 @@ class IngresoController extends Controller
                         'identificacion' => $cedula,
                         'codigo_activo' => $cod_equipo,
                         'usuario_creacion'  => $usuario,
-                        'fecha_creacion' => now(), 
+                        'fecha_creacion' =>  now(), 
                         'usuario_actualizacion' => $usuario, 
-                        'fecha_actualizacion' => now()
+                        'fecha_actualizacion' =>  now()
                        ]);
                 }
-                   $tabla="<table class='table' style='background-color: #FE3333;border-radius: 10px;border-left:0px; font-size:24px;font-family:'Lato', sans-serif'> 
+                   $tabla="<table class='' style='width: 100%;  text-align: center;   text-align: center;  font-weight: bold; background-color: #FE3333;border-radius: 10px;border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                     </tr> 
                    <tr> 
                        <td><label>".$nombre_v." ".$apellido_v." </label></td> 
@@ -273,7 +295,7 @@ class IngresoController extends Controller
                    </table>";
                    //REPRODUCE SONIDO DE NEGACION
                        $tabla.="<script> 
-                       var audio = new Audio('sonido/negado.mp3');  
+                       var audio = new Audio('".asset('/resources/sound')."/negado.mp3');  
                        audio.play(); 
                        </script>";
                        $sonido = "negado.mp3";
@@ -323,29 +345,38 @@ class IngresoController extends Controller
     {
 	
         $genera_reg= IngresoController::generaRegistro($usuario); //Valida si genera registro como portero
+
+     
+
         $hora_actual = date("Y-m-d H:i:s", time()-18830);	
         
         if($cedula !=""){
             
             $c=substr($cedula,0,1);
             $id_vis = "";
+            
             if($c=='R' || $c=='V' || $c=='C'){
                 $sql = DB::table('ohxqc_codigobidimensional')
                 ->select('id_visitante')
                 ->where('codigo', '=', $cedula)
                 ->where('activo', '=', 'S')
                 ->get();
+
+                
             }else{
                 $sql = DB::table('ohxqc_visitantes')
                 ->select('id_visitante')
                 ->where('identificacion', '=', $cedula)
                 ->get();
             }
+
             foreach($sql as $sq){
                 $id_vis = $sq->id_visitante;
             }
-            
+          
+
             if($id_vis!=''){
+               
                 $query = DB::table('ohxqc_visitantes as v')
                 ->select('v.nombre', 'v.apellido', 'v.identificacion', 'emp.descripcion as empresa', 'foto', 'vt.nombre as tipo_v')
                 ->join('ohxqc_empresas_visitante as emv', 'emv.id_visitante', '=', 'v.id_visitante')
@@ -353,9 +384,11 @@ class IngresoController extends Controller
                 ->join('ohxqc_tipos_visitante as vt', 'vt.id_tipo_visitante', '=', 'v.tipo_visitante')
                 ->where('v.id_visitante', '=', $id_vis)
                 ->where('v.activo', '=', 'S')
-                ->where('v.fecha_fin', '>=', date(now()))
+                ->where('v.fecha_fin', '>=', now())
                 ->limit(1)
-                ->get();	
+                ->get();
+               
+
             }else{
                 $query = DB::table('ohxqc_visitantes as v')
                 ->select('v.nombre', 'v.apellido', 'v.identificacion', 'emp.descripcion as empresa', 'foto', 'vt.nombre as tipo_v')
@@ -364,11 +397,12 @@ class IngresoController extends Controller
                 ->join('ohxqc_tipos_visitante as vt', 'vt.id_tipo_visitante', '=', 'v.tipo_visitante')
                 ->where('v.identificacion', '=', $cedula)
                 ->where('v.activo', '=', 'S')
-                ->where('v.fecha_fin', '>=', date(now()))
+                ->where('v.fecha_fin', '>=',  now())
                 ->limit(1)
                 ->get();	
             }
     
+            
             $row = array();
             foreach($query as $q){
                 $row[0] = $q->nombre;
@@ -379,6 +413,7 @@ class IngresoController extends Controller
                 $row[5] = $q->tipo_v;
             }
             
+
             $permiso = IngresoController::validaPermisos($mac,$cedula);
             $id_permiso = IngresoController::getIdPermiso($mac,$cedula);
             $id_ubi_dis = IngresoController::getIdUbicacionDis($mac);
@@ -387,16 +422,25 @@ class IngresoController extends Controller
             $descuento_park = IngresoController::evaluaEmpresa($cedula); //identifica si se le debe descontar parqueadero.
             $contador = ""; //Contador de parqueaderos
             
+            
+
             if(count($query) > 0){
+
+
                 $cedula= trim($row[2]);
-                //Identifica el Vehiculo de entrada
+             //Identifica el Vehiculo de entrada
             //Nota: todos los porteros deben tener al final una c para Carro y una M para Moto, de lo contrario son peatonales.		
             //CASO CUANDO NO TIENE FOTO
+            
             if(trim($row[0])!='' && $row[4]=='N'){
                 
                 //SI TIENE PERMISOS PINTA LA TABLA DE VERDE
+                
+              
+
+                
                 if($permiso){
-                            
+                   
                     if($parqueo == 1){
                         
                         //Descuento de parqueadero fijo
@@ -407,12 +451,12 @@ class IngresoController extends Controller
                         }
                         
                         //NARANJA
-                        $tabla="<table class='table' style='background-color: #FFBF00;
-                        border-radius: 10px; 
-                        border-left:0px; font-size:24px;font-family:'Lato', sans-serif'> 
+                        $tabla="<table class='' style='width: 100%; background-color: #FFBF00;
+                        border-radius: 10px;   text-align: center;   text-align: center;  font-weight: bold;
+                        border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                         <tr>	 
                         <td> 
-                        <img src='../images/person.png' WIDTH='190px' HEIGHT='10px'> 
+                        <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/person.png')."'WIDTH='60%' > 
                         </td> 
                         </tr> 
                         <tr> 
@@ -443,12 +487,12 @@ class IngresoController extends Controller
                             IngresoController::insertHistoricoIngreso($cedula,$tipo_ingreso,$opcion,$usuario,$id_vis,$id_permiso,$id_ubi_dis,'APROBADO');
                         }
                         
-                        $tabla="<table class='table' style='background-color: #00FF1A;
-                        border-radius: 10px; 
-                        border-left:0px; font-size:24px;font-family:'Lato', sans-serif'> 
+                        $tabla="<table class='' style='width: 100%; background-color: #00FF1A;
+                        border-radius: 10px;  text-align: center;   text-align: center;  font-weight: bold;
+                        border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                         <tr>	 
                         <td> 
-                        <img src='../images/person.png' WIDTH='190px' HEIGHT='10px'> 
+                        <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/person.png')."'WIDTH='60%' > 
                         </td> 
                         </tr> 
                         <tr> 
@@ -475,13 +519,13 @@ class IngresoController extends Controller
                     if(strpos($contador, 'FULL') !== false){
                         //Parqueadero full
                         $tabla.="<script> 
-                        var audio = new Audio('sonido/alarma.mp3');  
+                        var audio = new Audio('".asset('/resources/sound')."/alarma.mp3');  
                         audio.play(); 
                         </script>";
                         $sonido = "alarma.mp3";
                     }else{
                         $tabla.="<script> 
-                        var audio = new Audio('sonido/beep.mp3');  
+                        var audio = new Audio('".asset('/resources/sound')."/beep.mp3');  
                         audio.play(); 
                         </script>";
                         $sonido = "beep.mp3";
@@ -495,9 +539,9 @@ class IngresoController extends Controller
                             'tipo' => 'INGRESO',
                             'estado' => 'APROBADO',
                             'usuario_creacion' => $usuario,  
-                            'fecha_creacion' => now(),  
+                            'fecha_creacion' =>  now(),  
                             'usuario_actualizacion' => $usuario, 
-                            'fecha_actualizacion' => now(),
+                            'fecha_actualizacion' =>  now(),
                             'id_visitante' => $id_vis
                         ]);
     
@@ -510,17 +554,20 @@ class IngresoController extends Controller
                             'usuario_creacion' => $usuario,  
                             'fecha_creacion' => now(),  
                             'usuario_actualizacion' => $usuario, 
-                            'fecha_actualizacion' => now(),
+                            'fecha_actualizacion' =>  now(),
                             'id_visitante' => $id_vis
                         ]);
                     }
                 }else{ //SI NO TIENE PERMISOS PINTA LA TABLA DE ROJO
-                    $tabla="<table class='table' style='background-color: #FE3333;
-                    border-radius: 10px; 
-                    border-left:0px; font-size:24px;font-family:'Lato', sans-serif'> 
+                    
+
+        
+                    $tabla="<table class='' style='width: 100%; background-color: #FE3333;
+                    border-radius: 10px;  text-align: center;   text-align: center;  font-weight: bold;
+                    border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                     <tr>	 
                     <td> 
-                    <img src='../images/person.png' WIDTH='190px' HEIGHT='10px'> 
+                    <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/person.png')."'WIDTH='60%'  > 
                     </td> 
                     </tr> 
                     <tr> 
@@ -538,7 +585,7 @@ class IngresoController extends Controller
                     </table>";
                     //REPRODUCE SONIDO DE NEGACION
                     $tabla.="<script> 
-                    var audio = new Audio('sonido/negado.mp3');  
+                    var audio = new Audio('".asset('/resources/sound')."negado.mp3');  
                     audio.play(); 
                     </script>";
                     $sonido = "negado.mp3";
@@ -554,7 +601,7 @@ class IngresoController extends Controller
                             'usuario_creacion' => $usuario,  
                             'fecha_creacion' => now(),  
                             'usuario_actualizacion' => $usuario, 
-                            'fecha_actualizacion' => now(),
+                            'fecha_actualizacion' =>  now(),
                             'id_visitante' => $id_vis
                         ]);
                       
@@ -566,9 +613,9 @@ class IngresoController extends Controller
                             'tipo' => 'SALIDA',
                             'estado' => 'RECHAZADO',
                             'usuario_creacion' => $usuario,  
-                            'fecha_creacion' => now(),  
+                            'fecha_creacion' =>  now(),
                             'usuario_actualizacion' => $usuario, 
-                            'fecha_actualizacion' => now(),
+                            'fecha_actualizacion' =>  now(),
                             'id_visitante' => $id_vis
                         ]);
                     }
@@ -576,12 +623,14 @@ class IngresoController extends Controller
                     IngresoController::insertHistoricoIngreso($cedula,$tipo_ingreso,$opcion,$usuario,$id_vis,$id_permiso,$id_ubi_dis,'RECHAZADO');
                     
                 }
+                
                 return $tabla;
                 
             }elseif (trim($row[0])!='' && $row[4]=='S'){
-                
+              
                 //SI TIENE PERMISOS PINTA LA TABLA DE VERDE
                 if($permiso){
+                   
                     
                     if($parqueo == 1){
                         
@@ -593,12 +642,12 @@ class IngresoController extends Controller
                             IngresoController::insertHistoricoIngreso($cedula,$tipo_ingreso,$opcion,$usuario,$id_vis,$id_permiso,$id_ubi_dis,'APROBADO');
                         }
     
-                        $tabla="<table class='table' style='background-color: #FFBF00;
-                        border-radius: 10px; 
-                        border-left:0px; font-size:24px;font-family:'Lato', sans-serif'> 
+                        $tabla="<table class='' style='width: 100%; background-color: #FFBF00;
+                        border-radius: 10px;  text-align: center;   text-align: center;  font-weight: bold; width: 100%;
+                        border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                         <tr>	 
                         <td> 
-                        <img src='http://172.19.92.223/ingresocarvajal/modules/mod_visitantes/fotos/".$row[2].".jpg' WIDTH='190px' HEIGHT='10px'> 
+                        <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/'.$row[2].'.jpg')."'WIDTH='80%'  > 
                         </td> 
                         </tr> 
                         <tr> 
@@ -620,6 +669,7 @@ class IngresoController extends Controller
                         } 
                         $tabla.="</table>";
                     }else{
+
                         //Descuento de parqueadero temporal
                         if($descuento_park){
                             $contador= IngresoController::contadorPark($tipo_ingreso,$opcion,$cedula,'TEMPORAL',$id_sede,$usuario,$id_vis,$id_permiso,$id_ubi_dis,'APROBADO');
@@ -627,12 +677,12 @@ class IngresoController extends Controller
                             IngresoController::insertHistoricoIngreso($cedula,$tipo_ingreso,$opcion,$usuario,$id_vis,$id_permiso,$id_ubi_dis,'APROBADO');
                         }
     
-                        $tabla="<table class='table' style='background-color: #00FF1A;
-                        border-radius: 10px; 
-                        border-left:0px; font-size:24px;font-family:'Lato', sans-serif'> 
+                        $tabla="<table class='' style='width: 100%; background-color: #00FF1A;
+                        border-radius: 10px;  text-align: center;   text-align: center;  font-weight: bold; width: 100%;
+                        border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                         <tr>	 
                         <td> 
-                        <img src='http://172.19.92.223/ingresocarvajal/modules/mod_visitantes/fotos/".$row[2].".jpg' WIDTH='190px' HEIGHT='10px'> 
+                        <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/'.$row[2].'.jpg')."'WIDTH='80%'  > 
                         </td> 
                         </tr> 
                         <tr> 
@@ -658,19 +708,20 @@ class IngresoController extends Controller
                     if(strpos($contador, 'FULL') !== false){
                         //Parqueadero full
                         $tabla.="<script> 
-                        var audio = new Audio('sonido/alarma.mp3');  
+                        var audio = new Audio('".asset('/resources/sound')."/alarma.mp3');  
                         audio.play(); 
                         </script>";
                         $sonido = "alarma.mp3";
                     }else{
                         $tabla.="<script> 
-                        var audio = new Audio('sonido/beep.mp3');  
+                        var audio = new Audio('".asset('/resources/sound')."/beep.mp3');  
                         audio.play(); 
                         </script>";
                         $sonido = "beep.mp3";
                     }
                     if($opcion == "ENTRADA" && ($genera_reg==true)){
                         //INSERTA INGRESO O SALIDA
+
                         $inserta = DB::table('ohxqc_ingresos_salidas')->insert([
                             'id_permiso' => $id_permiso,  
                             'id_dispositivo' => $id_ubi_dis,  
@@ -690,7 +741,7 @@ class IngresoController extends Controller
                             'tipo' => 'SALIDA',
                             'estado' => 'APROBADO',
                             'usuario_creacion' => $usuario,  
-                            'fecha_creacion' => now(),  
+                            'fecha_creacion' =>  now(),  
                             'usuario_actualizacion' => $usuario, 
                             'fecha_actualizacion' => now(),
                             'id_visitante' => $id_vis
@@ -699,12 +750,12 @@ class IngresoController extends Controller
                 }else{
                     
                     //SI NO TIENE PERMISOS PINTA DE ROJO
-                    $tabla="<table class='table' style='background-color: #FE3333;
-                    border-radius: 10px; 
-                    border-left:0px; font-size:24px;font-family:'Lato', sans-serif'> 
+                    $tabla="<table class='' style='width: 100%; background-color: #FE3333;
+                    border-radius: 10px;  text-align: center;   text-align: center;  font-weight: bold; width: 100%;
+                    border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                     <tr>	 
                     <td> 
-                    <img src='http://172.19.92.223/ingresocarvajal/modules/mod_visitantes/fotos/".$row[2].".jpg' WIDTH='190px' HEIGHT='10px'> 
+                    <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/'.$row[2].'.jpg')."'WIDTH='80%'  >
                     </td> 
                     </tr> 
                     <tr> 
@@ -722,7 +773,7 @@ class IngresoController extends Controller
                     </table>";
                     //REPRODUCE SONIDO DE NEGACION
                     $tabla.="<script> 
-                    var audio = new Audio('sonido/negado.mp3');  
+                    var audio = new Audio('".asset('/resources/sound')."/negado.mp3');  
                     audio.play(); 
                     </script>";
                     $sonido = "negado.mp3";
@@ -736,9 +787,9 @@ class IngresoController extends Controller
                             'tipo' => 'INGRESO',
                             'estado' => 'RECHAZADO',
                             'usuario_creacion' => $usuario,  
-                            'fecha_creacion' => now(),  
+                            'fecha_creacion' =>  now(),  
                             'usuario_actualizacion' => $usuario, 
-                            'fecha_actualizacion' => now(),
+                            'fecha_actualizacion' =>  now(),
                             'id_visitante' => $id_vis
                         ]);
     
@@ -762,15 +813,41 @@ class IngresoController extends Controller
                 return $tabla;
              }
             }else{
+
+                
                 $tabla= IngresoController::validaInactivo($id_vis);
+
+                
                 if(trim($tabla) == ''){
-                    $tabla=" <div class='alert alert-warning alert-dismissible fade show mt-3' role='alert'>
-                    <strong>Información!</strong> No se encontraron registros.
-                    <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+                    /* $tabla=" <div class='alert alert-warning alert-dismissible fade show mt-3' role='alert'>
+                    <strong>información!</strong> no se encontraron registros.
+                    <button type='button' class='close' data-dismiss='alert' aria-label='close'>
                     <span aria-hidden='true'>&times;</span>
                     </button>
-                </div>";
+                </div>"; */
+
+                $tabla= "<table class='' style='width: 100%; high=50%; background-color: #FE3333;
+                        border-radius: 10px;  text-align: center;   text-align: center;  font-weight: bold; width: 100%;
+                        border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
+                        <tr>	 
+                        <td> 
+                        <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/person.png')."' WIDTH='50%'  >
+                        </td> 
+                        </tr> 
+                        <tr> 
+                        <td><label> No se encontraron registros.</label></td> 
+                        </tr> 
+                        
+                        </table>";
+                $tabla.="<script> 
+                        var audio = new Audio('".asset('/resources/sound')."/negado.mp3');  
+                        audio.play(); 
+                        </script>";
+                        $sonido = "negado.mp3";
+
                 }
+                
+
                 $id_ubi_dis=IngresoController::getIdUbicacionDis($mac);
                 if($genera_reg==true){
                     $inserta = DB::table('ohxqc_ingresos_rechazados')->insert([
@@ -783,6 +860,8 @@ class IngresoController extends Controller
                         'fecha_actualizacion' => now()
                     ]);
                 }
+
+               
                 return $tabla;
             }
         }
@@ -794,33 +873,42 @@ class IngresoController extends Controller
         $c=substr($cedula,0,1);
         $id_empresa='';
         $id_vis = "";
-            if($c=='R' || $c=='V' || $c=='C'){
-                $idVisi = DB::table('ohxqc_codigobidimensional')
-                ->select('id_visitante')
-                ->where('codigo', '=', $cedula)
-                ->where('activo', '=', 'S')
-                ->get();
-                foreach($idVisi as $s){
-                    $id_vis = $s->id_visitante;
-                }
+    
 
-                $idEmpresa = DB::table('ohxqc_codigobidimensional as c')
-                ->select('e.id_empresa')
-                ->join('ohxqc_empresas_visitante as e', 'e.id_visitante', 'c.id_visitante')
-                ->where('c.codigo', '=', $cedula)
-                ->where('c.activo', '=', 'S')
-                ->get();
-                foreach($idEmpresa as $id){
-                    $id_empresa = $id->id_empresa;
-                }
+        if($c=='R' || $c=='V' || $c=='C'){
+                    $idVisi = DB::table('ohxqc_codigobidimensional')
+                    ->select('id_visitante')
+                    ->where('codigo', '=', $cedula)
+                    ->where('activo', '=', 'S')
+                    ->get();
+                    foreach($idVisi as $s){
+                        $id_vis = $s->id_visitante;
+                    }
+
+                 
+                 
+
+                    $idEmpresa = DB::table('ohxqc_codigobidimensional as c')
+                    ->select('e.id_empresa')
+                    ->join('ohxqc_empresas_visitante as e', 'e.id_visitante', 'c.id_visitante')
+                    ->where('c.codigo', '=', $cedula)
+                    ->where('c.activo', '=', 'S')
+                    ->get();
+                    foreach($idEmpresa as $id){
+                        $id_empresa = $id->id_empresa;
+                    }
+
+                   
              
-                }else{$id_vis='';}
+        }else{$id_vis='';}
       
                 $this->id_vis = $id_vis;
                 $this->portero = $portero;
                 $this->cedula = $cedula;
-              if($id_vis != ''){
+                
 
+              if($id_vis != ''){
+            
                     $sql = DB::table('ohxqc_permisos')
                     ->select('id_ubicacion')
                     ->whereIn('id_empresa_visitante', function($query1){
@@ -831,7 +919,7 @@ class IngresoController extends Controller
                             ->from('ohxqc_visitantes')
                             ->where('id_visitante', '=', $this->id_vis)
                             ->where('activo', '=', 'S')
-                            ->where('fecha_fin', '>=', 'current_date');
+                            ->where('fecha_fin', '>=', DB::raw('current_date'));
                             
                         })->limit(1);
                     })
@@ -841,13 +929,15 @@ class IngresoController extends Controller
                             ->whereIn('id_ubicacion', function($query4){
                                 $query4->select('pu.id_ubicacion')
                                 ->from('ohxqc_porteros_ubicaciones as pu')
-                                ->join('ohxqc_porteros as p', 'p.id', '=', 'pu_id_portero')
+                                ->join('ohxqc_porteros as p', 'p.id', '=', 'pu.id_portero')
                                 ->where('p.activo', '=', 'S')
                                 ->where('p.usuario', '=', $this->portero);
                             });
                         })
-                    ->whereBetween('current_date', ['fecha_inicio', 'fecha_fin'])
+                    ->whereBetween(DB::raw('current_date'), [DB::raw('fecha_inicio'), DB::raw('fecha_fin')])
                     ->get();
+
+                   
 
                           /*$sql="SELECT id_ubicacion 
                           FROM ohxqc_permisos WHERE id_empresa_visitante=(SELECT id_empresa_visitante FROM ohxqc_empresas_visitante WHERE id_visitante=(SELECT id_visitante FROM ohxqc_visitantes WHERE id_visitante=$id_vis AND ACTIVO='S' AND fecha_fin >= current_date) limit 1) 
@@ -861,6 +951,7 @@ class IngresoController extends Controller
                           and current_date between fecha_inicio and fecha_fin";		*/	
               }else{
                   $this->fechaHoy = date('Y-m-d');
+                
                         $sql = DB::table('ohxqc_permisos')
                         ->select('id_ubicacion')
                         ->whereIn('id_empresa_visitante', function($query1){
@@ -886,11 +977,14 @@ class IngresoController extends Controller
                                 ->where('p.usuario', '=', $this->portero);
                             });
                         })
-                        ->where('fecha_inicio', '>=', $this->fechaHoy )
-                        ->where('fecha_fin', '<=', $this->fechaHoy )
+                        ->where('fecha_inicio', '<=', $this->fechaHoy )
+                        ->where('fecha_fin', '>=', $this->fechaHoy )
                         //->whereBetween(now(), ['fecha_inicio', 'fecha_fin'])
                         ->get();
-                        
+
+                     
+
+                      
                         /*$sql="SELECT id_ubicacion 
                         FROM ohxqc_permisos WHERE id_empresa_visitante=(SELECT id_empresa_visitante FROM ohxqc_empresas_visitante WHERE id_visitante=(SELECT id_visitante FROM ohxqc_visitantes WHERE identificacion='".$cedula."' AND ACTIVO='S' AND fecha_fin >= current_date) limit 1) 
                         and id_ubicacion=(SELECT id_ubicacion  
@@ -906,8 +1000,9 @@ class IngresoController extends Controller
                     $row = array();
                     $actual_date = date('Y-m-d');
                     $hora_actual = date("H:i:s", time()-18830); 
+                   
                     foreach($sql as $ide){
-                        $row[0] = $ide->ubicacion;
+                        $row[0] = $ide->id_ubicacion;
                     }
                     
                     if(count($row)>0){
@@ -972,12 +1067,15 @@ class IngresoController extends Controller
                             }
                             //Valida fecha y hora de entrada y salida
                             if(trim($id_empresa)==''){
-                                $sql = DB::table('ohxqc_empresas_visitante as e')
-                                ->select('e.id_empresa')
-                                ->join('ohxqc_visitantes as v', 'v.id_visitante', '=', ' e.id_visitante')
-                                ->where('v.identificacion', '=', $cedula)
+                               
+
+                                $sql = DB::table('ohxqc_empresas_visitante')
+                                ->join('ohxqc_visitantes', 'ohxqc_visitantes.id_visitante', '=', 'ohxqc_empresas_visitante.id_visitante')
+                                ->where('ohxqc_visitantes.identificacion', '=',$cedula)
+                                ->select('ohxqc_empresas_visitante.id_empresa')
                                 ->limit(1)
                                 ->get();
+                               
                             foreach($sql as $idem){
                                 $id_empresa =  $idem->id_empresa;
                             }
@@ -1000,17 +1098,25 @@ class IngresoController extends Controller
             ->where('codigo', '=', $cedula)
             ->where('activo', '=', 'S')
             ->get();
-            foreach($consulId as $id){
+            
+            foreach($consultaId as $id){
                 $id_vis = $id->id_visitante;
             }
-        }else{$id_vis='';}
+
+            if(count($consultaId)==0){
+                $id_vis ='';
+            }
+
+        }else{
+            $id_vis='';
+        }
 
         $this->id_vis = $id_vis;
         $this->portero = $portero;
         $this->cedula = $cedula;
 
         $id=0;
-            if($id_vis!=''){
+        if($id_vis!=''){
                 $sql = DB::table('ohxqc_permisos')
                 ->select('id_permiso')
                 ->whereIn('id_empresa_visitante', function($query1){
@@ -1021,7 +1127,7 @@ class IngresoController extends Controller
                         ->from('ohxqc_visitantes')
                         ->where('id_visitante', '=', $this->id_vis)
                         ->where('activo', '=', 'S')
-                        ->where('fecha_fin', '>=', 'current_date');
+                        ->where('fecha_fin', '>=', DB::raw('current_date'));
                         
                     });
                 })
@@ -1031,12 +1137,12 @@ class IngresoController extends Controller
                         ->whereIn('id_ubicacion', function($query4){
                             $query4->select('pu.id_ubicacion')
                             ->from('ohxqc_porteros_ubicaciones as pu')
-                            ->join('ohxqc_porteros as p', 'p.id', '=', 'pu_id_portero')
+                            ->join('ohxqc_porteros as p', 'p.id', '=', 'pu.id_portero')
                             ->where('p.activo', '=', 'S')
                             ->where('p.usuario', '=', $this->portero);
                         });
                     })
-                ->where('fecha_fin', '>=', 'current_date')
+                ->where('fecha_fin', '>=', DB::raw('current_date'))
                 ->get();
 
                     /* $sql="SELECT id_permiso 
@@ -1050,6 +1156,8 @@ class IngresoController extends Controller
                                                     and p.usuario='$portero'))
                     and fecha_fin >= current_date";*/
             }else{
+
+               
                 $sql = DB::table('ohxqc_permisos')
                 ->select('id_permiso')
                 ->whereIn('id_empresa_visitante', function($query1){
@@ -1077,10 +1185,12 @@ class IngresoController extends Controller
                     })
                 ->where('fecha_fin', '>=', $this->fechaHoy )
                 ->get();
+
+                
             }
 
             foreach($sql as $s){
-                $id = $s->id_ubicacion;
+                $id = $s->id_permiso;
             }
 
         return $id;
@@ -1494,7 +1604,7 @@ class IngresoController extends Controller
             'tipo_registro' => $tipo_registro,
             'usuario_creacion' => $usr_creacion,
             'fecha_registro' => now(),
-            'fecha_hora' => now(),
+            'fecha_hora' =>  now(),
             'id_empresa' => $id_empresa,
             'id_tipo_visitante' => $id_tipo_visitante,
             'id_permiso' => $id_permiso,
@@ -1513,9 +1623,12 @@ class IngresoController extends Controller
             ->join('ohxqc_empresas as emp', 'emp.id_empresa', '=', 'emv.id_empresa')
             ->join('ohxqc_tipos_visitante as vt', 'vt.id_tipo_visitante', '=', 'v.tipo_visitante')
             ->where('v.id_visitante', '=', $id_visitante )
-            ->Where('v.activo', '=', 'N' )
-            ->orWhere('v.fecha_fin', '<', now())
-            ->get();
+            ->where( function($q) {
+                $q->Where('v.activo', '=', 'N' )
+                ->orWhere('v.fecha_fin', '<',now());
+            } )->get();
+
+             
 			/*$sql="SELECT v.Nombre,
 						v.apellido,
 						v.identificacion, 
@@ -1526,6 +1639,7 @@ class IngresoController extends Controller
 					WHERE v.id_visitante=$id_visitante 
 					AND (v.activo='N' or v.fecha_fin < now())
 					and v.tipo_visitante=vt.id_tipo_visitante";*/
+
             $row = array();
             foreach($sql as $r){
                 $row[0] = $r->nombre;
@@ -1537,15 +1651,15 @@ class IngresoController extends Controller
             }
 			
 			if(trim($row[2]) != ''){
-				$tabla="<table class='table' style='background-color: #FE3333;
-						    border-radius: 10px; 
-						    border-left:0px; font-size:24px;font-family:'Lato', sans-serif'> 
+				$tabla="<table class='' style='width: 100%; background-color: #FE3333;
+						    border-radius: 10px;  text-align: center;   text-align: center;  font-weight: bold; width: 100%;
+						    border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
 						<tr><td>";
 						
 				if($row[4]=='S'){
-					$tabla.="<img src='http://172.19.92.223/ingresocarvajal/modules/mod_visitantes/fotos/".$row[2].".jpg' WIDTH='190px' HEIGHT='10px'>";
+					$tabla.="<br><img  class='img-thumbnail' src='".asset('../storage/app/public/fotos/'.$row[2].'.jpg')."'WIDTH='80%' >";
 				}else{
-					$tabla.="<img src='../images/person.png' WIDTH='190px' HEIGHT='10px'> ";
+					$tabla.="<br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/person.png')."'WIDTH='60%' > ";
 				}	
 				
 				$tabla.="</td> 
@@ -1566,7 +1680,7 @@ class IngresoController extends Controller
 				
 				//REPRODUCE SONIDO DE NEGACION
 				$tabla.="<script> 
-				var audio = new Audio('sonido/negado.mp3');  
+				var audio = new Audio('".asset('/resources/sound')."/negado.mp3');  
 				audio.play(); 
 				</script>";
 

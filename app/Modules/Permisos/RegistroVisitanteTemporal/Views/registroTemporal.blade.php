@@ -78,7 +78,20 @@
                 border-radius: 10px; 
                 border-left:0px; font-size:20px;padding:10px">
                     <div class="col-xs-12 col-md-6 col-lg-6">
-                        <img style="width: 80%" class="img-thumbnail" src="{{asset('storage').'/fotos'.'/'.$cedula.'.png'}}" alt="">
+                       
+                       {{-- @if ($row[4]=='S')
+                              <img style="width: 80%" class="img-thumbnail" src="{{asset('../storage/app/public/fotos/').'/'.$cedula.'.jpg'}}" alt="">
+                       @else
+                             <img  class="img-thumbnail" src='{{asset('../storage/app/public/fotos/person.png')}}'  style="width: 60%" class="img-thumbnail" > 
+                       @endif --}}
+                   
+                       @if (!file_exists(asset('../storage/app/public/fotos/').'/'.$cedula.'.jpg'))
+                             <img class="img-thumbnail" src="{{asset('../storage/app/public/fotos/').'/'.$cedula.'.jpg'}}" alt="">
+                         @else
+                            <img class="img-thumbnail" src='{{asset('../storage/app/public/fotos/person.png')}}'  style="width: 60%" class="img-thumbnail" >  
+                      @endif
+
+                      
                     </div>
                     <div class="col-xs-12 col-md-6 col-lg-6">
                         <ul style="list-style: none;margin-top:30px">
@@ -102,7 +115,7 @@
                     border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                     <tr>	 
                         <td width='200' height='200'> 
-                        <img src='http://172.19.92.223/ingresocarvajal/images/person.png' height='130' width='190'> 
+                        <img src='{{asset('../storage/app/public/fotos/person.png')}}'  width='190'> 
                         </td> 
                         <td width='500' height='100'>
                         <table>
@@ -210,7 +223,7 @@
                         <div class="form-group">
                             <div class="float-right">
                                 <input type="hidden" name="cedula" value="{{isset($cedulVi)?$cedulVi:''}}">
-                                <input type="hidden" name="username" value="{{Auth::user()->name}}">
+                                <input type="hidden" name="username" value="{{Auth::user()->username}}">
                                 <input type="submit" id="btn_registrar" name="btn_registrar" value="Registrar" class="btn btn-primary"/>
                             </div>
                         </div>

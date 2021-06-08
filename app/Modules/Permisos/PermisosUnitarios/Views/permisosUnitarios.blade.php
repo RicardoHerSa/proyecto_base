@@ -24,7 +24,7 @@
                     <div class="card-body">
                       <form method="post" action="{{route('consultarCedula')}}">
                         @csrf
-                        <h3 style="color:#666666">Consulta de Visitante</h3>
+                        <h4 style="color:#666666">Consulta de Visitante</h4>
                         <hr>
                         <div class="form-group">
                             <label class="title" for="cc_visitante"><b>Cedula:</b></label>
@@ -42,6 +42,16 @@
                             <input type="submit" id="btn_consulta" name="btn_consulta" value="Consultar" class="btn btn-primary"/>
                         </div>
                       </form>
+                        @if(isset($nombre))
+                            <hr>
+                           
+
+                            <img onerror="this.src='{{asset('../storage/app/public/fotos/person.png')}}'"  title="{{$nombre}}" class='img-thumbnail' src='{{asset('../storage/app/public/fotos').'/'.$cc.'.jpg'}}' WIDTH='100%' >
+
+
+            
+                        @endif
+                       
                     </div>
                 </div>
         </div>
@@ -50,7 +60,7 @@
             <!--Formulario de resultados-->
             <div class="card">
                 <div class="card-body">
-                    <h3 style="color:#666666">Actualización de Visitante</h3>
+                    <h4 style="color:#666666">Datos del Visitante</h4>
                     <hr>
                     @if(isset($nombre))
                     <form  method="post" id="form_update">
@@ -61,28 +71,28 @@
                         
                             <label id='cc' name='cc'><B>Cedula:</B>{{isset($cc)?$cc:''}}</label>
                             <label><B>Cargo:</B> {{isset($cargo)?$cargo:''}}</label>
-                        
                             <label><B>Empresa:</B> {{isset($empresa)?$empresa:''}}</label>
-                      
                             <label><B>Tipo:</B> {{isset($tipo)?$tipo:''}}</label>
-                      
                             <label><B>Jefe:</B> {{isset($jefe)?$jefe:''}}</label>
-                      
                             <label><B>Ciudad:</B> {{isset($ciudad)?$ciudad:''}}</label>
-                      
                             <label><B>Tipo de Contrato:</B> {{isset($contrato)?$contrato:''}}</label>
-                      
                             <label><B>Fecha Inicio:</B> {{isset($fechaIni)?$fechaIni:''}}</label>
-                      
                             <label><B>Fecha Fin:</B> {{isset($fechaFin)?$fechaFin:''}}</label>
                         
-                    <div class="element-checkbox">
-                        <label class="title"><B>Estado:</B></label>		
-                        <div class="column column1">
-                            <label><input type="checkbox" name="check_estado" id="check_estado" value="inactivo" {{isset($estado) && !empty($estado) && $estado != 'N' ?'checked':''}} / ><span> Activo</span></label>
-                        </div>
-                        <span class="clearfix"></span>
-                    </div>
+                            <div class="element-checkbox">
+                                
+                                <div class="column column1">
+                                    <label><input type="checkbox" name="check_estado" id="check_estado" value="inactivo" {{isset($estado) && !empty($estado) && $estado != 'N' ?'checked':''}} / ><span> Activo</span></label>
+                                </div>
+                                <span class="clearfix"></span>
+                            </div>
+                            <div class="element-checkbox">
+                               		
+                                <div class="column column1">
+                                    <label><input type="checkbox" name="check_parqueadero" id="check_parqueadero" value="0" {{isset($parqueadero) && !empty($parqueadero) && $parqueadero == '1' ?'checked':''}} / ><span> Parqueadero</span></label>
+                                </div>
+                                <span class="clearfix"></span>
+                            </div>
                     
                      <label class="title"><B>Horario</B></label>
                       
@@ -114,7 +124,7 @@
             <div class="card">
                 
                 <div class="card-body">
-                  <h3 class="card-title" style="color:#666666">Permisos</h3>
+                  <h4 class="card-title" style="color:#666666">Permisos</h4>
                   <hr>
                   @if (isset($nombre))
                     <div id="jqxTree"></div>
@@ -173,6 +183,7 @@
     var id_tree = "";
 	var id_horario="";
 	var check_estado="";
+    var check_parqueadero ="";
 
     $(document).ready(function (){
     var source2 =
@@ -193,7 +204,7 @@
                 // perform Data Binding.
                 dataAdapter2.dataBind();
                 var records = dataAdapter2.getRecordsHierarchy('id', 'parentid', 'items', [{ name: 'text', map: 'label'}]);
-                $('#jqxTree').jqxTree({ source: records, height: '400px', hasThreeStates: true, checkboxes: true, width: '330px'});
+                $('#jqxTree').jqxTree({ source: records, height: '470px', hasThreeStates: true, checkboxes: true, width: '100%'});
 
                 //Captura los permisos del arbol
                 $('#jqxTree').on('click', function (event) {
@@ -216,7 +227,9 @@
 	function getHorario(){
 	    id_horario=document.getElementById("horario_sel").value;
 	}
-
+    function getParqueadero(){
+	    check_parqueadero=document.getElementById("check_parqueadero").checked;
+	}
     
     $( "#form_update" ).submit(function( event ) {
         // Stop form from submitting normally
@@ -224,6 +237,7 @@
         // Get some values from elements on the page:
             getHorario();
             getEstado();
+            getParqueadero();
 		
 			var items = $('#jqxTree').jqxTree('getCheckedItems');
             console.log(items);
@@ -243,7 +257,7 @@
 				    var request=$.ajax({
                             type:  'POST',
                             url: "actualizarVisitante",
-                            data: {'cc':cc_id, 'id_t':id_tree, 'id_horario':id_horario, 'activo':check_estado, _token:token},
+                            data: {'cc':cc_id, 'id_t':id_tree, 'id_horario':id_horario, 'activo':check_estado , 'parqueadero':check_parqueadero, _token:token},
                             cache: false,
                             success: function(response){
                                 console.log(response);

@@ -5,6 +5,7 @@ use DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class AsignacionCodigosController extends Controller
 {
@@ -134,7 +135,7 @@ class AsignacionCodigosController extends Controller
      
       
     }
-
+    
     public function consultarClickTabla(Request $request)
     {
         //Funcion cundo se da click a un registro de la tabla
@@ -147,18 +148,35 @@ class AsignacionCodigosController extends Controller
         if($act == 1){
             $activo= 'S';
         }else{$activo= 'N';}
+
         
-        $consulta = DB::table('ohxqc_codigobidimensional as cb')
-        ->select('e.serial', 'e.descripcion', 'e.modelo', 'cb.codigo', 'cb.activo')
-        ->join('ohxqc_equipos as e', 'e.id_equipo', '=', 'cb.id_equipo')
-        ->whereIn('cb.id_visitante', function($query){
-            $query->select('id_visitante')
-            ->from('ohxqc_visitantes')
-            ->where('identificacion', '=', $this->cedula);
-        })
-        ->where('cb.codigo', '=', $codigo)
-        ->where('cb.tipo', '=', 'ACTIVO')
-        ->get();
+        $consulta_visitante =  DB::table('ohxqc_codigobidimensional as cb')
+        ->select(
+              DB::raw(" ' ' as serial , ' ' as descripcion , ' ' as modelo , cb.codigo as codigo , cb.activo as activo ")
+         )->whereIn('cb.id_visitante', function($query){
+         $query->select('id_visitante')
+         ->from('ohxqc_visitantes')
+         ->where('identificacion', '=', $this->cedula);
+         })
+         ->where('cb.codigo',  $codigo)
+         ->where('cb.tipo',  'VISITANTE');
+ 
+         $consulta = DB::table('ohxqc_codigobidimensional as cb')
+         ->select('e.serial', 'e.descripcion', 'e.modelo', 'cb.codigo', 'cb.activo'  )
+         ->join('ohxqc_equipos as e', 'e.id_equipo', '=', 'cb.id_equipo')
+         ->whereIn('cb.id_visitante', function($query){
+             $query->select('id_visitante')
+             ->from('ohxqc_visitantes')
+             ->where('identificacion', '=', $this->cedula);
+         })
+         ->where('cb.codigo', '=', $codigo)
+         ->where('cb.tipo', '=', 'ACTIVO')
+         ->union( $consulta_visitante)
+         ->get();
+        
+
+       
+
         if(count($consulta) > 0){
             $row = array();
             foreach($consulta as $cons){
@@ -171,16 +189,27 @@ class AsignacionCodigosController extends Controller
             $retorno = $row[0]."|".$row[1]."|".$row[2]."|".$row[3]."|".$row[4];
     
             if(trim($row[0])=='' && trim($row[1])=='' && trim($row[2])==''){
-                $consultaNula = DB::table('ohxqc_codigobidimensional as cb')
+                
+
+                Log::info( $fecha);
+       
+               /* $consultaNula = DB::table('ohxqc_codigobidimensional as cb')
                 ->select('null as serial', 'null as descripcion', 'null as modelo', 'cb.codigo', 'cb.activo', ' v.parqueadero')
                 ->join('ohxqc_visitantes as v')
                 ->where('cb.id_visitante', '=', 'v.id_visitante')
-                ->where('v.identificacion', '=', $cedula)
+                ->where('v.identificacion', '=', '1130614392')
                 ->where('cb.tipo', '=', 'VISITANTE')
                 ->where('cb.fecha_creacion', '=', $fecha)
                 ->where('cb.activo', '=', $activo)
-                ->get();
-    
+                ->get();*/
+                 
+                $parqueadero = DB::table('ohxqc_visitantes')
+                            ->where('identificacion', '=', '1130614392')
+                           ->get();
+
+
+                Log::info($parqueadero);
+       
                 $row2 = array();
                 foreach($consulta as $cons){
                     $row2[0] = $cons->serial;
@@ -188,9 +217,10 @@ class AsignacionCodigosController extends Controller
                     $row2[2] = $cons->modelo;
                     $row2[3] = $cons->codigo;
                     $row2[4] = $cons->activo;
-                    $row2[5] = $cons->parqueadero;
+                    $row2[5] = $parqueadero[0]->parqueadero;
                 }
-            $retorno=$row2[0]."|".$row2[1]."|".$row2[2]."|".$row2[3]."|".$row2[4]."|".$row2[5];
+
+                $retorno=$row2[0]."|".$row2[1]."|".$row2[2]."|".$row2[3]."|".$row2[4]."|".$row2[5];
             }
         }
         
@@ -264,7 +294,8 @@ class AsignacionCodigosController extends Controller
             foreach($consulta as $c){
                 $id = $c->id;
             }
-                
+              
+
             if(trim($id) == ''){ //CUANDO EL CODIGO ES NUEVO
                 $inserta = DB::table('ohxqc_codigobidimensional')->insert([
                     'id_equipo' => NULL,
@@ -337,10 +368,11 @@ class AsignacionCodigosController extends Controller
                         //Despues de insertar, se debe retornar el id_equipo con el que quedó
                         
                         $idEqu = DB::table('ohxqc_equipos')->max('id_equipo');
-                        $id_equipo = "";
-                        foreach($idEqu as $ide){
-                            $id_equipo = $ide->id_equipo;
-                        }
+                        Log::info("message");
+                        $id_equipo =  $idEqu + 1;
+                        // foreach($idEqu as $ide){
+                        //     $id_equipo = $ide->max;
+                        // }
 
                         $insertaEquiposVisitante = DB::table('ohxqc_equipos_visitante')->insert([
                             'id_visitante' => $id_usuario,
@@ -349,7 +381,7 @@ class AsignacionCodigosController extends Controller
                             'usuario_creacion' => 'admin',
                             'fecha_creacion' => now(),
                             'usuario_actualizacion' => 'admin',
-                            'fecha_actualizacio' =>  now()
+                            'fecha_actualizacion' =>  now()
                         ]);
 
                         $insertaCodeBidi = DB::table('ohxqc_codigobidimensional')->insert([
@@ -361,7 +393,7 @@ class AsignacionCodigosController extends Controller
                             'usuario_creacion' => 'admin',
                             'fecha_creacion' => now(),
                             'usuario_actualizacion' => 'admin',
-                            'fecha_actualizacio' =>  now()
+                            'fecha_actualizacion' =>  now()
                         ]);
                         $operacion = true;
 	
@@ -551,7 +583,9 @@ class AsignacionCodigosController extends Controller
       ->where('v.identificacion', '=', $cedula)
       ->where('v.activo', '=', 'S')
       ->get();
-      
+       
+       
+
       if(count($info)>0){
         $existeVisitante = true;
           $row = array();
@@ -591,8 +625,8 @@ class AsignacionCodigosController extends Controller
                 border-radius: 10px; 
                 border-left:0px; font-size:20px;font-family:'Lato', 'sans-serif'> 
             <tr>	 
-                <td> 
-                     <img src='http://172.19.92.223/ingresocarvajal/modules/mod_visitantes/fotos/".$row[2].".jpg' height='200' width='245'> 
+                <td>
+                     <img src='http://172.19.92.223/ingresocarvajal/modules/mod_visitantes/fotos/".$row[2].".' height='200' width='245'> 
                 </td> 
                 <td>
                     <table>
@@ -658,7 +692,7 @@ class AsignacionCodigosController extends Controller
         $cedula = $request->input('cedula');
         $url= $request->input('urlfoto');
         $image = explode('base64,',$url); 
-        $newname = $cedula.".png";
+        $newname = $cedula.".jpg";
 
         
         if(Storage::disk('Permisos')->put($newname,base64_decode($image[1]))){

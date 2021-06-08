@@ -1,7 +1,6 @@
 @include('layouts.app', ['modulo' => 'asignacion'])
 <div class="container">
     <br>
-    
     @if (Session::has('mensaje'))
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <strong>Información!</strong> {{Session::get('mensaje')}}
@@ -11,6 +10,7 @@
         </div>
         <br>
      @endif
+    
     <div class="row justify-content-center">
         <!--Formulario de consulta-->
         <div class="col-xs-12 col-md-{{isset($tabla)?'3':'12'}} col-lg-{{isset($tabla)?'3':'12'}} ">
@@ -43,13 +43,17 @@
         </div>
 
         <!--Resultado encabezado info personal-->
+        
         <div class="col-xs-12 col-md-{{isset($tabla)?'9':''}} col-lg-{{isset($tabla)?'9':''}}" style="margin-top: 2%">
             @if (isset($tabla) && $tabla != '0')
             <div class="row" style="background-color: #00FF1A;
             border-radius: 10px; 
             border-left:0px; font-size:20px;padding:10px;margin-top:5%">
                 <div class="col-xs-12 col-md-6 col-lg-6">
-                    <img class="img-thumbnail" style="width:80%" src="{{asset('storage').'/fotos'.'/'.$cedulVi.'.png'}}" alt="">
+                     
+
+                    <img onerror="this.src='{{asset('../storage/app/public/fotos/person.png')}}'"  style="width:80%" src="{{ asset('../storage/app/public/fotos/'.$cedulVi.'.jpg') }}"  width="50%" >
+                    
                 </div>
                 <div class="col-xs-12 col-md-6 col-lg-6">
                     <ul style="list-style: none;margin-top:30px">
@@ -113,7 +117,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="tx_cedula">Código Visitante: </label>
-                                    <input required  id="codigo" name="codigo" type="text" class="form-control">
+                                    <input   id="codigo" name="codigo" type="text" class="form-control">
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
@@ -253,7 +257,7 @@
              source: dataAdapter,
              width: 690,
              showtoolbar: true,
-             editable: true,
+             editable: false,
              sortable: true,
              columnsresize: true,
              pageable: true,
@@ -268,12 +272,15 @@
                  { text: 'Activo', datafield: 'activo', columntype: 'checkbox', editable: true, width: 230}	
                  ]
              });
-       $("#jqxgrid").on("cellclick", function (event){     	
+             
+       $("#jqxgrid").on("cellclick", function (event){    
+                   
                    var args = event.args;        
                    var rowBoundIndex = args.rowindex;
                    var rowData = $('#jqxgrid').jqxGrid('getrowdata', rowBoundIndex);
                    var obj=rowData.cod_vis;
                    var ini=obj.substring(0, 1);
+
              
                  if(ini=='A'){
                      if($("#modelo").val()==''){insertar=false;}
@@ -281,7 +288,9 @@
                      if($("#articulo").val()==''){insertar=false;}			
                      }
                });
-                 $("#jqxgrid").on('cellvaluechanged', function (event){
+
+
+            $("#jqxgrid").on('cellvaluechanged', function (event){
                      var args = event.args;
                      var datafield = event.args.datafield;
                      var rowBoundIndex = args.rowindex;
@@ -289,6 +298,7 @@
              }); 
 
              $('#jqxgrid').on('rowclick', function (event){
+                    
                      var args = event.args;
                      var boundIndex = args.rowindex;
                      var rowData = $('#jqxgrid').jqxGrid('getrowdata', boundIndex);
@@ -297,6 +307,7 @@
                      var activo=rowData.activo;
                      cedula=$("#cc").text();
                      var token = '{{csrf_token()}}';
+                                       
                      var request=$.ajax({
                                  type:  'POST',
                                  async: false,
@@ -304,7 +315,7 @@
                                  data: {'cod':cod, 'cc':cedula, 'fecha':fecha, 'act':activo, _token:token},
                                  cache: false,
                                  success: function(response){
-                                     console.log(response);
+                                     
                                  if(response != 0 ){  //modificado != 1
                          
                                      var arreglo=response.split("|");

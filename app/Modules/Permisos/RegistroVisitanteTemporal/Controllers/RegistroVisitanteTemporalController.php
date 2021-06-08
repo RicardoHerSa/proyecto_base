@@ -67,6 +67,7 @@ class RegistroVisitanteTemporalController extends Controller
             ->limit(1)
             ->get();
             $row = array();
+            
             if(count($consulta) > 0){
                 foreach($consulta as $c){
                     $row [0] = $c->nombre;
@@ -78,6 +79,8 @@ class RegistroVisitanteTemporalController extends Controller
                     $row [6] = $c->placa;
                     $row [7] = $c->responsable;
                 }
+
+            
     
                 //CASO CUANDO NO TIENE FOTO
                 if($row[4]=='N'){
@@ -348,12 +351,13 @@ class RegistroVisitanteTemporalController extends Controller
             //CASO CUANDO NO TIENE FOTO
             if($row[4]=='N'){
                 //SI TIENE PERMISOS PINTA LA TABLA DE VERDE
+
                 $tabla="<table class='table' style='background-color: #00BFFF;
                     border-radius: 10px; 
                     border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                 <tr>	 
                     <td> 
-                    <img src='http://172.19.92.223/ingresocarvajal/images/person.png' height='130' width='190'> 
+                    <img src='".asset('../storage/app/public/fotos/person.png')."' height='130' width='190'> 
                     </td> 
                     <td>
                     <table>
@@ -372,6 +376,7 @@ class RegistroVisitanteTemporalController extends Controller
                         </td> 
                     </tr> 
                     </table>";
+                    
                 
             }else if($row[4]=='S'){
                 //pinta tabla con foto
@@ -380,7 +385,7 @@ class RegistroVisitanteTemporalController extends Controller
                 border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
             <tr>	 
                 <td> 
-                <img src='http://172.19.92.223/ingresocarvajal/modules/mod_visitantes/fotos/".$row[2].".jpg' height='200' width='245'> 
+                <img src='".asset('../storage/app/public/fotos/').$row[2].".jpg' height='200' width='245'> 
                 </td> 
                 <td>
                 <table>
@@ -401,6 +406,7 @@ class RegistroVisitanteTemporalController extends Controller
             }else{
                 $tabla="0";
             }
+
           }else{
               $tabla = "0";
           }
@@ -424,7 +430,9 @@ class RegistroVisitanteTemporalController extends Controller
         }else{
             $operacion = false;
         }
-        return view('Permisos::registroTemporal', compact('listaEmpresas', 'listaCiudades', 'id_empresa', 'id_ciudad', 'data_v', 'tabla', 'data_b','cedula', 'operacion'));
+
+        
+        return view('Permisos::registroTemporal', compact('listaEmpresas', 'listaCiudades', 'id_empresa', 'id_ciudad', 'data_v', 'tabla', 'data_b','cedula', 'operacion','row'));
     }
 
     public function guardarRegistro($cedula,$nombre,$ciudad,$empresa,$codigo,$vehiculo,$placa,$puerta,$user,$responsable)
@@ -526,10 +534,12 @@ class RegistroVisitanteTemporalController extends Controller
                 'fecha_actualizacion' => now()
             ]);
 
-            $obtenerIdEmpresa = DB::table('ohxqc_empresas_visitante')->max('id_empresa_visitante')->get();
-            foreach($obtenerIdEmpresa as $idem){
-                $id_empresa_v = $idem->id_empresa_visitante;
-            }
+            $obtenerIdEmpresa = DB::table('ohxqc_empresas_visitante')->max('id_empresa_visitante');
+            $id_empresa_v =  $obtenerIdEmpresa ;
+            // foreach($obtenerIdEmpresa as $idem){
+
+            //     $id_empresa_v = $idem->max;
+            // }
             
            
         }
@@ -749,10 +759,11 @@ class RegistroVisitanteTemporalController extends Controller
     }
 
     public function guardarFoto(Request $request){
+        
         $cedula = $request->input('cedula');
         $url= $request->input('urlfoto');
         $image = explode('base64,',$url); 
-        $newname = $cedula.".png";
+        $newname = $cedula.".jpg";
 
         
         if(Storage::disk('Permisos')->put($newname,base64_decode($image[1]))){

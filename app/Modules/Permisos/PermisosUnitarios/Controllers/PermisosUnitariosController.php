@@ -4,6 +4,7 @@ namespace App\Modules\Permisos\PermisosUnitarios\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PermisosUnitariosController extends Controller
 {
@@ -51,6 +52,7 @@ class PermisosUnitariosController extends Controller
         'v.fecha_ingreso',
         'v.fecha_fin',
         'v.activo',
+        'v.parqueadero',
         'per.id_horario')
         ->join('ohxqc_empresas_visitante as ev', 'ev.id_visitante', '=', 'v.id_visitante')
         ->join('ohxqc_empresas as e', 'e.id_empresa', '=', 'ev.id_empresa')
@@ -78,6 +80,7 @@ class PermisosUnitariosController extends Controller
                 $fechaFin = $q->fecha_fin;
                 $estado = $q->activo;
                 $idhorario = $q->id_horario;
+                $parqueadero = $q->parqueadero;
                 
             }
            
@@ -127,7 +130,7 @@ class PermisosUnitariosController extends Controller
         $listaHorarios = DB::table('ohxqc_horarios')->get();
 
         if($resultado > 0){
-            return view('Permisos::permisosUnitarios', compact('dataTUser', 'nombre', 'cc', 'cargo', 'empresa', 'tipo', 'jefe', 'ciudad', 'contrato', 'fechaIni', 'fechaFin', 'estado', 'idhorario', 'btn', 'dataTree', 'listaHorarios'));
+            return view('Permisos::permisosUnitarios', compact('dataTUser', 'nombre', 'cc', 'cargo', 'empresa', 'tipo', 'jefe', 'ciudad', 'contrato', 'fechaIni', 'fechaFin', 'estado', 'idhorario', 'btn', 'dataTree', 'listaHorarios','parqueadero'));
             /*return redirect()->route('permisosUnitarios', ['json'=>$dataTUser,'nombre'=>$nombre,'cc'=>$cc,'cargo'=>$cargo,'empresa'=>$empresa,'tipo'=>$tipo,'jefe'=>$jefe,'ciudad'=>$ciudad,'contrato'=>$contrato,'fechaIni'=>$fechaIni,'fechaFin'=>$fechaFin,'estado'=>$estado,'horario'=>$idhorario, 'btn']);*/
         }else{
             return redirect('permisos-unitarios')->with(['mensaje' => 'No se encontraron registros']);
@@ -141,10 +144,16 @@ class PermisosUnitariosController extends Controller
         $permi = $request->input('id_t');
         $id_horario = $request->input('id_horario');
         $ac= $request->input('activo');
+        $par= $request->input('parqueadero');
         $activo="";
+        $parqueadero ="";
         //echo "CC: ".$this->cedula."<BR> PERMISOS: ".$permi." <BR>IDHORARIO: ".$id_horario."<BR>ESTADO: ".$ac."<br>";
 
         if($ac=='true'){$activo='S';}else{$activo='N';}
+        if($par=='true'){$parqueadero='1';}else{$parqueadero='0';}
+
+       
+
         //echo "NUEVO ESTADO: ".$activo;
         
         if($this->cedula != ""){
@@ -152,11 +161,9 @@ class PermisosUnitariosController extends Controller
            // echo "cedula: ".$this->cedula;
             $permisos=explode(",",$permi);  //convierte el estring de permisos a un array
            
-                if($activo== 'N'){
-                            $sql = DB::table('ohxqc_visitantes')->where('identificacion', '=', $this->cedula)->update(['activo'=>'N']);
-                }else{
-                            $sql = DB::table('ohxqc_visitantes')->where('identificacion', '=', $this->cedula)->update(['activo' => 'S']);
-                }
+           DB::table('ohxqc_visitantes')->where('identificacion', '=', $this->cedula)->update(['activo'=>$activo,'parqueadero' =>$parqueadero ]);
+
+               
          
             if($permisos[0]!="" && $activo=='S'){
                     //Elimina primero los permisos
