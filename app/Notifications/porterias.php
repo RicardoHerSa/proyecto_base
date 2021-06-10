@@ -48,7 +48,10 @@ class porterias extends Notification
      */
     public function toMail($notifiable)
     {
-        $sedeN = DB::table('ohxqc_sede_fisica')->select('nombre')->where('id_sedef',$this->sede)->get();
+        $sedeN =  DB::table('ohxqc_ubicaciones as ubi')
+        ->select('ubi.descripcion')
+        ->where('ubi.id_ubicacion', $$this->sede)
+        ->get();
         foreach($sedeN as $name){
             $nombreSede = $name->nombre;
         }

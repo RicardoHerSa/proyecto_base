@@ -55,6 +55,16 @@ class enviarSolicitud extends Notification implements ShouldQueue
         //$url = route('reset.token'.$this->token);
          $url = url($this->token);
 
+         //muestra hasta 5 colaboradores
+         $arrayColabora = array();
+         $colaboradores = DB::table('ohxqc_documentos_solicitud')select('nombre')->where('solicitud_id',$this->idSolicitud)->limit(5);
+         $i = 0;
+         foreach($colaboradores as $colabora){
+            $arrayColabora[$i] = $nom->nombre;
+            $i++;
+         }
+         $listado = implode(',', $arrayColabora);
+
         if($this->tipo == 1){
             return (new MailMessage)
             ->subject('Solicitud para aprobar nuevo visitante')
@@ -62,6 +72,7 @@ class enviarSolicitud extends Notification implements ShouldQueue
             ->line('Según el flujo al que perteneces, has recibido este correo para poder validar la solicitud número: '.$this->idSolicitud)
             ->line('Solicitante: '.$this->solicitante)
             ->line('Labor a realizar: '.$this->labor)
+            ->line('Integrantes: '.$listado."...")
             ->line('Para ver mas detalles, pulsa a continuación:')
             ->action('Validar solicitud ', url($url))
             ->salutation('Cordialmente:');

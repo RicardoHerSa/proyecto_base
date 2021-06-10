@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Modules\Permisos\RegistroVisitante\Controllers;
-require 'C:\xampp\htdocs\sica\vendor\autoload.php';
+require '../vendor\autoload.php';
+
 use DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ use App\Notifications\enviarSolicitud;
 use App\Notifications\notificaSolicitud;
 use App\Notifications\porterias;
 use App\Models\User\User;
+use App\Jobs\registrarPermisos;
 
 
 class RegistroVisitanteController extends Controller
@@ -37,7 +39,7 @@ class RegistroVisitanteController extends Controller
         ->distinct('descripcion')
         /*->whereIn('codigo_empresa', ['42681','119','24305','27027','130','21679','115','128','32506','701','702','703','705','706','707','708','709','710','711','713','714','716','718','720','721','722','723','724','725','726','727','728','729','730','732','733','734','735','736','737','738','739','740','742','743','744',
         '745','129','132'])*/
-        ->where('descripcion','LIKE','%CARVAJAL%')
+        ->where('grupo_carvajal',1)
         ->where('activo', 'S')
         ->orderBy('descripcion')
         ->get();
@@ -106,23 +108,22 @@ class RegistroVisitanteController extends Controller
         $idSolicitud =  DB::table('ohxqc_solicitud_ingreso')->max('id_solicitud')+1;
 
         //validar si el registro es masivo, para comprobar que el excel sea correcto y si no, devolver
+        $urlComprimido = null;
         if($tipoRegistroV == "RM"){
             $cantidadAnexos = $request->input('cantR');
             if($cantidadAnexos == 0){ //Solo debemos tener un documento para valdar como masivo
                 $urlDocumento = $request->file('anexo')->store('documentosSolicitud', 'public'); //se sube para poder leerlo
+                $urlComprimido = $request->file('comprimidoCola')->store('documentosSolicitud', 'public'); //contendrá el comprimido de los colaboradores.
                 $msj = RegistroVisitanteController::validarExcel($urlDocumento, $idSolicitud);
-                
+            
                 if(substr($msj,0,5) == "error"){
-                    echo "Retornaria con el mensaje: ".$msj;
                     return redirect()->back()->with('errExcel',$msj);
-                }else{
-                    echo $msj;
                 }
-                
 
             }
 
         }
+      
         
         $correoSolicitante = DB::table('jess_users')->select('email')->where('id', auth()->user()->id)->get();
         foreach($correoSolicitante as $corr){
@@ -160,6 +161,7 @@ class RegistroVisitanteController extends Controller
                         'identificacion' =>  $request->input('cedula'),
                         'nombre' => $request->input('nombre'),
                         'url_documento' =>  $urlDocumento,
+                        'url_comprimido' =>  $urlComprimido,
                         'solicitud_id' => $idSolicitud
                     ]);
 
@@ -195,6 +197,7 @@ class RegistroVisitanteController extends Controller
                     'identificacion' =>  $request->input('cedula'),
                     'nombre' => $request->input('nombre'),
                     'url_documento' =>  $urlDocumento,
+                    'url_comprimido' =>  $urlComprimido,
                     'solicitud_id' => $idSolicitud
                 ]);
             }
@@ -231,7 +234,7 @@ class RegistroVisitanteController extends Controller
                         /**Se consulta en la tabla de configuración ohxqc_config_solicitud_empresas, el max nivel
                         para conocer el flujo maximo por el cual viajará la solicitud. Si hay mas de una sede, se insertará en la tabla ohxqc_solicitud_por_aprobar, la cantidad de solicitudes  para c/u de las sedes
                         **/
-                        
+                  
                         if($cantidadSedes > 0){
                             $j = ""; //la primer sede tiene como name="sede", la segunda name="sede1"
                             $entraSede = 0;
@@ -437,6 +440,7 @@ class RegistroVisitanteController extends Controller
             //si no guardó la solicitud se redirige el error
             return redirect('registro-visitante')->with('errSoli', 'No se pudo regisrar la solicitud');
          }
+         
     }
 
  
@@ -617,6 +621,7 @@ class RegistroVisitanteController extends Controller
       
         $documentos = DB::table('ohxqc_documentos_solicitud')
         ->where('solicitud_id', '=', $solicitud)
+        ->orderBy('id_registro', 'DESC')
         ->get();
 
         $sedesVisitar = DB::table('ohxqc_sedes_solicitud as sol')
@@ -624,9 +629,6 @@ class RegistroVisitanteController extends Controller
         ->join('ohxqc_sede_fisica as sede', 'sede.id_sedef', 'sol.id_sede')
         ->where('sol.id_solicitud', '=', $solicitud)
         ->get();
-
-      //  var_dump($arrayInfo);
-        
 
         $empresas = DB::table('ohxqc_empresas')
         ->select('codigo_empresa', 'descripcion')
@@ -647,10 +649,21 @@ class RegistroVisitanteController extends Controller
        ->where('estado', '=', 1)
        ->get();
 
+       $tipoSolicitud = DB::table('ohxqc_solicitud_por_aprobar')
+       ->select('tipo_registro')
+       ->where('id_solicitud', $solicitud)
+       ->where('sede_id', $sedeID)
+       ->where('tipo_visitante', $ideIngreso)
+       ->get();
+       foreach($tipoSolicitud as $tipo){
+           $tipoR = $tipo->tipo_registro;
+       }
+
+
 
      
         if($accede){
-            return view('Permisos::validacionSolicitud', compact('solicitud','ideIngreso','sedeID','arrayInfo', 'documentos', 'sedesVisitar' ,'empresas', 'horarios', 'sedes', 'tiposVisitante', 'botonesAccion', 'msjRechazo', 'detalles'));
+            return view('Permisos::validacionSolicitud', compact('solicitud','ideIngreso','sedeID','arrayInfo', 'documentos', 'sedesVisitar' ,'empresas', 'horarios', 'sedes', 'tiposVisitante', 'botonesAccion', 'msjRechazo', 'detalles', 'tipoR'));
         }
 
 
@@ -1052,7 +1065,7 @@ class RegistroVisitanteController extends Controller
         $cantFilas = $worksheet->getHighestRow();
 
 
-        $arrayColumnas = ['C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+        $arrayColumnas = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
         //validar que no estén escritas las otras columnas
         for ($i=0; $i < count($arrayColumnas) ; $i++) { 
@@ -1075,8 +1088,25 @@ class RegistroVisitanteController extends Controller
         $conA = 1;
         $noEsNumero = true;
         $celdasNoEsNumero = array();
+        $noEsFechaIngr = true;
+        $celdasNoEsFechaIni = array();
+        $noEsFechaFin = true;
+        $celdasNoEsFechaFin = array();
         $arrayIdentidades = array();
         $arrayNombres = array();
+        $fechaIngreso = array();
+        $fechaFinal = array();
+
+        if(strlen($worksheet->getCell('A1')) == 0){
+            return "error, no se encuentra la cabecera para la columna A: IDENTIFICACION";
+        }else if(strlen($worksheet->getCell('B1')) == 0){
+            return "error, no se encuentra la cabecera para la columna B: NOMBRE";
+        }else if(strlen($worksheet->getCell('C1')) == 0){
+            return "error, no se encuentra la cabecera para la columna C: FECHA INICIO";
+        }else if(strlen($worksheet->getCell('D1')) == 0){
+            return "error, no se encuentra la cabecera para la columna D: FECHA FIN";
+        }
+
         while (strlen($worksheet->getCell('A'.$conA)) > 0) {
             if(strtoupper($worksheet->getCell('A1')->getValue()) != "IDENTIFICACION"){
                 return "error, no se encuentra la cabecera para la columna A: IDENTIFICACION";
@@ -1108,21 +1138,58 @@ class RegistroVisitanteController extends Controller
             $conB++;
         }
 
-        //valido si ambas columnas tienen la misma cantidad de resgistros
-        if($conA == $conB){
+        //solo recibo la columna C = fecha inicio
+        $conC = 1;
+     
+        while (strlen($worksheet->getCell('C'.$conC)) > 0) {
+            if(strtoupper($worksheet->getCell('C1')->getValue()) != "FECHA INICIO"){
+                return "error, no se encuentra la cabecera para la columna C: FECHA INICIO";
+                break;
+            }
+                //voy guardando las fechas de ingreso para asociar  las personas.
+                $fechaIngreso[$conC] = $worksheet->getCell('C'.$conC)->getValue();
+            
+            $conC++;
+        }
+
+        //solo recibo la columna D = fecha fin
+        $conD = 1;
+  
+        while (strlen($worksheet->getCell('D'.$conD)) > 0) {
+            if(strtoupper($worksheet->getCell('D1')->getValue()) != "FECHA FIN"){
+                return "error, no se encuentra la cabecera para la columna D: FECHA FIN";
+                break;
+            }
+                //voy guardando las fechas de fin para asociar  las personas.
+                $fechaFinal[$conD] = $worksheet->getCell('D'.$conD)->getValue();
+            $conD++;
+        }
+
+        //valido si las 4 columnas tienen la misma cantidad de resgistros
+        if($conA == $conB && $conA == $conC && $conA == $conD){
             //validar si algun registro de identificacion no fue numero
             if($noEsNumero == false){
                 $listaCeldas = implode(",", $celdasNoEsNumero);
 
                 return "error, las celdas: [ ".$listaCeldas." ] de la columna Identificación no tiene el formato válido: Número.";
+            }else if($noEsFechaIngr == false){
+                $listaCeldas = implode(",", $celdasNoEsFechaIni);
+
+                return "error, las celdas: [ ".$listaCeldas." ] de la columna Fecha Inicio no tiene el formato válido, EJ: 2021-06-09.";
+            }else if($noEsFechaFin == false){
+                $listaCeldas = implode(",", $celdasNoEsFechaFin);
+
+                return "error, las celdas: [ ".$listaCeldas." ] de la columna Fecha Fin no tiene el formato válido, EJ: 2021-06-09.";
             }else{
-                //se asocian identidades con nombres Y se guardan en la tabla ohxqc_documentos_solicitud
+                //se asocian identidades,nombres,fechas Y se guardan en la tabla ohxqc_documentos_solicitud
                 $guardado = false;
                 for ($i=2; $i < count($arrayIdentidades)+2 ; $i++) { 
                    $inserta = DB::table('ohxqc_documentos_solicitud')->insert([
                         'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
                         'identificacion' => $arrayIdentidades[$i],
                         'nombre' => $arrayNombres[$i],
+                        'fecha_inicio' => $fechaIngreso[$i],
+                        'fecha_fin' => $fechaFinal[$i],
                         'url_documento' => null,
                         'solicitud_id' => $idSolicitud
                     ]);
@@ -1136,8 +1203,47 @@ class RegistroVisitanteController extends Controller
                 }
             }
         }else{
-            return "error, las columnas Identificación y Nombre, no tienen la misma cantidad de registros.";
+            return "error, las columnas Identificacion,Nombre,Fecha Inicio, y Fecha_Fin, no tienen la misma cantidad de registros.";
         }
+    }
+
+    public function actualizarSedes($sedes/*Request $request*/)
+    {
+       // $sedes = $request->input('sedes');
+       $longiCadena = strlen($sedes);
+        
+       $sedes = substr($sedes, 0,$longiCadena-1);
+       $listaSedes = explode(",", $sedes);
+        $cantSedes = count($listaSedes);
+      
+        $nuevasSedes = DB::table('ohxqc_sede_fisica')->select('id_sedef', 'nombre')->whereNotIn('id_sedef', $listaSedes)->get();
+        foreach($nuevasSedes as $nueva){
+            echo "
+                <option value='".$nueva->id_sedef."'>".$nueva->nombre."</option>
+            
+            ";
+        }
+    }
+
+    public function consultaSedes(Request $request)
+    {
+        $idempresa = $request->input('idempresa');
+
+        $consulta = DB::table('ohxqc_ubicaciones as ubi')
+        ->select('ubi.id_ubicacion', 'ubi.descripcion')
+        ->join('ohxqc_empresas as emp', 'emp.sede_especifica_id', 'ubi.id_ubicacion')
+        ->where('emp.codigo_empresa', $idempresa)
+        ->where('emp.grupo_carvajal', 1)
+        ->orderBy('ubi.descripcion')
+        ->get();
+        if(count($consulta) > 0){
+            foreach($consulta as $emp){
+                echo "<option value='".$emp->id_ubicacion."'>".$emp->descripcion."</option>";
+            }
+        }else{
+            echo 0;
+        }
+
     }
 
    

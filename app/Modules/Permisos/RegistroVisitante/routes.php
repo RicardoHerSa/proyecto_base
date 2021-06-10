@@ -2,6 +2,7 @@
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
             use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+            use App\Jobs\registrarPermisos;
 
 Route::group(['middleware' => 'web'], function () { 
      Route::group(array('namespace' => 'App\Modules\Permisos\RegistroVisitante\Controllers'), function() {
@@ -15,10 +16,16 @@ Route::group(['middleware' => 'web'], function () {
         Route::get('solicitud/link', 'RegistroVisitanteController@getLinkSubscribe')->name('event.getLinkSubscribe')->middleware('authorization');
 
         Route::post('validarSolicitud', 'RegistroVisitanteController@validarSolicitud')->name('validarSolicitud')->middleware('authorization');
+        Route::post('consultasedes', 'RegistroVisitanteController@consultaSedes')->name('consultasedes')->middleware('authorization');
 
+        Route::get('actualizarSedes/{sedes}', 'RegistroVisitanteController@actualizarSedes')->name('actualizarSedes');
+
+        Route::get('job', function () {
+                registrarPermisos::dispatch(8,2,2);
+        });
         Route::get('excel', function () {
             
-           require 'C:\xampp\htdocs\sica\vendor\autoload.php';
+           require '../vendor\autoload.php';
 
            $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
            $reader->setReadDataOnly(TRUE);

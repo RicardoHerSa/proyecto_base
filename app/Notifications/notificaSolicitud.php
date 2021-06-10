@@ -55,9 +55,14 @@ class notificaSolicitud extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {   //Ruta de estructura de mail resources/views/vendor/notifications/email.blade.php
         //$url = route('reset.token'.$this->token);
-        $consultanombreSede = DB::table('ohxqc_sede_fisica')->select('nombre')->where('id_sedef',$this->sede)->get();
+        $consultanombreSede = DB::table('ohxqc_ubicaciones as ubi')
+        ->select('ubi.descripcion')
+        ->where('ubi.id_ubicacion', $$this->sede)
+        ->get();
+
+        
         foreach($consultanombreSede as $sed){
-            $nombreSede = $sed->nombre;
+            $nombreSede = $sed->descripcion;
         }
 
          if($this->tipoValidacion == "A"){

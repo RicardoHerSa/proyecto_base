@@ -95,7 +95,7 @@
         </div>
     </div> 
 
-    <form action="{{route('registraranexos')}}" method="POST" enctype="multipart/form-data">
+    <form  onsubmit="return validaFormulario();" action="{{route('registraranexos')}}" method="POST" enctype="multipart/form-data">
 
         <!--Solicitante-->
         <div class="row mt-2">
@@ -168,19 +168,19 @@
                                 <div class="row">
                                     <div class="col-xs-12 col-md-3 col-lg-3">
                                         <div class="form-group">
-                                            <label for="cedula">Identificación: </label>
+                                            <label for="cedula" id="lblIde">Identificación: </label>
                                             <input required id="cedula" class="form-control" type="number" name="cedula">
                                         </div>
                                     </div>
                                     <div class="col-xs-12 col-md-4 col-lg-4">
                                         <div class="form-group">
-                                            <label for=nombre">Nombre Completo: </label>
+                                            <label for=nombre" id="lblnom">Nombre Completo: </label>
                                             <input required id="nombre" class="form-control" type="text" name="nombre">
                                         </div>
                                     </div>
                                     <div class="col-xs-12 col-md-4 col-lg-4">
                                         <div class="form-group">
-                                            <label for="anexo">Anexo: </label>
+                                            <label for="anexo" id="lblAnex">Anexo: </label>
                                             <input required id="anexo" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo">
                                             <small id="txtAnexo" class="ml-2">Sólo archivos pdf, word, png, jpg, zip, rar</small>
                                         </div>
@@ -192,24 +192,33 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="row" id="comprimido" style="display: none">
+                                    <div class="col-xs-12 col-md-5">
+                                        <div class="form-group">
+                                            <label for="comprimidoCola">Subir Comprimido de Documentación: </label>
+                                            <input id="comprimidoCola" class="form-control" type="file" accept=".pdf,.zip,.rar" name="comprimidoCola">
+                                            <small id="txtAnexo" class="ml-2">Comprimido con la documentación de cada colaborador.</small>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div id="inputs" style="display: none">
                                     <div class="row" id="clonado">
                                         <div class="col-xs-12 col-md-3 col-lg-3">
                                             <div class="form-group">
                                                 <label for="cedula1">Indetificación: </label>
-                                                <input id="cedula1" class="form-control" type="text" name="cedula1">
+                                                <input id="cedula1" required class="form-control" type="text" name="cedula1">
                                             </div>
                                         </div>
                                         <div class="col-xs-12 col-md-4 col-lg-4">
                                             <div class="form-group">
                                                 <label for="nombre1">Nombre Completo: </label>
-                                                <input id="nombre1" class="form-control" type="text" name="nombre1">
+                                                <input id="nombre1" required class="form-control" type="text" name="nombre1">
                                             </div>
                                         </div>
                                         <div class="col-xs-12 col-md-4 col-lg-4">
                                             <div class="form-group">
                                                 <label for="anexo1">Anexo: </label>
-                                                <input id="anexo1" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo1">
+                                                <input id="anexo1" required class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo1">
                                             </div>
                                         </div>
                                         <div class="col-xs-12 col-md-3 col-lg-1">
@@ -245,8 +254,9 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="empVisi">Empresa a Visitar: <span style="color:red">*</span></label>
-                                    <select name="empVisi" id="empVisi" class="form-control" required>
-                                        
+                                   
+                                    <select  onchange="cargaSedes()" name="empVisi" id="empVisi" class="form-control" required>
+                                        <option value="0">Seleccione Empresa</option>
                                         @foreach ($empresas as $emp)
                                         <option value="{{$emp->codigo_empresa}}">{{$emp->descripcion}}</option>
                                         @endforeach
@@ -297,18 +307,18 @@
                         
                             <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="float-left  ml-3 mt-2">
-                                    <button type="button" onclick="nuevaSede();" class="btn btn-primary">Añadir</button>
+                                    <button style="display: none" id="btnAddSede" type="button" onclick="nuevaSede();" class="btn btn-primary">Añadir</button>
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
                             
                             <div class="form-group">
-                                <label for="my-input">Seleccione Sede</label>
+                                <label for="sede" id="lblSede">Seleccione Sede:</label>
+                                <div class="spinner-border text-primary float-right mb-1" style="display: none" role="status" id="bolaCarga">
+                                    <span class="sr-only">Cargando Sedes...</span>
+                                </div>
                                 <select name="sede" id="sede" class="form-control">
-                                    
-                                    @foreach ($sedes as $sede)
-                                    <option value="{{$sede->id_sedef}}">{{$sede->nombre}}</option>
-                                    @endforeach
+                                    <option value="0">Sin registros</option>
                                 </select>
                                     <input type="hidden" id="primerEliminadoSelect" value="n">
                                     <input type="hidden" id="cantRegisSelect" value="0" name="cantRSelects">
@@ -322,12 +332,9 @@
                                 <div class="col-xs-12 col-md-4 col-lg-4"></div>
                                 <div class="col-xs-12 col-md-4 col-lg-4">
                                     <div class="form-group">
-                                        <label for="my-input">Seleccione Sede</label>
+                                        <label for="sede1">Seleccione Sede:</label>
                                         <select name="sede1" id="sede1" class="form-control">
-                                            
-                                            @foreach ($sedes as $sede)
-                                            <option value="{{$sede->id_sedef}}">{{$sede->nombre}}</option>
-                                            @endforeach
+                                            <option value="0">Sin registros</option>
                                         </select>
                                     </div>
                                 </div>
@@ -341,6 +348,7 @@
                         </div>
                     </div>
                 </div>
+                <input type="hidden" id="sedeSelcc">
             <!-- <input type="submit">
                 </form>-->
             </div>
@@ -349,6 +357,10 @@
         <!--Labor a realizar-->
         <div class="row mt-2">
             <div class="col-xs-12 col-md-12 col-lg-12">
+                <div class="align-items-center" style="display: none" id="loading">
+                    <strong>Enviando Solicitud, por favor espere...</strong>
+                    <div class="spinner-border ml-auto " role="status" aria-hidden="true"></div>
+                  </div>
                 <div class="card">
                     <div class="card-body">
                         <div class="form-group">
@@ -359,7 +371,7 @@
                             <div class="col-xs-12 col-md-6 col-lg-6"></div>
                             <div class="col-xs-12 col-md-3 col-lg-3">
                                 <div class="form-group">
-                                    <input type="submit" class="btn btn-primary" value="Enviar">
+                                    <input id="btnEnviar" type="submit" class="btn btn-primary" value="Enviar" onclick="return validaFormulario();">
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-3 col-lg-3"></div>
@@ -400,7 +412,7 @@
         var texto = $('select[name="tipoIngreso"] option:selected').text();
         var txt = texto.substr(0,3);
         console.log(txt);
-        if(txt != "CON"){
+        if(txt != "USU"){
                 $("#contenedorContratista").hide();
                 $("#empresaContratista").val('')
             }else{
@@ -484,8 +496,22 @@
     //agregar mas select sedes
     let nuevaSede = function() 
     {
+       
+       
         var cant = parseInt(1);
         var cantidadRegistroActual = parseInt($("#cantRegisSelect").val());
+        var sedeAc = $("#sedeSelcc").val();
+        var otrasede = "";
+        if(cantidadRegistroActual == 0){
+            var sedeUno = $("#sede").val();
+            $("#sedeSelcc").val(sedeUno);
+        }else if(cantidadRegistroActual == 1){
+            otrasede = $("#sede"+cantidadRegistroActual).val();
+        }else{
+            console.log("entra else: "+cantidadRegistroActual-1);
+            otrasede = $("#sede"+cantidadRegistroActual-1).val();
+        }
+        var acumula = sedeAc+=","+otrasede;
         var cantidadRegistro = parseInt($("#cantRegisSelect").val());
         cantidadRegistro+=cant;
         if(cantidadRegistro > 9){
@@ -495,12 +521,15 @@
                 $('#selects').show();
                 $("#clonadoSelects").find("button").attr("onclick", "eliminarSelect(this,1)");
                 $("#clonadoSelects").find("button").attr('name', 'btnEliminarSelect'+cantidadRegistro);
+                
                 //para los input cc, nombre, anexo
                 $('#cedula'+cantidadRegistro).attr('name', 'cedula'+cantidadRegistro);
 
               
                 $('#primerEliminado').val('n');
             }else{
+               
+                $("#sedeSelcc").val(acumula);
                 $("#anexarSedes")                                    // crea una nueva sección
                 //.insertBefore("[name='borrar']")    // insértala antes del botón de enviar (para que se vayan añadiendo en orden)
                  .append($("#selects").html()
@@ -511,11 +540,16 @@
                     //para los input cc, nombre, anexo
                     $("#clonadoSelects").find($('#sede'+cantidadRegistroActual)).attr("name", "sede"+cantidadRegistro);
                     $("#clonadoSelects").find($('#sede'+cantidadRegistroActual)).attr("id", "sede"+cantidadRegistro);
+                    $("#clonadoSelects").find($('#sede'+cantidadRegistroActual)).attr("chahol");
+              
                   
             }
         
                  $("#cantRegisSelect").val(cantidadRegistro);
         }
+
+        //Ir guardando las sedes seleccionadas para que no las vuelva a mostrar
+        //guardaSedes();
               
       
     }
@@ -555,6 +589,20 @@
     {
         if($event == "RM"){
             $("#btnAñadirRegistro").hide();
+
+            //cambia nombre  labels
+            $("#lblIde").text('Nit Empresa:');
+            $("#lblnom").text('Nombre Empresa:');
+            $("#lblAnex").text('Listado de Colabordores:');
+
+            //Muestra el comprimido
+            $("#comprimido").show();
+            $("#comprimidoCola").attr('required', true);
+
+            //quita los required de cedula1,nombre1,anexo1
+            $('#cedula1').removeAttr('required');
+            $('#nombre1').removeAttr('required');
+            $('#anexo1').removeAttr('required');
             
             var hasta = parseInt($("#cantRegis").val());
             console.log(hasta);
@@ -582,11 +630,143 @@
             $("#anexo").removeAttr('accept');
             $("#anexo").attr('accept', '.xlsx');
         }else{
+            //cambia nombre  labels
+            $("#lblIde").text('Identificación:');
+            $("#lblnom").text('Nombre Completo:');
+            $("#lblAnex").text('Anexo:');
+
+            //oculta comprimido
+            $("#comprimido").hide();
+            $("#comprimidoCola").removeAttr('required');
+
+            //agrega los required de cedula1,nombre1,anexo1
+            $('#cedula1').attr('required', true);
+            $('#nombre1').attr('required', true);
+            $('#anexo1').attr('required', true);
+
             $("#btnAñadirRegistro").show();
             $("#clonado").css({'display':'flex'});
             $("#txtAnexo").text('Sólo archivos pdf, word, png, jpg, zip, rar');
             $("#anexo").removeAttr('accept');
             $("#anexo").attr('accept', 'image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar');
+        }
+    }
+
+    function guardaSedes()
+    {
+        var sedesSeleccionadas = ""; 
+        var cant = $("#cantRegisSelect").val();
+        for(var i=0; i < cant; i++){
+            if(i == 0){
+                var idSede = $("#sede").val();
+            }else{
+                var idSede = $("#sede"+i).val();
+            }
+            sedesSeleccionadas += idSede+",";
+        }
+       
+       
+        
+        console.log("SEDES SELECCIONADAS: "+sedesSeleccionadas);
+        var token = '{{csrf_token()}}';
+            var request=$.ajax({
+                    type:  'GET',
+                    url: "actualizarSedes/"+sedesSeleccionadas,
+                  // data: {'sedes':sedesSeleccionadas, _token:token},
+                    cache: false,
+                    success: function(response){
+                        if(cant > 1){
+                            var items = "";
+                            var actual = $("#sede"+cant).val();
+                            console.log("SELECT ACTUAL: SEDE:"+actual);
+                        $("#sede1 option").each(function() { 
+                            //console.log($(this).attr('value'));
+                            var it = $(this).attr('value');
+                            var nom = $(this).text();
+                            if(actual == it){
+                                items += "<option selected value='"+it+"'>"+nom+"</option>";
+                            }else{
+                                items += "<option value='"+it+"'>"+nom+"</option>";
+                            }
+                        });
+
+                        
+                        console.log("ITEMS DE LA SEDE: "+actual+" ->> "+items);
+                      
+                            document.getElementById("sede"+cant).innerHTML=items;
+                            var sedeNueva = cant-1;
+                            document.getElementById("sede"+sedeNueva).innerHTML=response;
+                        }else{
+
+                            document.getElementById("sede1").innerHTML=response;
+                        }
+                    },
+                      
+                    error:function(xhr, ajaxOptions, thrownError) {
+                                    alert(xhr.status);
+                    }
+                        
+        });
+    }
+
+    function cargaSedes()
+    {
+       $("#lblSede").removeClass('text-danger');
+       $("#btnAddSede").hide();
+       var idempresa = $("#empVisi").val();
+        if(idempresa != 0){
+            $("#bolaCarga").fadeIn();
+            $("#lblSede").text('Buscando Sedes...');
+            var token = '{{csrf_token()}}';
+                var request=$.ajax({
+                        type:  'POST',
+                        url: "consultasedes",
+                        data: {'idempresa':idempresa,  _token:token},
+                        cache: false,
+                        success: function(response){
+                            if(response != 0){
+                                $("#lblSede").text('Seleccione Sede:');
+                                document.getElementById('sede').innerHTML = response;
+                                document.getElementById('sede1').innerHTML = response;
+                                $("#btnAddSede").show();
+                            }else{
+                                $("#lblSede").text('No se encontraron sedes asociadas.');
+                                $("#lblSede").addClass('text-danger');
+                                document.getElementById('sede').innerHTML = "<option value='0'>Sin registros</option>";
+                                document.getElementById('sede1').innerHTML = "<option value='0'>Sin registros</option>";
+                            }
+                            $("#bolaCarga").hide();
+                            
+                        },
+                        error:function(xhr, ajaxOptions, thrownError) {
+                            alert(xhr.status);
+                            $("#bolaCarga").hide();
+                            $("#lblSede").text('No se encontraron sedes.');
+                        }
+                    
+                    });
+
+        }else{
+            $("#lblSede").addClass('text-danger');
+            $("#lblSede").text('Por favor seleccione empresa');
+            document.getElementById('sede').innerHTML = "<option value='0'>Sin registros</option>";
+            document.getElementById('sede1').innerHTML = "<option value='0'>Sin registros</option>";
+            $("#btnAddSede").hide();
+        }
+    }
+
+    function validaFormulario()
+    {
+        var idsede = $("#sede").val();
+        console.log(idsede);
+        if(idsede == 0){
+            alert('Debe seleccionar una sede.');
+            return false;
+        }else{
+
+            $("#btnEnviar").hide();
+            $("#loading").show();
+            return true;
         }
     }
 

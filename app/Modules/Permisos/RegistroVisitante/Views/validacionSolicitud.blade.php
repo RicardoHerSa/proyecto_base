@@ -32,7 +32,7 @@
         @endif
     @endif
    
-
+    
     <div class="row mt-3">
         <div class="col-xs-12 col-md-12 col-lg-12">
             <div class="card">
@@ -89,7 +89,7 @@
         <div class="row mt-2">
             <div class="col-xs-12 col-md-12 col-lg-12">
                 <div class="card">
-                    <div class="card-body" id="anexos">
+                    <div class="card-body" style="height: 300px;overflow-y: scroll;" id="anexos">
                         <h4 class="text-center mt-2">Personas Que Ingresan</h4>
                         <hr>
                         <br>
@@ -98,6 +98,11 @@
                                 <tr>
                                     <th>Identificación</th>
                                     <th>Nombre</th>
+                                    @if ($tipoR == "RM")
+                                    <th>Fecha Ingreso</th>
+                                    <th>Fecha Fin</th>
+                                    <th>Comprimido Colaboradores</th>
+                                    @endif
                                     <th>Anexo</th>
                                 </tr>
                             </thead>
@@ -106,11 +111,20 @@
                                         <tr>
                                             <td>{{$docu->identificacion}}</td>
                                             <td>{{$docu->nombre}}</td>
-                                            @if (strlen($docu->url_documento) > 0)
-                                              <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
-                                            @else
-                                            <td><span class="badge badge-secondary">Sin Documento</span></td>
+                                            @if ($tipoR == "RM")
+                                                <td>{{$docu->fecha_inicio}}</td>
+                                                <td>{{$docu->fecha_fin}}</td>
+                                                @if (strlen($docu->url_comprimido) > 0)
+                                                <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_comprimido}}" target="_blank" download>Descargar Comprimido</a></td>
+                                                @else
+                                                <td><span class="badge badge-secondary"></span></td>
+                                                @endif
                                             @endif
+                                            @if (strlen($docu->url_documento) > 0)
+                                                <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
+                                          @else
+                                                <td><span class="badge badge-secondary"></span></td>
+                                          @endif
                                         </tr>
                                 @endforeach
                             </tbody>
@@ -222,6 +236,10 @@
         </div>
         <div class="row mt-2">
             <div class="col-xs-12 col-md-12 col-lg-12">
+                <div class="align-items-center" id="loading" style="display: none">
+                    <strong>Procesando, espere un momento por favor....</strong>
+                    <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+                </div>
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
@@ -237,10 +255,10 @@
                                             <input type="hidden" name="idsede" value="{{$sedeID}}">
                                             <input type="hidden" name="idempresa" value="{{$arrayInfo[0]['empVisitar']}}">
                                             <label for="">Digite un comentario antes de validar</label>
-                                            <textarea required placeholder="Digite aqui..." name="comentario" cols="8" rows="5" class="form-control"></textarea>
+                                            <textarea required placeholder="Digite aqui..." name="comentario" cols="8" rows="5" class="form-control" id="comentario"></textarea>
                                             <br>
-                                            <input onclick="return confirm('¿Está seguro de aprobar esta solicitud?')" name="aprobar" type="submit" class="btn btn-success" value="Aprobar">
-                                            <input onclick="return confirm('¿Está seguro de rechazar esta solicitud?')" name="rechazar" type="submit" class="btn btn-danger" value="Rechazar">
+                                            <input id="btnAprobar" onclick="return load(1);" name="aprobar" type="submit" class="btn btn-success" value="Aprobar">
+                                            <input id="btnRechazar" onclick="return load(2);" name="rechazar" type="submit" class="btn btn-danger" value="Rechazar">
                                             @if (count($detalles) > 0)
                                                 <a class="btn btn-primary" href="#" data-toggle="modal" data-target="#modalDetallesDos" href="#">Ver Flujo</a>  
                                                 </div>
@@ -386,5 +404,24 @@
      </div>
      @endif
 
+     <script>
+        function load(opcion){
+            var comentario = $("#comentario").val();
+            if(opcion == 1){
+                if(confirm('¿Está seguro de aprobar esta solicitud?') && comentario != ""){
+                     $("#loading").css({'display':'block'});
+                     $("#btnAprobar").hide();
+                     $("#btnRechazar").hide();
+                }
+            }else{
+                if(confirm('¿Está seguro de rechazar esta solicitud?') && comentario != ""){
+                     $("#loading").css({'display':'block'});
+                     $("#btnAprobar").hide();
+                     $("#btnRechazar").hide();
+                }
+            }
+        
+         }
+     </script>
 
 @include('layouts.footer', ['modulo' => 'unitario'])
