@@ -15,6 +15,7 @@ use App\Notifications\enviarSolicitud;
 use App\Notifications\notificaSolicitud;
 use App\Notifications\porterias;
 use App\Models\User\User;
+use Illuminate\Support\Facades\Log;
 use App\Jobs\registrarPermisos;
 
 
@@ -39,7 +40,7 @@ class RegistroVisitanteController extends Controller
         ->distinct('descripcion')
         /*->whereIn('codigo_empresa', ['42681','119','24305','27027','130','21679','115','128','32506','701','702','703','705','706','707','708','709','710','711','713','714','716','718','720','721','722','723','724','725','726','727','728','729','730','732','733','734','735','736','737','738','739','740','742','743','744',
         '745','129','132'])*/
-        ->where('grupo_carvajal',1)
+        ->where('grupo_carvajal',-1)
         ->where('activo', 'S')
         ->orderBy('descripcion')
         ->get();
@@ -1233,9 +1234,11 @@ class RegistroVisitanteController extends Controller
         ->select('ubi.id_ubicacion', 'ubi.descripcion')
         ->join('ohxqc_empresas as emp', 'emp.sede_especifica_id', 'ubi.id_ubicacion')
         ->where('emp.codigo_empresa', $idempresa)
-        ->where('emp.grupo_carvajal', 1)
+       // ->where('emp.grupo_carvajal', 1)
         ->orderBy('ubi.descripcion')
         ->get();
+
+
         if(count($consulta) > 0){
             foreach($consulta as $emp){
                 echo "<option value='".$emp->id_ubicacion."'>".$emp->descripcion."</option>";
@@ -1243,6 +1246,36 @@ class RegistroVisitanteController extends Controller
         }else{
             echo 0;
         }
+
+    }
+
+
+    public function empresaVisitar(Request $request){
+
+        
+        $tipo = $request->input('tipoIngreso');
+        
+
+
+        $consulta = DB::table('ohxqc_empresas')
+        ->select('codigo_empresa', 'descripcion')
+        ->distinct('descripcion')
+        //->where('grupo_carvajal',-1)
+        ->where('activo', 'S')
+        ->orderBy('descripcion')
+        ->get();
+
+        Log::info( 'Tipo: ' . $tipo);
+       
+        if(count($consulta) > 0){
+            foreach($consulta as $emp){
+                echo "<option value='".$emp->codigo_empresa."'>".$emp->descripcion."</option>";
+            }
+        }else{
+            echo 0;
+        }
+
+
 
     }
 

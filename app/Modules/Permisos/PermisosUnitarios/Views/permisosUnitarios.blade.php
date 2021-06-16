@@ -72,7 +72,7 @@
                             <label id='cc' name='cc'><B>Cedula:</B>{{isset($cc)?$cc:''}}</label>
                             <label><B>Cargo:</B> {{isset($cargo)?$cargo:''}}</label>
                             <label><B>Empresa:</B> {{isset($empresa)?$empresa:''}}</label>
-                            <label><B>Tipo:</B> {{isset($tipo)?$tipo:''}}</label>
+                            <label><B>Tipo:</B> {{isset($tipo)?$tipo:''}}</label><br>
                             <label><B>Jefe:</B> {{isset($jefe)?$jefe:''}}</label>
                             <label><B>Ciudad:</B> {{isset($ciudad)?$ciudad:''}}</label>
                             <label><B>Tipo de Contrato:</B> {{isset($contrato)?$contrato:''}}</label>
@@ -295,11 +295,15 @@
                                 var item = items[a];
                                 if(item.value == permisos[0]){
                                     $('#jqxTree').jqxTree('checkItem', item, true);
+                                    $('#jqxTree').jqxTree('expandItem', item);
                                 }
                      }
 				}
 	    }
-		$('#jqxTree').jqxTree('expandAll');
+       
+    
+		//$('#jqxTree').jqxTree('expandAll');
+       // $('#jqxTree').jqxTree('expandItem', items[0]);
         $("#jqxTree").css({'width':'100%'});
 	});
 	

@@ -17,6 +17,7 @@ Route::group(['middleware' => 'web'], function () {
 
         Route::post('validarSolicitud', 'RegistroVisitanteController@validarSolicitud')->name('validarSolicitud')->middleware('authorization');
         Route::post('consultasedes', 'RegistroVisitanteController@consultaSedes')->name('consultasedes')->middleware('authorization');
+        Route::post('empresavisitar', 'RegistroVisitanteController@empresaVisitar')->name('empresavisitar')->middleware('authorization');
 
         Route::get('actualizarSedes/{sedes}', 'RegistroVisitanteController@actualizarSedes')->name('actualizarSedes');
 

@@ -77,10 +77,10 @@
         <div class="col-xs-12 col-md-12 col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>Registro de Nuevo Visitante</h4>
+                    <h5>Formulario Solicitud de Ingreso  </h5>
                 </div>
                 <div class="card-body">
-                    <p class="card-text">SEÑOR SOLICITANTE:  Recuerde que los trabajos en alturas debe tener:</p>
+                    <p style="color:red" class="card-text">SEÑOR SOLICITANTE:  Recuerde que los trabajos en alturas debe tener:</p>
                    <ul>
                        <li>Certificado medico de aptitud (Este no debe exceder un año).</li>
                        <li>Certificado de entrenamiento en alturas (Este no debe exceder un año).</li>
@@ -112,7 +112,8 @@
                             <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="form-group">
                                     <label for="tipoIngreso">Tipo de Ingreso: <span style="color:red">*</span></label>
-                                    <select name="tipoIngreso" id="tipoIngreso" class="form-control" onchange="ocultaInput()" required>
+                                    <select  onchange="Consultaempresavisitar()" name="tipoIngreso" id="tipoIngreso" class="form-control" onchange="ocultaInput()" required>
+                                        <option id = 'selingreso'value="0"> </option>
                                         @foreach ($tiposVisitante as $tipos)
                                             <option value="{{$tipos->id_tipo_visitante}}">{{$tipos->nombre}}</option>
                                         @endforeach
@@ -187,7 +188,7 @@
                                     </div>
                                     <div class="col-xs-12 col-md-3 col-lg-1">
                                         <div class="form-group">
-                                            <label for="">Borrar</label>
+                                            <label for=""></label>
                                             <button type="button" class="btn btn-danger" onclick="borrarAnexos()"><i class="fa fa-trash"></i></button>
                                         </div>
                                     </div>
@@ -223,7 +224,7 @@
                                         </div>
                                         <div class="col-xs-12 col-md-3 col-lg-1">
                                             <div class="form-group">
-                                                <label for="">Borrar</label>
+                                                <label for=""></label>
                                                 <button type="button" class="btn btn-danger"><i class="fa fa-trash"></i></button>
                                             </div>
                                         </div>
@@ -253,13 +254,13 @@
                                    <input type="text" class="form-control" readonly value="Horario Especial Lunes a Domingo 00:00 - 23:59">
                                 </div>
                                 <div class="form-group">
-                                    <label for="empVisi">Empresa a Visitar: <span style="color:red">*</span></label>
+                                    <label  id ='lblempresavisitar' for="empVisi">Empresa a Visitar: <span style="color:red">*</span></label>
                                    
-                                    <select  onchange="cargaSedes()" name="empVisi" id="empVisi" class="form-control" required>
-                                        <option value="0">Seleccione Empresa</option>
-                                        @foreach ($empresas as $emp)
+                                    <select  onchange="cargaSedes()" name="selEmpresa" id="selEmpresa" class="form-control" required>
+                                        <option  value="0">Seleccione Empresa</option>
+                                        {{-- @foreach ($empresas as $emp)
                                         <option value="{{$emp->codigo_empresa}}">{{$emp->descripcion}}</option>
-                                        @endforeach
+                                        @endforeach --}}
                                     </select>
                                 </div>
                             </div>
@@ -385,6 +386,13 @@
 </div>
 
 <script>
+
+$( document ).ready(function() {
+    Consultaempresavisitar();
+});
+
+
+    
     //consultas en real time - Hs
     function consultarHora()
     {
@@ -707,6 +715,57 @@
                     }
                         
         });
+    }
+ //lblempresavisitar
+    
+
+ function Consultaempresavisitar()
+
+    {
+       $("#lblempresavisitar").removeClass('text-danger');
+       //$("#btnAddSede").hide();
+       var idempresa = $("#empVisi").val();
+      
+       // if(idempresa != 0){
+            $("#bolaCarga").fadeIn();
+            $("#lblempresavisitar").text('Buscando Empresa...');
+                var token = '{{csrf_token()}}';
+                var request=$.ajax({
+                        type:  'POST',
+                        url: "empresavisitar",
+                        data: {_token:token},
+                        cache: false,
+                        success: function(response){
+                           
+                            if(response != 0){
+                                $("#lblempresavisitar").text('Seleccione Empresa:');
+                                document.getElementById('selEmpresa').innerHTML = response;
+                                
+                                $("#btnAddSede").show();
+                            }else{
+                                
+                              //  $("#lblempresavisitar").text('No se encontraron sedes asociadas.');
+                               // $("#lblempresavisitar").addClass('text-danger');
+                                document.getElementById('selEmpresa').innerHTML = "<option value='0'>Sin registros emp</option>";
+                               
+                            }
+                            $("#bolaCarga").hide();
+                            
+                        },
+                        error:function(xhr, ajaxOptions, thrownError) {
+                            alert(xhr.status);
+                            $("#bolaCarga").hide();
+                            $("#selEmpresa").text('Ninguna empresa configurada.');
+                        }
+                    
+                    });
+
+        //}else{
+           // $("#lblSede").addClass('text-danger');
+           // $("#lblSede").text('Por favor seleccione empresa');
+           // document.getElementById('selEmpresa').innerHTML = "<option value='0'>Sin registros</option>";
+           
+        //}
     }
 
     function cargaSedes()
