@@ -50,22 +50,16 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-xs-12 col-md-4 col-lg-4">
+                            <div class="col-xs-12 col-md-6 col-lg-6">
                                 <div class="form-group">
                                     <label for="solicitante">Solicitante, Correo, Ext: </label>
                                     <input id="solicitante" class="form-control" type="text" name="solicitante" readonly value="{{$arrayInfo[0]['solicitante']}}">
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-md-4 col-lg-4">
+                            <div class="col-xs-12 col-md-6 col-lg-6">
                                 <div class="form-group">
                                     <label for="tipoIngreso">Tipo de Ingreso: </label>
                                     <input type="text" readonly class="form-control" value="{{$arrayInfo[0]['tipoIngreso']}}">
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-md-4 col-lg-4">
-                                <div class="form-group">
-                                    <label for="tipoId">Tipo de Identificación: </label>
-                                    <input type="text" readonly class="form-control" value="{{$arrayInfo[0]['tipoId'] == 'CEDULA'?'Cédula':'Pasaporte'}}">
                                 </div>
                             </div>
                         </div>
@@ -96,11 +90,13 @@
                         <table class="table table-light">
                             <thead class="thead-light">
                                 <tr>
+                                    <th>Tipo Identificación</th>
                                     <th>Identificación</th>
                                     <th>Nombre</th>
-                                    @if ($tipoR == "RM")
                                     <th>Fecha Ingreso</th>
                                     <th>Fecha Fin</th>
+                                    <th>Estado</th>
+                                    @if ($tipoR == "RM")
                                     <th>Comprimido Colaboradores</th>
                                     @endif
                                     <th>Anexo</th>
@@ -109,11 +105,13 @@
                             <tbody>
                                 @foreach ($documentos as $docu)
                                         <tr>
+                                            <td>{{$docu->tipo_identificacion}}</td>
                                             <td>{{$docu->identificacion}}</td>
                                             <td>{{$docu->nombre}}</td>
+                                            <td>{{$docu->fecha_inicio}}</td>
+                                            <td>{{$docu->fecha_fin}}</td>
+                                            <td>{{$docu->estado}}</td>
                                             @if ($tipoR == "RM")
-                                                <td>{{$docu->fecha_inicio}}</td>
-                                                <td>{{$docu->fecha_fin}}</td>
                                                 @if (strlen($docu->url_comprimido) > 0)
                                                 <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_comprimido}}" target="_blank" download>Descargar Comprimido</a></td>
                                                 @else
@@ -134,62 +132,6 @@
             </div>
         </div> 
 
-        <!--Fechas de ingreso-->
-        <div class="row mt-2">
-            <div class="col-xs-12 col-md-12 col-lg-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-xs-12 col-md-6 col-lg-6">
-                                <div class="form-group">
-                                    <label for="fechaIngreso">Fecha Inicio Ingreso: </label>
-                                    <input id="fechaIngreso" class="form-control" type="date" name="fechaIngreso" readonly value="{{$arrayInfo[0]['fechaIni']}}">
-                                </div>
-                              
-                                <div class="form-group">
-                                    <label for="empVisi">Empresa a Visitar: </label>
-                                    <select disabled name="empVisi" id="empVisi" class="form-control" readonly>
-                                        
-                                        @foreach ($empresas as $emp)
-                                        <option {{$arrayInfo[0]['empVisitar']==$emp->codigo_empresa?'selected':''}} value="{{$emp->codigo_empresa}}">{{$emp->descripcion}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-md-6 col-lg-6">
-                                <div class="form-group">
-                                    <label for="fechaFin">Fecha Fin Ingreso: </label>
-                                    <input id="fechaFin" class="form-control" type="date" name="fechaFin" readonly value="{{$arrayInfo[0]['fechaFinal']}}">
-                                </div>
-                                <div class="form-group">
-                                    <label for="horario">Horario: </label>
-                                    <select disabled name="horario" id="horario" class="form-control" >
-                                        @foreach ($horarios as $horar)
-                                            <option {{$arrayInfo[0]['horario']==$horar->id?'selected':''}} value="{{$horar->id}}">{{$horar->descripcion}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <!--
-                                <div class="form-group">
-                                    <label for="ciudad">Ciudad: </label>
-                                    <select disabled name="ciudad" id="ciudad" class="form-control" readonly>
-                                        
-                                        <option {{$arrayInfo[0]['ciudad']==2?'selected':''}} value="2">Bogota</option>
-                                        <option {{$arrayInfo[0]['ciudad']==1?'selected':''}} value="1">Cali</option>
-                                        <option {{$arrayInfo[0]['ciudad']==4?'selected':''}} value="4">Medellin</option>
-                                        <option {{$arrayInfo[0]['ciudad']==3?'selected':''}} value="3">Yumbo</option>
-                                        <option {{$arrayInfo[0]['ciudad']==5?'selected':''}} value="5">Montevideo Bgta.</option>
-                                        <option {{$arrayInfo[0]['ciudad']==6?'selected':''}} value="6">Palmira</option>
-                                        <option {{$arrayInfo[0]['ciudad']==12?'selected':''}} value="12">Tocancipa</option>
-                                        <option {{$arrayInfo[0]['ciudad']==13?'selected':''}} value="13">Ginebra</option></es>
-                                    </select>
-                                </div>-->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> 
 
         <!--Sedes a Visitar-->
         <div class="row mt-2">
@@ -208,7 +150,7 @@
                             <tbody>
                                 @foreach ($sedesVisitar as $sede)
                                         <tr>
-                                            <td>{{$sede->nombre}}</td>
+                                            <td>{{$sede->descripcion}}</td>
                                           
                                         </tr>
                                 @endforeach

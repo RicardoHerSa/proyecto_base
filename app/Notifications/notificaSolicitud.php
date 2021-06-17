@@ -57,7 +57,7 @@ class notificaSolicitud extends Notification implements ShouldQueue
         //$url = route('reset.token'.$this->token);
         $consultanombreSede = DB::table('ohxqc_ubicaciones as ubi')
         ->select('ubi.descripcion')
-        ->where('ubi.id_ubicacion', $$this->sede)
+        ->where('ubi.id_ubicacion', $this->sede)
         ->get();
 
         

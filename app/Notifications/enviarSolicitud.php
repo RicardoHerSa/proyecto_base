@@ -57,10 +57,10 @@ class enviarSolicitud extends Notification implements ShouldQueue
 
          //muestra hasta 5 colaboradores
          $arrayColabora = array();
-         $colaboradores = DB::table('ohxqc_documentos_solicitud')select('nombre')->where('solicitud_id',$this->idSolicitud)->limit(5);
+         $colaboradores = DB::table('ohxqc_documentos_solicitud')->select('nombre')->where('solicitud_id',$this->idSolicitud)->limit(5)->get();
          $i = 0;
          foreach($colaboradores as $colabora){
-            $arrayColabora[$i] = $nom->nombre;
+            $arrayColabora[$i] = $colabora->nombre;
             $i++;
          }
          $listado = implode(',', $arrayColabora);

@@ -27,6 +27,7 @@
                             <a href="users" class="btn btn-outline-info" role="button" aria-pressed="true"><i class="fa fa-users" aria-hidden="true"></i> Gestor de Usuarios </a>
                             <a href="usergroup" class="btn btn-outline-info" role="button" aria-pressed="true"><i class="fa fa-cubes" aria-hidden="true"></i> Gestor de Grupos </a>
                             <a href="viewlevels" class="btn btn-outline-info" role="button" aria-pressed="true"><i class="fa fa-tasks" aria-hidden="true"></i> Gestor Niveles de Accesos</a>
+                            <a href="company" class="btn btn-outline-info" role="button" aria-pressed="true"><i class="fa fa-briefcase" aria-hidden="true"></i> Gestor de Empresas</a>
                         </div>
 
                     </div>

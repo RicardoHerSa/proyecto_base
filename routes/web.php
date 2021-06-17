@@ -75,3 +75,11 @@ Route::get('p/{key}', function ($key) {return  response(array( 'auto' => Hash::m
 //Route::get('createuser',  'Services\ManagerUserController@UserCreate')->name('createuser')->middleware('authorization');
 //Route::get('updatepas',   'Services\ManagerUserController@updatepas')->name('createuser')->middleware('authorization');
 
+//Gestor de empresas y porterías
+Route::resource('company', 'company\companyController')->middleware('authorization');
+Route::post('actualizarestadoempresa', 'company\companyController@actualizarEstado')->name('actual.estado');
+Route::post('consultarnombreempresa', 'company\companyController@consultarNombreEmpresa')->name('consult.empresa');
+Route::post('consutarsedesempresa', 'company\companyController@consultarSedesEmpresa')->name('consult.sedes');
+Route::post('actualizarsedesempresa', 'company\companyController@actualizarSedesEmpresa')->name('actualiza.sedes');
+Route::post('registraempresa', 'company\companyController@registrarEmpresa')->name('registra.empresa');
+
