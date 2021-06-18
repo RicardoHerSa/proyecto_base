@@ -138,17 +138,14 @@ class companyController extends Controller
     {
         $codigoEmpresa = $request->input('codigo');
         $listSedes = DB::table('ohxqc_ubicaciones as ubi')
-        ->select('ciu.descripcion as ciuda','ubi.descripcion as sed')
+        ->select('ubi.descripcion as sed')
         ->join('ohxqc_empresas as emp', 'emp.sede_especifica_id', 'ubi.id_ubicacion')
-        ->join('ohxqc_sedes as ciu', 'ciu.id', 'emp.id_sede')
         ->where('emp.codigo_empresa', $codigoEmpresa)
         ->get();
 
         if(count($listSedes) > 0){
             foreach($listSedes as $sedes){
                echo "<tr> 
-               
-                <td>".$sedes->ciuda."</td>
                 <td>".$sedes->sed."</td>
                
                </tr>";

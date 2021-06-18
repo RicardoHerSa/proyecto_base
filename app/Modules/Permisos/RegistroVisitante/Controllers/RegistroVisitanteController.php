@@ -89,7 +89,7 @@ class RegistroVisitanteController extends Controller
        }
      
 
-        return view('Permisos::registroVisitante', compact('empresas', 'horarios', 'sedes', 'tiposVisitante'));
+        return view('Permisos::registroVisitante', compact('empresas', 'horarios', 'sedes', 'tiposVisitante', 'grupo'));
     }
 
     function consultarHora(Request $request)
@@ -114,6 +114,9 @@ class RegistroVisitanteController extends Controller
         $nombreTipoIngreso = DB::table('ohxqc_tipos_visitante')->select('nombre')->where('id_tipo_visitante', '=', $tipoIngreso)->get();
         foreach($nombreTipoIngreso as $nombreTipo){
             $nombreIngreso = $nombreTipo->nombre;   //este nombre se ingresa a solicitud_ingreso
+        }
+        if($tipoIngreso == 4){
+            $nombreIngreso = "EMPRESA EXTERNA";
         }
         $tipoId = $request->input('tipoId');
         if($request->input('empresaContratista') != null){
@@ -144,7 +147,7 @@ class RegistroVisitanteController extends Controller
                 $urlComprimido = $request->file('comprimidoCola')->store('documentosSolicitud', 'public'); //contendrá el comprimido de los colaboradores.
                 $msj = RegistroVisitanteController::validarExcel($urlDocumento, $idSolicitud);
                 if(substr($msj,0,5) == "error"){
-                    return redirect()->back()->with('errExcel',$msj);
+                   return redirect()->back()->with('errExcel',$msj);
                 }
             }
 
@@ -977,6 +980,9 @@ class RegistroVisitanteController extends Controller
         foreach($solicitudIngreso as $soli){
             $tipoIngr = $soli->tipo_ingreso;
         }
+        if($tipoIngr == "EMPRESA EXTERNA"){
+            $tipoIngr = "USUARIOS EMPRESA EXTERNA";
+        }
 
         $idTipoIngreso = DB::table('ohxqc_tipos_visitante')->select('id_tipo_visitante')->where('nombre',  $tipoIngr)->get();
         foreach($idTipoIngreso as $tip){
@@ -1127,9 +1133,15 @@ class RegistroVisitanteController extends Controller
         $celdasNoEsDocumento = array();
         $arrayTiposDocu = array();
 
-        $arrayNombres = array();
+        $noEsFechaIngr = true;
         $arrayFechaIngreso = array();
+        $celdasNoEsFechaIngr = array();
+
+        $noEsFechaFin = true;
         $arrayFechaFinal = array();
+        $celdasNoEsFechaFin = array();
+
+        $arrayNombres = array();
         $arrayEstados = array();
         
 
@@ -1161,7 +1173,7 @@ class RegistroVisitanteController extends Controller
             //echo $worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)."<br>";
             switch ($columns) {
                 case 0:
-                    if(strtoupper($worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)->getValue()) != "CEDULA" && strtoupper($worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)->getValue()) != "PASAPORTE"){
+                    if(strtoupper($worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)->getValue()) != "CC" && strtoupper($worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)->getValue()) != "PS"){
                         if($conG != 1){
                             $noEsDocumento = false;
                             array_push($celdasNoEsDocumento, "A".$conG);
@@ -1193,13 +1205,34 @@ class RegistroVisitanteController extends Controller
                     break;
                 case 3:
                     if($conG != 1){
-                        $arrayFechaIngreso[$conG] = $worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)->getValue();
+                        $explode = explode('-',$worksheet->getCell($arrayColumnasPermitidas[$columns].$conG));
+                        $explode[0];
+                        $explode[1];
+                        $explode[2];
+                                            //mes        //dia        //AÑO
+                        if(checkdate($explode[1], $explode[2], $explode[0] )){
+                            $arrayFechaIngreso[$conG] = $worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)->getValue();
+                        }else{
+                            $noEsFechaIngr = false;
+                            array_push($celdasNoEsFechaIngr, "D".$conG);
+                        }
+
                     }
                     $conD++;
                     break;
                 case 4:
                     if($conG != 1){
-                        $arrayFechaFinal[$conG] = $worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)->getValue();
+                        $explode = explode('-',$worksheet->getCell($arrayColumnasPermitidas[$columns].$conG));
+                        $explode[0]."<br>";
+                        $explode[1]."<br>";
+                        $explode[2]."<br>";
+                                            //mes        //dia        //AÑO
+                        if(checkdate($explode[1], $explode[2], $explode[0] )){
+                            $arrayFechaFinal[$conG] = $worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)->getValue();
+                        }else{
+                            $noEsFechaFin = false;
+                            array_push($celdasNoEsFechaFin, "E".$conG);
+                        }
                     }
                     $conE++;
                     break;
@@ -1220,41 +1253,65 @@ class RegistroVisitanteController extends Controller
             }
         }
 
+        
+      
         //Se valida que todas las columnas tengn la misma cantidad de registros, omitiendo la columna de estados
         if($conA == $conB && $conB == $conC && $conC == $conD && $conD == $conE ){
+           
             //Se valida que no hayan tipos de identificacion diferentes a CEDULA O PASAPORTE
             if(!$noEsDocumento){
                 $listaCeldas = implode(",", $celdasNoEsDocumento);
-                return "error, las celdas [".$listaCeldas."] de la columna TIPO IDENTIFICACION son diferentes a CEDULA O PASAPORTE.";
+                return "error, las celdas [".$listaCeldas."] de la columna TIPO IDENTIFICACION son diferentes a CC O PS.";
             }else{
                 //Si los tipos de identificación son válidos, entonces seguimos con la identificacion.
                 if(!$noEsNumero){
                     $listaCeldas = implode(",", $celdasNoEsNumero);
                     return "error, las celdas [".$listaCeldas."] de la columna IDENTIFICACION, no tienen un número válido.";
                 }else{
-                    //Si las identificaciones están bien, entonces  recibimos los datos.
-                    $guardado = false;
-                    for ($i=2; $i < count($arrayIdentidades)+2 ; $i++) { 
-                       $inserta = DB::table('ohxqc_documentos_solicitud')->insert([
-                            'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
-                            'tipo_identificacion' => $arrayTiposDocu[$i],
-                            'identificacion' => $arrayIdentidades[$i],
-                            'nombre' => $arrayNombres[$i],
-                            'fecha_inicio' => $arrayFechaIngreso[$i],
-                            'fecha_fin' => $arrayFechaFinal[$i],
-                            'url_documento' => null,
-                            'solicitud_id' => $idSolicitud,
-                            'usuario_creacion' => auth()->user()->name,
-                            'fecha_creacion' => now(),
-                            'estado' => isset($arrayEstados[$i])?$arrayEstados[$i]:'A'
-                        ]);
-                        if($inserta){ $guardado = true;}else{ $guardado = false; }
-                    }
-                    if($guardado){
-                        return "ok, los visitantes han sido guardados.";
+                    //se valida que las fechas  de ingreso sean correctas
+                    if(!$noEsFechaIngr){
+                         $listaCeldas = implode(",", $celdasNoEsFechaIngr);
+                         return "error, las celdas [".$listaCeldas."] de la columna FECHA INGRESO, no tienen una fecha válida.";
+                    }else if(!$noEsFechaFin){
+                         $listaCeldas = implode(",", $celdasNoEsFechaFin);
+                         return "error, las celdas [".$listaCeldas."] de la columna FECHA FIN, no tienen una fecha válida.";
                     }else{
-                        return "error, ha ocurrido un problema al guardar los visitantes.";
+                        //Si las fechas están bien, entonces  recibimos los datos.
+                                
+                        $guardado = false;
+
+                        //validar si la fecha final es mayor a la de ingreso, de no ser asi, retornamos
+                        $error = false;
+                        for ($i=2; $i < count($arrayFechaFinal)+2 ; $i++) { 
+                            if($arrayFechaFinal[$i] < $arrayFechaIngreso[$i]){
+                                return "error, la fecha de ingreso no debe ser mayor a la fecha final, en las celdas D".$i." y E".$i;            
+                            }
+                        }
+                    
+                        for ($i=2; $i < count($arrayIdentidades)+2 ; $i++) { 
+                    
+                        $inserta = DB::table('ohxqc_documentos_solicitud')->insert([
+                                'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
+                                'tipo_identificacion' => $arrayTiposDocu[$i],
+                                'identificacion' => $arrayIdentidades[$i],
+                                'nombre' => $arrayNombres[$i],
+                                'fecha_inicio' => $arrayFechaIngreso[$i],
+                                'fecha_fin' => $arrayFechaFinal[$i],
+                                'url_documento' => null,
+                                'solicitud_id' => $idSolicitud,
+                                'usuario_creacion' => auth()->user()->name,
+                                'fecha_creacion' => now(),
+                                'estado' => isset($arrayEstados[$i])?$arrayEstados[$i]:'A'
+                            ]);
+                            if($inserta){ $guardado = true;}else{ $guardado = false; }
+                        }
+                        if($guardado){
+                            return "ok, los visitantes han sido guardados.";
+                        }else{
+                            return "error, ha ocurrido un problema al guardar los visitantes.";
+                        }
                     }
+                  
                 }
             }
         }else{
@@ -1308,18 +1365,9 @@ class RegistroVisitanteController extends Controller
     public function empresaVisitar(Request $request){
 
         $tipo = $request->input('tipoIngreso');
-        //Empresas contrtistas
-        if($tipo == 2){
-            $consulta = DB::table('ohxqc_empresas')
-            ->select('codigo_empresa', 'descripcion')
-            ->distinct('descripcion')
-            ->where('grupo_carvajal',2)
-            ->where('activo', 'S')
-            ->orderBy('descripcion')
-            ->get();
-
-        //Empresas del grupo carvajal
-        }else if($tipo == 3){
+        $grupo = $request->input('grupo');
+        //Siendo colaborador y Si es visitante o contratista, deberia ver todas las empresas de grupo
+        if($tipo == 2 || $tipo == 3 && $grupo == 1){
             $consulta = DB::table('ohxqc_empresas')
             ->select('codigo_empresa', 'descripcion')
             ->distinct('descripcion')
@@ -1328,13 +1376,24 @@ class RegistroVisitanteController extends Controller
             ->orderBy('descripcion')
             ->get();
 
-        }else{
-            //todas las empresas
+        //Siendo colaborador y escoge empresa externa, debe ver todas las empresas externas
+        }else if($tipo == 4 && $grupo == 1){
+            $consulta = DB::table('ohxqc_empresas')
+            ->select('codigo_empresa', 'descripcion')
+            ->distinct('descripcion')
+            ->where('grupo_carvajal',2)
+            ->where('activo', 'S')
+            ->orderBy('descripcion')
+            ->get();
+
+        //Si no es colaborador, solo debe ver la empresa de él mismo
+        }else if($tipo == 4 && $grupo == 2){
+            
             $consulta = DB::table('ohxqc_empresas')
             ->select('codigo_empresa', 'descripcion')
             ->distinct('descripcion')
             ->where('activo', 'S')
-            ->orderBy('descripcion')
+            ->where('codigo_empresa', auth()->user()->profile_orgcountry)
             ->get();
 
         }
@@ -1343,6 +1402,9 @@ class RegistroVisitanteController extends Controller
         Log::info( 'Tipo: ' . $tipo);
        
         if(count($consulta) > 0){
+            if(count($consulta) == 1){
+                echo "<option value='0'>Seleccione Empresa</option>";
+            }
             foreach($consulta as $emp){
                 echo "<option value='".$emp->codigo_empresa."'>".$emp->descripcion."</option>";
             }

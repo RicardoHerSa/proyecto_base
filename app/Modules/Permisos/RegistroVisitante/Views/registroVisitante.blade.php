@@ -95,7 +95,7 @@
         </div>
     </div> 
 
-    <form  onsubmit="return validaFormulario();" action="{{route('registraranexos')}}" method="POST" enctype="multipart/form-data">
+    <form id="form" onsubmit="return validaFormulario();" action="{{route('registraranexos')}}" method="POST" enctype="multipart/form-data">
 
         <!--Solicitante-->
         <div class="row mt-2">
@@ -142,6 +142,7 @@
                     <div class="float-left ml-3 mt-2">
                         <button type="button" id="btnAñadirRegistro" onclick="nuevo();" class="btn btn-primary">Añadir</button>
                         <div class="form-check form-check-inline">
+                            <input type="hidden" value="1" id="tipReg">
                             <input onchange="tipoRegistroV(this.value)" class="form-check-input" checked type="radio" name="tipoRegistroVisi" id="inlineRadio1" value="RI">
                             <label class="form-check-label"  for="inlineRadio1">Registro individual</label>
                           </div>
@@ -181,13 +182,13 @@
                                     <div class="col-xs-12 col-md-3 col-lg-3" id="contenedorFechaIni">
                                         <div class="form-group">
                                             <label for="fechaIngreso">Fecha Ingreso: </label>
-                                            <input type="date" class="form-control" id="fechaIngreso" name="fechaIngreso">
+                                            <input type="date" class="form-control" id="fechaIngreso" name="fechaIngreso" >
                                         </div>
                                     </div>
                                     <div class="col-xs-12 col-md-4 col-lg-4" id="contenedorFechaFin">
                                         <div class="form-group">
                                             <label for="fechaFinal">Fecha Final: </label>
-                                            <input type="date" class="form-control" id="fechaFinal" name="fechaFinal">
+                                            <input onchange="validarFechas(0)" type="date" class="form-control" id="fechaFinal" name="fechaFinal" >
                                         </div>
                                     </div>
                                     <div class="col-xs-12 col-md-5 col-lg-5" id="comprimido" style="display: none">
@@ -221,12 +222,12 @@
                                 </div>
                                    
                                 <div id="inputs" style="display: none">
-                                    <hr>
+                                    <hr style="border: 1px solid">
                                     <div class="row" id="clonado">
                                         <div class="col-xs-12 col-md-3 col-lg-3">
                                             <div class="form-group">
                                                 <label for="tipoId1">Tipo de Identificación: <span style="color:red">*</span></label>
-                                                <select name="tipoId1" id="tipoId1" class="form-control" required>
+                                                <select name="tipoId1" id="tipoId1" class="form-control">
                                                     <option value="CEDULA">Cédula</option>
                                                     <option value="PASAPORTE">Pasaporte</option>
                                                 </select>
@@ -235,13 +236,13 @@
                                         <div class="col-xs-12 col-md-4 col-lg-4">
                                             <div class="form-group">
                                                 <label for="cedula1">Indetificación: </label>
-                                                <input id="cedula1" required class="form-control" type="text" name="cedula1">
+                                                <input id="cedula1" class="form-control" type="text" name="cedula1">
                                             </div>
                                         </div>
                                         <div class="col-xs-12 col-md-5 col-lg-5">
                                             <div class="form-group">
                                                 <label for="nombre1">Nombre Completo: </label>
-                                                <input id="nombre1" required class="form-control" type="text" name="nombre1">
+                                                <input id="nombre1" class="form-control" type="text" name="nombre1">
                                             </div>
                                         </div> <!--Cerrri el primer clonado-->
                                         <div class="col-xs-12 col-md-3 col-lg-3">
@@ -253,13 +254,13 @@
                                         <div class="col-xs-12 col-md-4 col-lg-4">
                                             <div class="form-group">
                                                 <label for="">Fecha Final: </label>
-                                                <input type="date" class="form-control" id="fechaFinal1" name="fechaFinal1">
+                                                <input  type="date" class="form-control" id="fechaFinal1" name="fechaFinal1">
                                             </div>
                                         </div>
                                         <div class="col-xs-12 col-md-4 col-lg-4">
                                             <div class="form-group">
                                                 <label for="anexo1">Anexo: </label>
-                                                <input id="anexo1" required class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo1">
+                                                <input id="anexo1" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo1">
                                             </div>
                                         </div>
                                         <div class="col-xs-12 col-md-1 col-lg-1">
@@ -373,6 +374,7 @@
                             <div class="col-xs-12 col-md-6 col-lg-6"></div>
                             <div class="col-xs-12 col-md-3 col-lg-3">
                                 <div class="form-group">
+                                    <input type="hidden" value="{{$grupo}}" name="grupo" id="grupo">
                                     <input id="btnEnviar" type="submit" class="btn btn-primary" value="Enviar" onclick="return validaFormulario();">
                                 </div>
                             </div>
@@ -606,6 +608,7 @@ $( document ).ready(function() {
     function tipoRegistroV($event)
     {
         if($event == "RM"){
+            $("#tipReg").val(2);
             $("#btnAñadirRegistro").hide();
 
             //Descarga de plantilla
@@ -663,6 +666,10 @@ $( document ).ready(function() {
                 $("#clonado"+hasta).find($('#nombre'+hasta)).attr("id", "nombre1");
                 $("#clonado"+hasta).find($('#anexo'+hasta)).attr("name", "anexo1");
                 $("#clonado"+hasta).find($('#anexo'+hasta)).attr("id", "anexo1");
+                $("#clonado"+hasta).find($('#fechaIngreso'+hasta)).attr("name", "fechaIngreso1");
+                $("#clonado"+hasta).find($('#fechaIngreso'+hasta)).attr("id", "fechaIngreso1");
+                $("#clonado"+hasta).find($('#fechaFinal'+hasta)).attr("name", "fechaFinal1");
+                $("#clonado"+hasta).find($('#fechaFinal'+hasta)).attr("id", "fechaFinal1");
                 $("#clonado"+hasta).attr('id', 'clonado');
                 $("#cantRegis").val(0);
 
@@ -674,7 +681,7 @@ $( document ).ready(function() {
             $("#anexo").removeAttr('accept');
             $("#anexo").attr('accept', '.xlsx');
         }else{
-
+             $("#tipReg").val(1);
              //Descarga de plantilla
              $("#descargaPlantilla").hide();
 
@@ -788,6 +795,7 @@ $( document ).ready(function() {
        //$("#btnAddSede").hide();
        
        var tipo = $("#tipoIngreso").val();
+       var grupo = $("#grupo").val();
         if(tipo != 0){
             $("#bolaCarga").fadeIn();
             $("#lblempresavisitar").text('Buscando Empresa...');
@@ -796,7 +804,7 @@ $( document ).ready(function() {
                 var request=$.ajax({
                         type:  'POST',
                         url: "empresavisitar",
-                        data: {'tipoIngreso':tipo, _token:token},
+                        data: {'tipoIngreso':tipo,'grupo':grupo, _token:token},
                         cache: false,
                         success: function(response){
                            
@@ -878,18 +886,50 @@ $( document ).ready(function() {
         }
     }
 
+    function validarFechas()
+    {
+
+    }
+
     function validaFormulario()
     {
         var idsede = $("#sede").val();
-        console.log(idsede);
         if(idsede == 0){
             alert('Debe seleccionar una sede.');
             return false;
         }else{
+            //recibir los campos principales para saber si estan completos
+            var solicitante = $("#solicitante").val();
+            var tipoIngreso = $("#tipoIngreso").val();
+            var empresaC = $("#empresaContratista").val();
 
-            $("#btnEnviar").hide();
-            $("#loading").show();
-            return true;
+            var tipReg = $("#tipReg").val();
+            var cedula = $("#cedula").val();
+            var nombre = $("#nombre").val();
+            var fechaIngreso = $("#fechaIngreso").val();
+            var fechaFinal = $("#fechaFinal").val();
+            var anexo = $("#anexo").val();
+            var comprimidoCola = $("#comprimidoCola").val();
+
+            var labor = $("#labor").val();
+
+            if(solicitante.length == 0 ||  tipoIngreso == 0 || tipoIngreso == 2 && empresaC.length == 0 ){
+                alert('Campos Incompletos - Información Solicitante');
+                return false;
+            }else if(tipReg == 1 && cedula.length == 0 || tipReg == 1 && nombre.length == 0 || tipReg == 1 && fechaIngreso == '' || tipReg == 1 && fechaFinal == '' || tipReg == 1 && anexo == ''){
+                alert('Campos Incompletos - Ingreso Colaboradores');
+                return false;
+            }else if(tipReg == 2 && cedula.length == 0 || tipReg == 2 && nombre.length == 0 || tipReg == 2 && anexo == '' || tipReg == 2 && comprimidoCola == ''){
+                alert('Campos Incompletos - Ingreso Masivo');
+                return false;
+            }else if(labor.length == 0){
+                alert('Campo Incompleto - Labor a Realizar.');
+                return false;
+            }else{
+                $("#btnEnviar").hide();
+                $("#loading").show();
+                return true;
+            }
         }
     }
 
