@@ -132,7 +132,7 @@
                             <div class="col-xs-12 col-md-6 col-lg-6">
                                 <div class="form-group" id="contenedorContratista">
                                     <label for="empresaContratista">Empresa Contratista: </label>
-                                    <input id="empresaContratista" class="form-control" type="text" name="empresaContratista">
+                                    <input onchange="ponerNombreMasivo()" id="empresaContratista" class="form-control" type="text" name="empresaContratista">
                                 </div>
                             </div>
                         </div>
@@ -621,6 +621,13 @@
     function tipoRegistroV($event)
     {
         if($event == "RM"){
+            if($("#empresaContratista").val().length != 0 && $("#tipoIngreso").val() == 2){
+                $("#nombre").val($("#empresaContratista").val());
+                $("#nombre").attr('readonly', true);
+            }else{
+                $("#nombre").val($("#empresaContratista").val());
+                $("#nombre").attr('readonly', true);
+            }
             $("#tipReg").val(2);
             $("#btnAñadirRegistro").hide();
 
@@ -706,6 +713,8 @@
             $("#anexo").removeAttr('accept');
             $("#anexo").attr('accept', '.xlsx');
         }else{
+            $("#nombre").val('');
+            $("#nombre").removeAttr('readonly');
              $("#tipReg").val(1);
              //Descarga de plantilla
              $("#descargaPlantilla").hide();
@@ -751,12 +760,12 @@
             $("#comprimidoCola").removeAttr('');
 
             //agrega los  de cedula1,nombre1,anexo1
-            $('#tipoId1').attr('', true);
-            $('#cedula1').attr('', true);
-            $('#nombre1').attr('', true);
-            $('#fechaIngreso1').attr('', true);
-            $('#fechaFinal1').attr('', true);
-            $('#anexo1').attr('', true);
+            $('#tipoId1').attr('required', true);
+            $('#cedula1').attr('required', true);
+            $('#nombre1').attr('required', true);
+            $('#fechaIngreso1').attr('required', true);
+            $('#fechaFinal1').attr('required', true);
+            $('#anexo1').attr('required', true);
 
             $("#btnAñadirRegistro").show();
             $("#clonado").css({'display':'flex'});
@@ -964,6 +973,24 @@
                 $("#loading").show();
                 return true;
             }
+        }
+    }
+
+    function ponerNombreMasivo()
+    {
+        $("#inlineRadio1").removeAttr('checked');
+        $("#inlineRadio2").removeAttr('checked');
+        var nombreeContratista = $("#empresaContratista").val();
+        if(nombreeContratista.length != 0){
+            $("#nombre").val(nombreeContratista);
+            $("#nombre").attr('readonly', true);
+            $("#inlineRadio2").attr('checked', true);
+            tipoRegistroV("RM");
+        }else{
+            $("#nombre").val('');
+            $("#nombre").removeAttr('readonly');
+            $("#inlineRadio1").attr('checked', true);
+            tipoRegistroV("RI");
         }
     }
 

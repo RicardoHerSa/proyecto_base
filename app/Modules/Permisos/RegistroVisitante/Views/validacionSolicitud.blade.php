@@ -87,6 +87,27 @@
                         <h4 class="text-center mt-2">Personas Que Ingresan</h4>
                         <hr>
                         <br>
+                        @if ($tipoR == "RM")
+                        <div class="row mb-4">
+                            <div class="col-xs-12 col-md-3 col-lg-3">
+                                <b>Empresa:</b> {{$arrayDatosEmpresa[0]}}
+                            </div>
+                            <div class="col-xs-12 col-md-3 col-lg-3">
+                                <b>NIT:</b> {{$arrayDatosEmpresa[1]}}
+                            </div>
+                            <div class="col-xs-12 col-md-3 col-lg-3">
+                                Comprimido Colaboradores: <a class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[2]}}" target="_blank" download>Descargar Comprimido</a>
+                            </div>
+                            <div class="col-xs-12 col-md-3 col-lg-3">
+                                Plantilla Subida: <a class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[3]}}" target="_blank" download>Descargar Excel</a>
+                            </div>
+                        </div>
+                       {{-- @if (strlen($docu->url_comprimido) > 0)
+                        <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_comprimido}}" target="_blank" download>Descargar Comprimido</a></td>
+                        @else
+                        <td><span class="badge badge-secondary"></span></td>
+                        @endif--}} 
+                        @endif
                         <table class="table table-light">
                             <thead class="thead-light">
                                 <tr>
@@ -96,14 +117,14 @@
                                     <th>Fecha Ingreso</th>
                                     <th>Fecha Fin</th>
                                     <th>Estado</th>
-                                    @if ($tipoR == "RM")
-                                    <th>Comprimido Colaboradores</th>
+                                    @if (!$tipoR == "RM")
+                                        <th>Anexo</th>
                                     @endif
-                                    <th>Anexo</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($documentos as $docu)
+                                    @if ($docu->tipo_identificacion != "NIT")
                                         <tr>
                                             <td>{{$docu->tipo_identificacion}}</td>
                                             <td>{{$docu->identificacion}}</td>
@@ -111,19 +132,16 @@
                                             <td>{{$docu->fecha_inicio}}</td>
                                             <td>{{$docu->fecha_fin}}</td>
                                             <td>{{$docu->estado}}</td>
-                                            @if ($tipoR == "RM")
-                                                @if (strlen($docu->url_comprimido) > 0)
-                                                <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_comprimido}}" target="_blank" download>Descargar Comprimido</a></td>
+                                            @if (!$tipoR == "RM")
+                                                @if (strlen($docu->url_documento) > 0)
+                                                    <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
                                                 @else
-                                                <td><span class="badge badge-secondary"></span></td>
+                                                    <td><span class="badge badge-secondary"></span></td>
                                                 @endif
                                             @endif
-                                            @if (strlen($docu->url_documento) > 0)
-                                                <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
-                                          @else
-                                                <td><span class="badge badge-secondary"></span></td>
-                                          @endif
                                         </tr>
+                                        
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>
@@ -141,6 +159,14 @@
                         <h4 class="card-title text-center">Sedes a Visitar </h4>
                         <hr>
                         <br>
+                        <div class="row mb-3">
+                            <div class="col-xs-12 col-md-6 col-lg-6">
+                                <h6><b>Empresa a Visitar:</b> {{$empresaVisitar[0]->descripcion}}</h6>
+                            </div>
+                            <div class="col-xs-12 col-md-6 col-lg-6">
+                                <h6><b>Código de la Empresa:</b> {{$empresaVisitar[0]->codigo_empresa}}</h6>
+                            </div>
+                        </div>
                         <table class="table table-light">
                             <thead class="thead-light">
                                 <tr>
