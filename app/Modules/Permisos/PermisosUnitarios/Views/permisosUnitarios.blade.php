@@ -149,9 +149,9 @@
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/formoid-flat-blue.js')}}"></script>
  <link rel="stylesheet" href="{{asset('permisosUnitarios/styles/jqx.base.css')}}" type="text/css" />
     
- <script src="{{ asset('permisosUnitarios/scripts/demos.js')}}"></script>   
+ <script type="text/javascript" src="{{ asset('permisosUnitarios/scripts/demos.js')}}"></script>   
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/jqxcore.js')}}"></script>
- <script src="{{ asset('permisosUnitarios/js/jqxTree.js')}}"></script>
+ <script type="text/javascript" src="{{ asset('permisosUnitarios/js/jqxtree.js')}}"></script>
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/jqxbuttons.js')}}"></script>
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/jqxscrollbar.js')}}"></script>
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/jqxpanel.js')}}"></script>

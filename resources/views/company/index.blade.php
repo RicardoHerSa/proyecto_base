@@ -4,6 +4,21 @@
 <div class="container">
     <div class="row">
         <div class="col-xs-12 col-md-12 col-lg-12">
+            @if (Session::has('msj') && Session::get('msj') == "ok")
+                <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
+                    <strong>Información!</strong> Empresa eliminada con éxito.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            @elseif(Session::has('msj') && Session::get('msj') == "err")
+            <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+                <strong>Información!</strong> Error al eliminar empresa.
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+             @endif
             <div class="card">
                 <div class="card-header">
                    <strong> Gestor de Empresas </strong>
@@ -122,12 +137,11 @@
       var confirma = confirm('¿Está seguro de eliminar la empresa '+ descripcion+'?');
       if(confirma){
             var token = '{{csrf_token()}}';
-            var method = '{{method_field("DELETE")}}';
             $.ajax({
                     type:  'POST',
                     async: true,
                     url: "company/"+codigoEmpresa, 
-                    data: { _token:token, _method:method},
+                    data: { _token:token, codigo:codigoEmpresa},
                     cache: false,
                     success: function(response){
                        

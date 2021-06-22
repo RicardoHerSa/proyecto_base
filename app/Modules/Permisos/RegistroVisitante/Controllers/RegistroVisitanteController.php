@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Modules\Permisos\RegistroVisitante\Controllers;
-require '../vendor\autoload.php';
+require '/app/Portal_Sica/vendor/autoload.php';
+//require '../vendor\autoload.php';
 
 use DB;
 use App\Http\Controllers\Controller;
@@ -25,7 +26,7 @@ class RegistroVisitanteController extends Controller
     public $infoDeEmpresa  = "";
     public $tipoIngres = "";
     public $sedeId = "";
-    
+    public $nuevaEmpresa = "";    
     
    
     /**
@@ -107,7 +108,7 @@ class RegistroVisitanteController extends Controller
 
     public function registrarVisitante(Request $request)
     {
-
+        set_time_limit(0);
         // Recibe información del solicitante
         $solicitante = $request->input('solicitante');
         $tipoIngreso = $request->input('tipoIngreso'); //recibe es el id
@@ -137,7 +138,7 @@ class RegistroVisitanteController extends Controller
         
         //id de la solicitud para guardar en la tabla ohxqc_solicitud_ingreso
         $idSolicitud =  DB::table('ohxqc_solicitud_ingreso')->max('id_solicitud')+1;
-
+        //var_dump($request->input('anexo'));
         //validar si el registro es masivo, para comprobar que el excel sea correcto y si no, devolver
         $urlComprimido = null;
         if($tipoRegistroV == "RM"){
@@ -982,7 +983,7 @@ class RegistroVisitanteController extends Controller
             
         }
     }
-
+                                        // 4        // 128       //96
     public function agregarVisitantes($idSolicitud,$idempresa,$sedeID)
     {
         $usuarioCreador =  substr(auth()->user()->name , 0,25);
@@ -1044,6 +1045,26 @@ class RegistroVisitanteController extends Controller
                     'usuario_actualizacion' =>  $usuarioCreador,
                     'fecha_actualizacion' => now()
                 ]);
+
+                //actualiza permisos
+                 //insertamos los permisos para cada visitante en la sede actual
+                 for($j = 0; $j < count($arrayPermisos); $j++){
+                    DB::table('ohxqc_permisos')->insert([
+                    'id_permiso' => DB::table('ohxqc_permisos')->max('id_permiso')+1,
+                    'id_empresa_visitante' => $idNuevoVisitante,
+                    'id_ubicacion' =>  $arrayPermisos[$j],
+                    'id_horario' => 8, //DIA HORARIO ESPECIAL
+                    'identificacion_responsable' =>  $v->identificacion,
+                    'fecha_inicio' => is_null($v->fecha_inicio)?now():$v->fecha_inicio,
+                    'fecha_fin' =>  is_null($v->fecha_fin)?now():$v->fecha_fin,
+                    'activo' => 'S',
+                    'usuario_creacion' => 'admin',
+                    'fecha_creacion' => now(),
+                    'usuario_actualizacion' => 'admin',
+                    'fecha_actualizacion' => now()
+                ]);
+               
+            }
                 
               
 
@@ -1088,27 +1109,26 @@ class RegistroVisitanteController extends Controller
                         'usuario_actualizacion' =>  $usuarioCreador,
                         'fecha_actualizacion' => now()
                     ]);
-            
+                    //insertamos los permisos para cada visitante en la sede actual
+                    for($j = 0; $j < count($arrayPermisos); $j++){
+                            DB::table('ohxqc_permisos')->insert([
+                            'id_permiso' => DB::table('ohxqc_permisos')->max('id_permiso')+1,
+                            'id_empresa_visitante' => $idNuevoVisitante,
+                            'id_ubicacion' =>  $arrayPermisos[$j],
+                            'id_horario' => 8, //DIA HORARIO ESPECIAL
+                            'identificacion_responsable' =>  $v->identificacion,
+                            'fecha_inicio' => is_null($v->fecha_inicio)?now():$v->fecha_inicio,
+                            'fecha_fin' =>  is_null($v->fecha_fin)?now():$v->fecha_fin,
+                            'activo' => 'S',
+                            'usuario_creacion' => 'admin',
+                            'fecha_creacion' => now(),
+                            'usuario_actualizacion' => 'admin',
+                            'fecha_actualizacion' => now()
+                        ]);
+                       
+                    }
             }
 
-            //insertamos los permisos para cada visitante en la sede actual
-            for($j = 0; $j < count($arrayPermisos); $j++){
-                    DB::table('ohxqc_permisos')->insert([
-                    'id_permiso' => DB::table('ohxqc_permisos')->max('id_permiso')+1,
-                    'id_empresa_visitante' => $idempresa,
-                    'id_ubicacion' =>  $arrayPermisos[$j],
-                    'id_horario' => 8, //DIA HORARIO ESPECIAL
-                    'identificacion_responsable' =>  $v->identificacion,
-                    'fecha_inicio' => is_null($v->fecha_inicio)?now():$v->fecha_inicio,
-                    'fecha_fin' =>  is_null($v->fecha_fin)?now():$v->fecha_fin,
-                    'activo' => 'S',
-                    'usuario_creacion' => 'admin',
-                    'fecha_creacion' => now(),
-                    'usuario_actualizacion' => 'admin',
-                    'fecha_actualizacion' => now()
-                ]);
-               
-            }
         }
     }
 

@@ -104,9 +104,13 @@ class companyController extends Controller
      * @param  \App\Models\Request  $Request
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $Request)
+    public function destroy($codigoEmpresa)
     {
-        //
+        if(DB::table('ohxqc_empresas')->where('codigo_empresa', $codigoEmpresa)->delete()){
+            return redirect('company')->with('msj', 'ok');
+        }else{
+            return redirect('company')->with('msj', 'err');
+        }
     }
 
     public function actualizarEstado(Request $request)

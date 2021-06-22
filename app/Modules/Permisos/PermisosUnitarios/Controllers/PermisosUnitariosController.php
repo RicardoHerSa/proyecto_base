@@ -56,12 +56,13 @@ class PermisosUnitariosController extends Controller
         'v.fecha_fin',
         'v.activo',
         'per.id_horario',
-        'jefe.nombre as jefe')
+        'v.nombre as jefe'
+        )
         ->join('ohxqc_empresas_visitante as ev', 'ev.id_visitante', '=', 'v.id_visitante')
         ->join('ohxqc_empresas as e', 'e.id_empresa', '=', 'ev.id_empresa')
         ->join('ohxqc_tipos_visitante as tv', 'tv.id_tipo_visitante', '=', 'v.tipo_visitante')
         ->join('ohxqc_permisos as per', 'per.id_empresa_visitante', '=', 'v.id_visitante')
-        ->join('ohxqc_visitantes as jefe', 'jefe.identificacion', '=', 'v.identificacion_jefe')
+       // ->join('ohxqc_visitantes as jefe', 'jefe.identificacion', '=', 'v.identificacion_jefe')
                                                                     //ev.id_empresa_visitante
                                                                     //DB::raw("cast(ev.id_empresa as numeric)")
         ->where('v.identificacion', '=', $this->cedula)

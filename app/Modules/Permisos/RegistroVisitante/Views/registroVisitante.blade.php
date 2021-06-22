@@ -115,13 +115,13 @@
                             <div class="col-xs-12 col-md-6 col-lg-6">
                                 <div class="form-group">
                                     <label for="solicitante">Solicitante, Correo, Ext: <span style="color:red">*</span></label>
-                                    <input id="solicitante" class="form-control" type="text" name="solicitante" required value="{{auth()->user()->name}}">
+                                    <input id="solicitante" class="form-control" type="text" name="solicitante"  value="{{auth()->user()->name}}">
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-6 col-lg-6">
                                 <div class="form-group">
                                     <label for="tipoIngreso">Tipo de Ingreso: <span style="color:red">*</span></label>
-                                    <select  onchange="Consultaempresavisitar()" name="tipoIngreso" id="tipoIngreso" class="form-control" required>
+                                    <select  onchange="Consultaempresavisitar()" name="tipoIngreso" id="tipoIngreso" class="form-control" >
                                         <option id = 'selingreso' value="0"> Seleccione tipo</option>
                                         @foreach ($tiposVisitante as $tipos)
                                             <option value="{{$tipos->id_tipo_visitante}}">{{$tipos->nombre}}</option>
@@ -168,7 +168,7 @@
                                <div class="col-xs-12 col-md-2 col-lg-2" id="contenedorTipoId">
                                    <div class="form-group">
                                        <label for="tipoId">Tipo Identidad: <span style="color:red">*</span></label>
-                                       <select name="tipoId" id="tipoId" class="form-control" required>
+                                       <select name="tipoId" id="tipoId" class="form-control" >
                                            <option value="CEDULA">Cédula</option>
                                            <option value="PASAPORTE">Pasaporte</option>
                                        </select>
@@ -177,13 +177,13 @@
                                <div class="col-xs-12 col-md-2 col-lg-2" id="contenedorNit">
                                    <div class="form-group">
                                        <label for="cedula" id="lblIde">Identificación: </label>
-                                       <input required id="cedula" class="form-control" type="number" name="cedula">
+                                       <input  id="cedula" class="form-control" type="number" name="cedula">
                                    </div>
                                </div>
                                <div class="col-xs-12 col-md-3 col-lg-3" id="contenedorNomEmpresa">
                                    <div class="form-group">
                                        <label for=nombre" id="lblnom">Nombre Completo: </label>
-                                       <input required id="nombre" class="form-control" type="text" name="nombre">
+                                       <input  id="nombre" class="form-control" type="text" name="nombre">
                                    </div>
                                </div>
                            
@@ -215,7 +215,7 @@
                                            bottom: 38px;
                                            left: 10px;
                                            cursor: pointer;
-                                           opacity: 0;" required id="anexo" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo">
+                                           opacity: 0;" id="anexo" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo">
                                            
                                        </div>
                                        <div class="col-md-6 col-lg-6" id="contenedorBorrar">
@@ -228,7 +228,7 @@
                            <div class="row mt-2" id="descargaPlantilla" style="display: none">
                                <div class="col-xs-12 col-md-5 col-lg-5"></div>
                                <div class="col-xs-12 col-md-4 col-lg-4">
-                                   <a class="btn btn-primary" href="{{asset('plantillaCargueMasivo/formatoCargueMasivo.xlsx')}}" href="">Descargar Plantilla.</a>
+                                   <a class="btn btn-primary" href="{{asset('plantillaCargueMasivo/formatoCargueMasivo.xlsx')}}" download >Descargar Plantilla.</a>
                                </div>
                                <div class="col-xs-12 col-md-3 col-lg-3"></div>
                            </div>
@@ -278,7 +278,7 @@
                                                    bottom: 38px;
                                                    left: 10px;
                                                    cursor: pointer;
-                                                   opacity: 0;" required id="anexo1" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo">
+                                                   opacity: 0;"  id="anexo1" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo1">
                                                    
                                                </div>
                                                <div class="col-md-6 col-lg-6">
@@ -309,7 +309,7 @@
                                 <div class="form-group">
                                     <label  id ='lblempresavisitar' for="empVisi">Empresa a Visitar: <span style="color:red">*</span></label>
                                    
-                                    <select  onchange="cargaSedes()" name="selEmpresa" id="selEmpresa" class="form-control" required>
+                                    <select  onchange="cargaSedes()" name="selEmpresa" id="selEmpresa" class="form-control" >
                                         <option  value="0">Seleccione Empresa</option>
                                         {{-- @foreach ($empresas as $emp)
                                         <option value="{{$emp->codigo_empresa}}">{{$emp->descripcion}}</option>
@@ -384,7 +384,7 @@
                     <div class="card-body">
                         <div class="form-group">
                             <label for="labor">Labor a Realizar: <span style="color:red">*</span></label>
-                            <textarea name="labor" id="labor" cols="15" rows="5" class="form-control" required></textarea>
+                            <textarea name="labor" id="labor" cols="15" rows="5" class="form-control" ></textarea>
                         </div>
                         <div class="row">
                             <div class="col-xs-12 col-md-6 col-lg-6"></div>
@@ -666,15 +666,15 @@
 
             //Muestra el comprimido
             $("#comprimido").show();
-            $("#comprimidoCola").attr('required', true);
+            $("#comprimidoCola").attr('', true);
 
-            //quita los required de cedula1,nombre1,anexo1
-            $('#tipoId1').removeAttr('required');
-            $('#cedula1').removeAttr('required');
-            $('#nombre1').removeAttr('required');
-            $('#fechaIngreso1').removeAttr('required');
-            $('#fechaFinal1').removeAttr('required');
-            $('#anexo1').removeAttr('required');
+            //quita los  de cedula1,nombre1,anexo1
+            $('#tipoId1').removeAttr('');
+            $('#cedula1').removeAttr('');
+            $('#nombre1').removeAttr('');
+            $('#fechaIngreso1').removeAttr('');
+            $('#fechaFinal1').removeAttr('');
+            $('#anexo1').removeAttr('');
             
             var hasta = parseInt($("#cantRegis").val());
             console.log(hasta);
@@ -748,15 +748,15 @@
 
             //oculta comprimido
             $("#comprimido").hide();
-            $("#comprimidoCola").removeAttr('required');
+            $("#comprimidoCola").removeAttr('');
 
-            //agrega los required de cedula1,nombre1,anexo1
-            $('#tipoId1').attr('required', true);
-            $('#cedula1').attr('required', true);
-            $('#nombre1').attr('required', true);
-            $('#fechaIngreso1').attr('required', true);
-            $('#fechaFinal1').attr('required', true);
-            $('#anexo1').attr('required', true);
+            //agrega los  de cedula1,nombre1,anexo1
+            $('#tipoId1').attr('', true);
+            $('#cedula1').attr('', true);
+            $('#nombre1').attr('', true);
+            $('#fechaIngreso1').attr('', true);
+            $('#fechaFinal1').attr('', true);
+            $('#anexo1').attr('', true);
 
             $("#btnAñadirRegistro").show();
             $("#clonado").css({'display':'flex'});
