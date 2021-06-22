@@ -153,33 +153,101 @@ class RegistroVisitanteController extends Controller
 
         }
 
-        $correoSolicitante = DB::table('jess_users')->select('email')->where('id', auth()->user()->id)->get();
-        foreach($correoSolicitante as $corr){
-            $correoSolicitante = $corr->email;
+        
+        //validar que las fechas de ingreso no sean mayor a las de fin
+        $errorFechas = false;
+        if($request->input('fechaIngreso') > $request->input('fechaFinal'))
+        {
+            $errorFechas = true;
         }
-        $guardaSolicitud = DB::table('ohxqc_solicitud_ingreso')->insert([
-            'id_solicitud' => $idSolicitud,
-            'empresa_id' =>  $empVisi,
-            'horario_id' => $horario,
-            'solicitante' => $solicitante,
-            'tipo_ingreso' => $nombreIngreso,
-            'empresa_contratista' => $empresaContratista,
-            'labor_realizar' => $labor,
-            'correo_solicitante' =>  $correoSolicitante
-        ]);
+        $cantidadAnexos = $request->input('cantR');
+        if($cantidadAnexos > 0){
+            for($i=1; $i <= $cantidadAnexos; $i++){
+                if($request->input('fechaIngreso'.$i) > $request->input('fechaFinal'.$i))
+                {
+                    $errorFechas = true;
+                } 
+            }
+        }
 
-        if($guardaSolicitud){
-            //Recibe información de anexos
-            $guardaDocumento="";
-            $cantidadAnexos = $request->input('cantR');
-            if($cantidadAnexos > 0){
-                //se recibe el primer registro que es obligatorio y se valida el documento
+        //si las fechas estan correctas prosigo, sino, devuelvo
+        if(!$errorFechas){
+
+            $correoSolicitante = DB::table('jess_users')->select('email')->where('id', auth()->user()->id)->get();
+            foreach($correoSolicitante as $corr){
+                $correoSolicitante = $corr->email;
+            }
+            $guardaSolicitud = DB::table('ohxqc_solicitud_ingreso')->insert([
+                'id_solicitud' => $idSolicitud,
+                'empresa_id' =>  $empVisi,
+                'horario_id' => $horario,
+                'solicitante' => $solicitante,
+                'tipo_ingreso' => $nombreIngreso,
+                'empresa_contratista' => $empresaContratista,
+                'labor_realizar' => $labor,
+                'correo_solicitante' =>  $correoSolicitante
+            ]);
+    
+            if($guardaSolicitud){
+                //Recibe información de anexos
+                $guardaDocumento="";
+                $cantidadAnexos = $request->input('cantR');
+                if($cantidadAnexos > 0){
+                    //se recibe el primer registro que es obligatorio y se valida el documento
+                        if($request->hasFile('anexo')){
+                            $urlDocumento = $request->file('anexo')->store('documentosSolicitud', 'public');
+                        }else{
+                            $urlDocumento = "";
+                        }
+    
+                        $guardaDocumento = DB::table('ohxqc_documentos_solicitud')->insert([
+                            'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
+                            'identificacion' =>  $request->input('cedula'),
+                            'nombre' => $request->input('nombre'),
+                            'url_documento' =>  $urlDocumento,
+                            'url_comprimido' =>  $urlComprimido,
+                            'fecha_inicio' =>  $request->input('fechaIngreso'),
+                            'fecha_fin' =>  $request->input('fechaFinal'),
+                            'usuario_creacion' => auth()->user()->name,
+                            'fecha_creacion' => now(),
+                            'estado' => 'A',
+                            'tipo_identificacion' =>  $request->input('tipoId'),
+                            'solicitud_id' => $idSolicitud
+                            ]);
+    
+                        for($i=1; $i <= $cantidadAnexos; $i++){
+                            //Mientras sea diferente de null los registros, los guardo en tabla ohxqc_documentos_solicitud
+                            if($request->input('cedula'.$i) != null){
+    
+                                //validar si viene un documento para poderlo mover al Storage
+                                if($request->hasFile('anexo'.$i)){
+                                    $urlDocumento = $request->file('anexo'.$i)->store('documentosSolicitud', 'public');
+                                }else{
+                                    $urlDocumento = "";
+                                }
+    
+                                $guardaDocumento = DB::table('ohxqc_documentos_solicitud')->insert([
+                                    'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
+                                    'identificacion' =>  $request->input('cedula'.$i),
+                                    'nombre' => $request->input('nombre'.$i),
+                                    'url_documento' =>  $urlDocumento,
+                                    'fecha_inicio' =>  $request->input('fechaIngreso'.$i),
+                                    'fecha_fin' =>  $request->input('fechaFinal'.$i),
+                                    'usuario_creacion' => auth()->user()->name,
+                                    'fecha_creacion' => now(),
+                                    'estado' => 'A',
+                                    'tipo_identificacion' =>  $request->input('tipoId'.$i),
+                                    'solicitud_id' => $idSolicitud
+                                ]);
+                            }
+                        }
+                }else{
                     if($request->hasFile('anexo')){
                         $urlDocumento = $request->file('anexo')->store('documentosSolicitud', 'public');
                     }else{
                         $urlDocumento = "";
                     }
-
+    
                     $guardaDocumento = DB::table('ohxqc_documentos_solicitud')->insert([
                         'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
                         'identificacion' =>  $request->input('cedula'),
@@ -191,102 +259,144 @@ class RegistroVisitanteController extends Controller
                         'usuario_creacion' => auth()->user()->name,
                         'fecha_creacion' => now(),
                         'estado' => 'A',
-                        'tipo_identificacion' =>  $request->input('tipoId'),
+                        'tipo_identificacion' => strlen($urlComprimido)>0?'NIT': $request->input('tipoId'),
                         'solicitud_id' => $idSolicitud
-                        ]);
-
-                    for($i=1; $i <= $cantidadAnexos; $i++){
-                        //Mientras sea diferente de null los registros, los guardo en tabla ohxqc_documentos_solicitud
-                        if($request->input('cedula'.$i) != null){
-
-                            //validar si viene un documento para poderlo mover al Storage
-                            if($request->hasFile('anexo'.$i)){
-                                $urlDocumento = $request->file('anexo'.$i)->store('documentosSolicitud', 'public');
-                            }else{
-                                $urlDocumento = "";
-                            }
-
-                            $guardaDocumento = DB::table('ohxqc_documentos_solicitud')->insert([
-                                'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
-                                'identificacion' =>  $request->input('cedula'.$i),
-                                'nombre' => $request->input('nombre'.$i),
-                                'url_documento' =>  $urlDocumento,
-                                'fecha_inicio' =>  $request->input('fechaIngreso'.$i),
-                                'fecha_fin' =>  $request->input('fechaFinal'.$i),
-                                'usuario_creacion' => auth()->user()->name,
-                                'fecha_creacion' => now(),
-                                'estado' => 'A',
-                                'tipo_identificacion' =>  $request->input('tipoId'.$i),
-                                'solicitud_id' => $idSolicitud
-                            ]);
-                        }
-                    }
-            }else{
-                if($request->hasFile('anexo')){
-                    $urlDocumento = $request->file('anexo')->store('documentosSolicitud', 'public');
-                }else{
-                    $urlDocumento = "";
+                    ]);
                 }
-
-                $guardaDocumento = DB::table('ohxqc_documentos_solicitud')->insert([
-                    'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
-                    'identificacion' =>  $request->input('cedula'),
-                    'nombre' => $request->input('nombre'),
-                    'url_documento' =>  $urlDocumento,
-                    'url_comprimido' =>  $urlComprimido,
-                    'fecha_inicio' =>  $request->input('fechaIngreso'),
-                    'fecha_fin' =>  $request->input('fechaFinal'),
-                    'usuario_creacion' => auth()->user()->name,
-                    'fecha_creacion' => now(),
-                    'estado' => 'A',
-                    'tipo_identificacion' => strlen($urlComprimido)>0?'NIT': $request->input('tipoId'),
-                    'solicitud_id' => $idSolicitud
-                ]);
-            }
-
-             //Recibe información de las sedes
-             if($guardaDocumento){
-                $guardaSedes="";
-                $cantidadSedes = $request->input('cantRSelects');
-                    if($cantidadSedes > 0){
-                    //Se recibe la primer sede que es obligatoria y se guarda en la tabla ohxqc_sedes_solicitud
-                        $guardaSedes = DB::table('ohxqc_sedes_solicitud')->insert([
-                            'id' => DB::table('ohxqc_sedes_solicitud')->max('id')+1,
-                            'id_sede' => $request->input('sede'),
-                            'id_solicitud' => $idSolicitud
-                        ]);
-                        for($i=1; $i <= $cantidadSedes; $i++){
+    
+                 //Recibe información de las sedes
+                 if($guardaDocumento){
+                    $guardaSedes="";
+                    $cantidadSedes = $request->input('cantRSelects');
+                        if($cantidadSedes > 0){
+                        //Se recibe la primer sede que es obligatoria y se guarda en la tabla ohxqc_sedes_solicitud
                             $guardaSedes = DB::table('ohxqc_sedes_solicitud')->insert([
                                 'id' => DB::table('ohxqc_sedes_solicitud')->max('id')+1,
-                                'id_sede' => $request->input('sede'.$i),
+                                'id_sede' => $request->input('sede'),
+                                'id_solicitud' => $idSolicitud
+                            ]);
+                            for($i=1; $i <= $cantidadSedes; $i++){
+                                $guardaSedes = DB::table('ohxqc_sedes_solicitud')->insert([
+                                    'id' => DB::table('ohxqc_sedes_solicitud')->max('id')+1,
+                                    'id_sede' => $request->input('sede'.$i),
+                                    'id_solicitud' => $idSolicitud
+                                ]);
+                            }
+                        }else{
+                            $guardaSedes = DB::table('ohxqc_sedes_solicitud')->insert([
+                                'id' => DB::table('ohxqc_sedes_solicitud')->max('id')+1,
+                                'id_sede' => $request->input('sede'),
                                 'id_solicitud' => $idSolicitud
                             ]);
                         }
-                    }else{
-                        $guardaSedes = DB::table('ohxqc_sedes_solicitud')->insert([
-                            'id' => DB::table('ohxqc_sedes_solicitud')->max('id')+1,
-                            'id_sede' => $request->input('sede'),
-                            'id_solicitud' => $idSolicitud
-                        ]);
-                    }
-
-                    if($guardaSedes){
-                        //teniendo la documentacion correcta, se registraria en la tabla ohxqc_solicitud_por_aprobar
-
-                        /**Se consulta en la tabla de configuración ohxqc_config_solicitud_empresas, el max nivel
-                        para conocer el flujo maximo por el cual viajará la solicitud. Si hay mas de una sede, se insertará en la tabla ohxqc_solicitud_por_aprobar, la cantidad de solicitudes  para c/u de las sedes
-                        **/
-                  
-                        if($cantidadSedes > 0){
-                            $j = ""; //la primer sede tiene como name="sede", la segunda name="sede1"
-                            $entraSede = 0;
-                            for($i = 0; $i <= $cantidadSedes; $i++){
+    
+                        if($guardaSedes){
+                            //teniendo la documentacion correcta, se registraria en la tabla ohxqc_solicitud_por_aprobar
+    
+                            /**Se consulta en la tabla de configuración ohxqc_config_solicitud_empresas, el max nivel
+                            para conocer el flujo maximo por el cual viajará la solicitud. Si hay mas de una sede, se insertará en la tabla ohxqc_solicitud_por_aprobar, la cantidad de solicitudes  para c/u de las sedes
+                            **/
+                      
+                            if($cantidadSedes > 0){
+                                $j = ""; //la primer sede tiene como name="sede", la segunda name="sede1"
+                                $entraSede = 0;
+                                for($i = 0; $i <= $cantidadSedes; $i++){
+                                    $infoNivel = DB::table('ohxqc_config_solicitud_empresas')
+                                    ->where('empresa_id', '=', $empVisi)
+                                    ->where('tipo_visitante', '=', $tipoIngreso)
+                                    ->where('sede_id', '=', $request->input('sede'.$j))
+                                    ->max('nivel');
+                                   // echo $infoNivel." ---> ".$request->input('sede'.$j)."->fin<br> ";
+                                    if($infoNivel > 0){
+                                        $niveles = $infoNivel;
+                                        //al obtener resultados se debe insertar en la tabla ohxqc_solicitud_por_aprobar
+            
+                                         //se llama a un metodo el cual sea el que genere la URL TOKEN
+                                         $this->solicitudID = $idSolicitud;
+                                         $this->tipoIngres = $tipoIngreso;
+                                         $this->sedeId = $request->input('sede'.$j);
+                                         $token = RegistroVisitanteController::getLinkSubscribe();
+            
+                                        $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
+                                            'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
+                                            'id_solicitud' => $idSolicitud,
+                                            'fecha_registro' => now(),
+                                            'niveles' => $niveles,
+                                            'nivel_actual' => 1,
+                                            'estado' => 'Pendiente',
+                                            'token' => $token,
+                                            'tipo_visitante'=> $tipoIngreso,
+                                            'sede_id'=> $request->input('sede'.$j),
+                                            'tipo_registro' => $tipoRegistroV
+            
+                                        ]);
+                                            //Enviar el correo con esta solicitud, y la url
+                                             $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso, $request->input('sede'.$j),$idSolicitud, $solicitante, $labor);
+                                           
+                                        
+                                    }else{
+                                        $entraSede++;
+                                        //si no hay info de esta sede, se debe aprobar  inmediatamente
+                                            $this->solicitudID = $idSolicitud;
+                                            $this->tipoIngres = $tipoIngreso;
+                                            $this->sedeId = $request->input('sede'.$j);
+                                            $token = RegistroVisitanteController::getLinkSubscribe();
+    
+                                            $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
+                                                'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
+                                                'id_solicitud' => $idSolicitud,
+                                                'fecha_registro' => now(),
+                                                'niveles' => 1,
+                                                'nivel_actual' => 1,
+                                                'estado' => 'Aprobado',
+                                                'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                                'token' => $token,
+                                                'tipo_visitante'=> $tipoIngreso,
+                                                'sede_id'=> $request->input('sede'.$j),
+                                                'tipo_registro' => $tipoRegistroV
+    
+                                            ]);
+                               
+                           
+                                            //se actualiza de una vez la aprobacion
+                                            DB::table('ohxqc_historico_solicitud')->insert([
+                                                'id_his' =>  DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
+                                                'id_solicitud' => $idSolicitud,
+                                                'nivel_aprobador' => 1,
+                                                'usuario_aprobador' => auth()->user()->id,
+                                                'fecha_diligenciado' => now(),
+                                                'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                                'estado' => 'A',
+                                                'sede_id' => $request->input('sede'.$j)
+                                            ]);
+                                            //se agregan a la tabla visitantes y se asigna permisos
+    
+                                            RegistroVisitanteController::agregarVisitantes($idSolicitud,$empVisi,$request->input('sede'.$j));
+    
+                                            //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
+    
+                                        $correo = User::where('id',auth()->user()->id)->get();
+                                        Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede'.$j) ));
+                                    }
+                                    if($i == 0 ){$j = 1;}else{$j = $i+1;}
+                                }
+    
+                                    //se valida si todas las sedes fueron aprobadas inmediatamente porque no tenian config en la maestra, y de ser asi, retornamos avisando
+                                     if($entraSede == $cantidadSedes+1){
+                                        // echo "<br> AMBAS ENTRARON SIN CONFIG";
+                                        return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
+                                     }else{
+                                        return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
+                                     }
+                                
+                            }else{
+                                //si solo tenemos una sede pues entonces vemos el max nivel del flujo de acuerdo a la empresa
                                 $infoNivel = DB::table('ohxqc_config_solicitud_empresas')
                                 ->where('empresa_id', '=', $empVisi)
                                 ->where('tipo_visitante', '=', $tipoIngreso)
-                                ->where('sede_id', '=', $request->input('sede'.$j))
+                                ->where('sede_id', '=', $request->input('sede'))
                                 ->max('nivel');
-                               // echo $infoNivel." ---> ".$request->input('sede'.$j)."->fin<br> ";
+        
                                 if($infoNivel > 0){
                                     $niveles = $infoNivel;
                                     //al obtener resultados se debe insertar en la tabla ohxqc_solicitud_por_aprobar
@@ -294,7 +404,7 @@ class RegistroVisitanteController extends Controller
                                      //se llama a un metodo el cual sea el que genere la URL TOKEN
                                      $this->solicitudID = $idSolicitud;
                                      $this->tipoIngres = $tipoIngreso;
-                                     $this->sedeId = $request->input('sede'.$j);
+                                     $this->sedeId = $request->input('sede');
                                      $token = RegistroVisitanteController::getLinkSubscribe();
         
                                     $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
@@ -306,182 +416,95 @@ class RegistroVisitanteController extends Controller
                                         'estado' => 'Pendiente',
                                         'token' => $token,
                                         'tipo_visitante'=> $tipoIngreso,
-                                        'sede_id'=> $request->input('sede'.$j),
+                                        'sede_id' => $request->input('sede'),
                                         'tipo_registro' => $tipoRegistroV
         
                                     ]);
+                                    
+                                    if($guardarSolicitudPorAprobar){
+                                        //Hasta aqui ya tendriamos la info importante, podemos notificar el registro
+        
                                         //Enviar el correo con esta solicitud, y la url
-                                         $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso, $request->input('sede'.$j),$idSolicitud, $solicitante, $labor);
-                                       
-                                    
+                                         $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso,$request->input('sede'), $idSolicitud, $solicitante, $labor);
+                                        return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
+                                        
+                                    }else{
+                                        //si no se guarda la solicitud, redireccionamos el error
+                                        return redirect('registro-visitante')->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
+                                    }
+        
+                                   
+        
+        
                                 }else{
-                                    $entraSede++;
-                                    //si no hay info de esta sede, se debe aprobar  inmediatamente
-                                        $this->solicitudID = $idSolicitud;
-                                        $this->tipoIngres = $tipoIngreso;
-                                        $this->sedeId = $request->input('sede'.$j);
-                                        $token = RegistroVisitanteController::getLinkSubscribe();
-
-                                        $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
-                                            'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
-                                            'id_solicitud' => $idSolicitud,
-                                            'fecha_registro' => now(),
-                                            'niveles' => 1,
-                                            'nivel_actual' => 1,
-                                            'estado' => 'Aprobado',
-                                            'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
-                                            'token' => $token,
-                                            'tipo_visitante'=> $tipoIngreso,
-                                            'sede_id'=> $request->input('sede'.$j),
-                                            'tipo_registro' => $tipoRegistroV
-
-                                        ]);
-                           
-                       
-                                        //se actualiza de una vez la aprobacion
-                                        DB::table('ohxqc_historico_solicitud')->insert([
-                                            'id_his' =>  DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
-                                            'id_solicitud' => $idSolicitud,
-                                            'nivel_aprobador' => 1,
-                                            'usuario_aprobador' => auth()->user()->id,
-                                            'fecha_diligenciado' => now(),
-                                            'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
-                                            'estado' => 'A',
-                                            'sede_id' => $request->input('sede'.$j)
-                                        ]);
-                                        //se agregan a la tabla visitantes y se asigna permisos
-
-                                        RegistroVisitanteController::agregarVisitantes($idSolicitud,$empVisi,$request->input('sede'.$j));
-
+                                    //si no se encuentran resultados, hay que configurar la empresa en la maestra o
+                                    //se aprueba de una vez
+                                    $this->solicitudID = $idSolicitud;
+                                    $this->tipoIngres = $tipoIngreso;
+                                    $this->sedeId = $request->input('sede');
+                                    $token = RegistroVisitanteController::getLinkSubscribe();
+        
+                                   $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
+                                       'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
+                                       'id_solicitud' => $idSolicitud,
+                                       'fecha_registro' => now(),
+                                       'niveles' => 1,
+                                       'nivel_actual' => 1,
+                                       'estado' => 'Aprobado',
+                                       'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                       'token' => $token,
+                                       'tipo_visitante'=> $tipoIngreso,
+                                       'sede_id' => $request->input('sede'),
+                                       'tipo_registro' => $tipoRegistroV
+        
+                                   ]);
+                                   
+                                   if($guardarSolicitudPorAprobar){
+                                       //se actualiza de una vez la aprobacion
+                                       DB::table('ohxqc_historico_solicitud')->insert([
+                                        'id_his' =>  DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
+                                        'id_solicitud' => $idSolicitud,
+                                        'nivel_aprobador' => 1,
+                                        'usuario_aprobador' => auth()->user()->id,
+                                        'fecha_diligenciado' => now(),
+                                        'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                        'estado' => 'A',
+                                        'sede_id' => $request->input('sede')
+                                    ]);
+                                        //se agregan a la tabla visitantes y se asignan permisos
+                                         RegistroVisitanteController::agregarVisitantes($idSolicitud,$empVisi,$request->input('sede'));
+    
                                         //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
-
-                                    $correo = User::where('id',auth()->user()->id)->get();
-                                    Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede'.$j) ));
+        
+                                       $correo = User::where('id',auth()->user()->id)->get();
+                                       Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede')));
+                                           return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
+        
+                                   }else{
+                                       //si no se guarda la solicitud, redireccionamos el error
+                                       return redirect('registro-visitante')->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
+                                   }
                                 }
-                                if($i == 0 ){$j = 1;}else{$j = $i+1;}
+        
+        
                             }
-
-                                //se valida si todas las sedes fueron aprobadas inmediatamente porque no tenian config en la maestra, y de ser asi, retornamos avisando
-                                 if($entraSede == $cantidadSedes+1){
-                                    // echo "<br> AMBAS ENTRARON SIN CONFIG";
-                                    return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
-                                 }else{
-                                    return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
-                                 }
-                            
+                           
                         }else{
-                            //si solo tenemos una sede pues entonces vemos el max nivel del flujo de acuerdo a la empresa
-                            $infoNivel = DB::table('ohxqc_config_solicitud_empresas')
-                            ->where('empresa_id', '=', $empVisi)
-                            ->where('tipo_visitante', '=', $tipoIngreso)
-                            ->where('sede_id', '=', $request->input('sede'))
-                            ->max('nivel');
-    
-                            if($infoNivel > 0){
-                                $niveles = $infoNivel;
-                                //al obtener resultados se debe insertar en la tabla ohxqc_solicitud_por_aprobar
-    
-                                 //se llama a un metodo el cual sea el que genere la URL TOKEN
-                                 $this->solicitudID = $idSolicitud;
-                                 $this->tipoIngres = $tipoIngreso;
-                                 $this->sedeId = $request->input('sede');
-                                 $token = RegistroVisitanteController::getLinkSubscribe();
-    
-                                $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
-                                    'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
-                                    'id_solicitud' => $idSolicitud,
-                                    'fecha_registro' => now(),
-                                    'niveles' => $niveles,
-                                    'nivel_actual' => 1,
-                                    'estado' => 'Pendiente',
-                                    'token' => $token,
-                                    'tipo_visitante'=> $tipoIngreso,
-                                    'sede_id' => $request->input('sede'),
-                                    'tipo_registro' => $tipoRegistroV
-    
-                                ]);
-                                
-                                if($guardarSolicitudPorAprobar){
-                                    //Hasta aqui ya tendriamos la info importante, podemos notificar el registro
-    
-                                    //Enviar el correo con esta solicitud, y la url
-                                     $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso,$request->input('sede'), $idSolicitud, $solicitante, $labor);
-                                    return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
-                                    
-                                }else{
-                                    //si no se guarda la solicitud, redireccionamos el error
-                                    return redirect('registro-visitante')->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
-                                }
-    
-                               
-    
-    
-                            }else{
-                                //si no se encuentran resultados, hay que configurar la empresa en la maestra o
-                                //se aprueba de una vez
-                                $this->solicitudID = $idSolicitud;
-                                $this->tipoIngres = $tipoIngreso;
-                                $this->sedeId = $request->input('sede');
-                                $token = RegistroVisitanteController::getLinkSubscribe();
-    
-                               $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
-                                   'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
-                                   'id_solicitud' => $idSolicitud,
-                                   'fecha_registro' => now(),
-                                   'niveles' => 1,
-                                   'nivel_actual' => 1,
-                                   'estado' => 'Aprobado',
-                                   'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
-                                   'token' => $token,
-                                   'tipo_visitante'=> $tipoIngreso,
-                                   'sede_id' => $request->input('sede'),
-                                   'tipo_registro' => $tipoRegistroV
-    
-                               ]);
-                               
-                               if($guardarSolicitudPorAprobar){
-                                   //se actualiza de una vez la aprobacion
-                                   DB::table('ohxqc_historico_solicitud')->insert([
-                                    'id_his' =>  DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
-                                    'id_solicitud' => $idSolicitud,
-                                    'nivel_aprobador' => 1,
-                                    'usuario_aprobador' => auth()->user()->id,
-                                    'fecha_diligenciado' => now(),
-                                    'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
-                                    'estado' => 'A',
-                                    'sede_id' => $request->input('sede')
-                                ]);
-                                    //se agregan a la tabla visitantes y se asignan permisos
-                                     RegistroVisitanteController::agregarVisitantes($idSolicitud,$empVisi,$request->input('sede'));
-
-                                    //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
-    
-                                   $correo = User::where('id',auth()->user()->id)->get();
-                                   Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede')));
-                                       return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
-    
-                               }else{
-                                   //si no se guarda la solicitud, redireccionamos el error
-                                   return redirect('registro-visitante')->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
-                               }
-                            }
-    
-    
+                            //si no guardó las sedes se redirige el error
+                            return redirect('registro-visitante')->with('errSedes', 'No se pudieron registrar las sedes');
                         }
-                       
-                    }else{
-                        //si no guardó las sedes se redirige el error
-                        return redirect('registro-visitante')->with('errSedes', 'No se pudieron registrar las sedes');
-                    }
-             }else{
-                //si no guardó los documentos se redirige el error
-                return redirect('registro-visitante')->with('errDocu', 'No se pudieron guardar los documentos');
+                 }else{
+                    //si no guardó los documentos se redirige el error
+                    return redirect('registro-visitante')->with('errDocu', 'No se pudieron guardar los documentos');
+                 }
+    
+            }else{
+                //si no guardó la solicitud se redirige el error
+                return redirect('registro-visitante')->with('errSoli', 'No se pudo regisrar la solicitud');
              }
-
         }else{
-            //si no guardó la solicitud se redirige el error
-            return redirect('registro-visitante')->with('errSoli', 'No se pudo regisrar la solicitud');
-         }
+            return redirect('registro-visitante')->with('errFechas', 'Las fechas de Ingreso no deben ser mayor a las fechas de fin.');
+        }
     }
 
  
@@ -1398,15 +1421,10 @@ class RegistroVisitanteController extends Controller
 
         }
 
-      
-        Log::info( 'Tipo: ' . $tipo);
-       
         if(count($consulta) > 0){
-            if(count($consulta) == 1){
-                echo "<option value='0'>Seleccione Empresa</option>";
-            }
+               echo "<option value='0'>Seleccione Empresa</option>";
             foreach($consulta as $emp){
-                echo "<option value='".$emp->codigo_empresa."'>".$emp->descripcion."</option>";
+                echo "<option id=".count($consulta)." value='".$emp->codigo_empresa."'>".$emp->descripcion."</option>";
             }
         }else{
             echo 0;

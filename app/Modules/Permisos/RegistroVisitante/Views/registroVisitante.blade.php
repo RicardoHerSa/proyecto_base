@@ -73,6 +73,15 @@
     </div>
     @endif
 
+    @if (Session::has('errFechas'))
+    <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+        <strong>Información!</strong> {{Session::get('errFechas')}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    @endif
+
     <div class="row mt-3">
         <div class="col-xs-12 col-md-12 col-lg-12">
             <div class="card">
@@ -138,146 +147,153 @@
         <!--Anexos-->
         <div class="row mt-2">
             <div class="col-xs-12 col-md-12 col-lg-12">
-                <div class="card">
-                    <div class="float-left ml-3 mt-2">
-                        <button type="button" id="btnAñadirRegistro" onclick="nuevo();" class="btn btn-primary">Añadir</button>
-                        <div class="form-check form-check-inline">
-                            <input type="hidden" value="1" id="tipReg">
-                            <input onchange="tipoRegistroV(this.value)" class="form-check-input" checked type="radio" name="tipoRegistroVisi" id="inlineRadio1" value="RI">
-                            <label class="form-check-label"  for="inlineRadio1">Registro individual</label>
-                          </div>
-                          <div class="form-check form-check-inline">
-                            <input onchange="tipoRegistroV(this.value)" class="form-check-input" type="radio" name="tipoRegistroVisi" id="inlineRadio2" value="RM">
-                            <label class="form-check-label" for="inlineRadio2">Registro masivo</label>
-                          </div>
-                        <input type="hidden" id="primerEliminado" value="n">
-                    </div>
-                            <div class="card-body" id="anexos">
-                                @csrf
-                                <input type="hidden" id="cantRegis" value="0" name="cantR">
-                                <div class="row">
-                                    <div class="col-xs-12 col-md-3 col-lg-3" id="contenedorTipoId">
-                                        <div class="form-group">
-                                            <label for="tipoId">Tipo de Identificación: <span style="color:red">*</span></label>
-                                            <select name="tipoId" id="tipoId" class="form-control" required>
-                                                <option value="CEDULA">Cédula</option>
-                                                <option value="PASAPORTE">Pasaporte</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-12 col-md-4 col-lg-4" id="contenedorNit">
-                                        <div class="form-group">
-                                            <label for="cedula" id="lblIde">Identificación: </label>
-                                            <input required id="cedula" class="form-control" type="number" name="cedula">
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-12 col-md-5 col-lg-5" id="contenedorNomEmpresa">
-                                        <div class="form-group">
-                                            <label for=nombre" id="lblnom">Nombre Completo: </label>
-                                            <input required id="nombre" class="form-control" type="text" name="nombre">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-xs-12 col-md-3 col-lg-3" id="contenedorFechaIni">
-                                        <div class="form-group">
-                                            <label for="fechaIngreso">Fecha Ingreso: </label>
-                                            <input type="date" class="form-control" id="fechaIngreso" name="fechaIngreso" >
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-12 col-md-4 col-lg-4" id="contenedorFechaFin">
-                                        <div class="form-group">
-                                            <label for="fechaFinal">Fecha Final: </label>
-                                            <input onchange="validarFechas(0)" type="date" class="form-control" id="fechaFinal" name="fechaFinal" >
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-12 col-md-5 col-lg-5" id="comprimido" style="display: none">
-                                        <div class="form-group">
-                                            <label for="comprimidoCola">Subir Comprimido de Documentación: </label>
-                                            <input id="comprimidoCola" class="form-control" type="file" accept=".pdf,.zip,.rar" name="comprimidoCola">
-                                            <small  class="ml-2">Comprimido con la documentación de cada colaborador.</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-12 col-md-4 col-lg-4" id="contenedorColaboradores">
-                                        <div class="form-group">
-                                            <label for="anexo" id="lblAnex">Anexo: </label>
-                                            <input required id="anexo" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo">
-                                            <small id="txtAnexo" class="ml-2">Sólo archivos pdf, word, png, jpg, zip, rar</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-12 col-md-1 col-lg-1">
-                                        <div class="form-group">
-                                            <label for=""></label>
-                                            <button type="button" class="btn btn-danger" onclick="borrarAnexos()"><i class="fa fa-trash"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
+                    <div class="card">
+                       <div class="float-left ml-3 mt-2">
+                           <button type="button" id="btnAñadirRegistro" onclick="nuevo();" class="btn btn-primary">Añadir</button>
+                           <div class="form-check form-check-inline">
+                               <input type="hidden" value="1" id="tipReg">
+                               <input onchange="tipoRegistroV(this.value)" class="form-check-input" checked type="radio" name="tipoRegistroVisi" id="inlineRadio1" value="RI">
+                               <label class="form-check-label"  for="inlineRadio1">Registro individual</label>
+                           </div>
+                           <div class="form-check form-check-inline">
+                               <input onchange="tipoRegistroV(this.value)" class="form-check-input" type="radio" name="tipoRegistroVisi" id="inlineRadio2" value="RM">
+                               <label class="form-check-label" for="inlineRadio2">Registro masivo</label>
+                           </div>
+                           <input type="hidden" id="primerEliminado" value="n">
+                       </div>
+                       <div class="card-body" id="anexos">
+                           @csrf
+                           <input type="hidden" id="cantRegis" value="0" name="cantR">
+                           <div class="row">
+                               <div class="col-xs-12 col-md-2 col-lg-2" id="contenedorTipoId">
+                                   <div class="form-group">
+                                       <label for="tipoId">Tipo Identidad: <span style="color:red">*</span></label>
+                                       <select name="tipoId" id="tipoId" class="form-control" required>
+                                           <option value="CEDULA">Cédula</option>
+                                           <option value="PASAPORTE">Pasaporte</option>
+                                       </select>
+                                   </div>
+                               </div>
+                               <div class="col-xs-12 col-md-2 col-lg-2" id="contenedorNit">
+                                   <div class="form-group">
+                                       <label for="cedula" id="lblIde">Identificación: </label>
+                                       <input required id="cedula" class="form-control" type="number" name="cedula">
+                                   </div>
+                               </div>
+                               <div class="col-xs-12 col-md-3 col-lg-3" id="contenedorNomEmpresa">
+                                   <div class="form-group">
+                                       <label for=nombre" id="lblnom">Nombre Completo: </label>
+                                       <input required id="nombre" class="form-control" type="text" name="nombre">
+                                   </div>
+                               </div>
+                           
+                               <div class="col-xs-12 col-md-2 col-lg-2" id="contenedorFechaIni">
+                                   <div class="form-group">
+                                       <label for="fechaIngreso">Fecha Ingreso: </label>
+                                       <input type="date" class="form-control" id="fechaIngreso" name="fechaIngreso" >
+                                   </div>
+                               </div>
+                               <div class="col-xs-12 col-md-2 col-lg-2" id="contenedorFechaFin">
+                                   <div class="form-group">
+                                       <label for="fechaFinal">Fecha Final: </label>
+                                       <input onchange="validarFechas(0)" type="date" class="form-control" id="fechaFinal" name="fechaFinal" >
+                                   </div>
+                               </div>
+                               <div class="col-xs-12 col-md-6 col-lg-6" id="comprimido" style="display: none">
+                                   <div class="form-group">
+                                       <label for="comprimidoCola">Subir Comprimido de Documentación: </label>
+                                       <input id="comprimidoCola" class="form-control" type="file" accept=".pdf,.zip,.rar" name="comprimidoCola">
+                                       <small  class="ml-2">Comprimido con la documentación de cada colaborador.</small>
+                                   </div>
+                               </div>
+                               <div class="col-xs-12 col-md-1 col-lg-1" id="contenedorColaboradores">
+                                   <label for="anexo" id="lblAnex">Anexo: </label>
+                                   <div class="row" style="margin-left: -40px" id="contenedorAnexos">
+                                       <div class="col-md-6 col-lg-6" id="contenedorDocumento">
+                                           <button id="btnDocu" class="btn btn-primary"><i class="fa fa-folder"></i></button>
+                                           <input data-toggle="tooltip" data-placement="bottom" title="Sólo archivos pdf, word, png, jpg, zip, rar" style="position: relative;
+                                           bottom: 38px;
+                                           left: 10px;
+                                           cursor: pointer;
+                                           opacity: 0;" required id="anexo" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo">
+                                           
+                                       </div>
+                                       <div class="col-md-6 col-lg-6" id="contenedorBorrar">
+                                           <button style="height: 35px;" type="button" class="btn btn-danger" onclick="borrarAnexos()"><i class="fa fa-trash"></i></button>
+                                       </div>
+                                   </div>
+                               </div>
+                           </div>
 
-                                <div class="row mt-2" id="descargaPlantilla" style="display: none">
-                                    <div class="col-xs-12 col-md-4 col-lg-4"></div>
-                                    <div class="col-xs-12 col-md-4 col-lg-4">
-                                        <a href="{{asset('plantillaCargueMasivo/formatoCargueMasivo.xlsx')}}" style="color: darkslateblue;cursor: pointer;text-decoration:underline;" href="">Descarga el formato aceptado para subir.</a>
-                                    </div>
-                                    <div class="col-xs-12 col-md-4 col-lg-4"></div>
-                                </div>
-                                   
-                                <div id="inputs" style="display: none">
-                                    <hr style="border: 1px solid">
-                                    <div class="row" id="clonado">
-                                        <div class="col-xs-12 col-md-3 col-lg-3">
-                                            <div class="form-group">
-                                                <label for="tipoId1">Tipo de Identificación: <span style="color:red">*</span></label>
-                                                <select name="tipoId1" id="tipoId1" class="form-control">
-                                                    <option value="CEDULA">Cédula</option>
-                                                    <option value="PASAPORTE">Pasaporte</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md-4 col-lg-4">
-                                            <div class="form-group">
-                                                <label for="cedula1">Indetificación: </label>
-                                                <input id="cedula1" class="form-control" type="text" name="cedula1">
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md-5 col-lg-5">
-                                            <div class="form-group">
-                                                <label for="nombre1">Nombre Completo: </label>
-                                                <input id="nombre1" class="form-control" type="text" name="nombre1">
-                                            </div>
-                                        </div> <!--Cerrri el primer clonado-->
-                                        <div class="col-xs-12 col-md-3 col-lg-3">
-                                            <div class="form-group">
-                                                <label for="">Fecha Ingreso: </label>
-                                                <input type="date" class="form-control" id="fechaIngreso1" name="fechaIngreso1">
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md-4 col-lg-4">
-                                            <div class="form-group">
-                                                <label for="">Fecha Final: </label>
-                                                <input  type="date" class="form-control" id="fechaFinal1" name="fechaFinal1">
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md-4 col-lg-4">
-                                            <div class="form-group">
-                                                <label for="anexo1">Anexo: </label>
-                                                <input id="anexo1" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo1">
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md-1 col-lg-1">
-                                            <div class="form-group">
-                                                <label for=""></label>
-                                                <button type="button" class="btn btn-danger"><i class="fa fa-trash"></i></button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <p id="txtPermite"  class="ml-3"><i>Sólo se permite el registro de hasta 4 visitantes de manera individual.</i></p>
-                    <!-- <input type="submit" value="enviar">
-                    </form>-->
-                </div>
-            </div>
-        </div> 
+                           <div class="row mt-2" id="descargaPlantilla" style="display: none">
+                               <div class="col-xs-12 col-md-5 col-lg-5"></div>
+                               <div class="col-xs-12 col-md-4 col-lg-4">
+                                   <a class="btn btn-primary" href="{{asset('plantillaCargueMasivo/formatoCargueMasivo.xlsx')}}" href="">Descargar Plantilla.</a>
+                               </div>
+                               <div class="col-xs-12 col-md-3 col-lg-3"></div>
+                           </div>
+                              
+                           <div id="inputs" style="display: none">
+                               <div class="row" id="clonado">
+                                   <hr style="border: 1px solid; width: -webkit-fill-available;">
+                                   <div class="col-xs-12 col-md-2 col-lg-2">
+                                       <div class="form-group">
+                                           <label for="tipoId1">Tipo Identidad: <span style="color:red">*</span></label>
+                                           <select name="tipoId1" id="tipoId1" class="form-control">
+                                               <option value="CEDULA">Cédula</option>
+                                               <option value="PASAPORTE">Pasaporte</option>
+                                           </select>
+                                       </div>
+                                   </div>
+                                   <div class="col-xs-12 col-md-2 col-lg-2">
+                                       <div class="form-group">
+                                           <label for="cedula1">Indetificación: </label>
+                                           <input id="cedula1" class="form-control" type="text" name="cedula1">
+                                       </div>
+                                   </div>
+                                   <div class="col-xs-12 col-md-3 col-lg-3">
+                                       <div class="form-group">
+                                           <label for="nombre1">Nombre Completo: </label>
+                                           <input id="nombre1" class="form-control" type="text" name="nombre1">
+                                       </div>
+                                   </div> 
+                                   <div class="col-xs-12 col-md-2 col-lg-2">
+                                       <div class="form-group">
+                                           <label for="">Fecha Ingreso: </label>
+                                           <input type="date" class="form-control" id="fechaIngreso1" name="fechaIngreso1">
+                                       </div>
+                                   </div>
+                                   <div class="col-xs-12 col-md-2 col-lg-2">
+                                       <div class="form-group">
+                                           <label for="">Fecha Final: </label>
+                                           <input  type="date" class="form-control" id="fechaFinal1" name="fechaFinal1">
+                                       </div>
+                                   </div>
+                                   <div class="col-xs-12 col-md-1 col-lg-1">
+                                       <label for="anexo1">Anexo: </label>
+                                           <div class="row" style="margin-left: -40px">
+                                               <div class="col-md-6 col-lg-6">
+                                                   <a class="btn btn-primary"><i class="fa fa-camera"></i></a>
+                                                   <input data-toggle="tooltip" data-placement="bottom" title="Sólo archivos pdf, word, png, jpg, zip, rar" style="position: relative;
+                                                   bottom: 38px;
+                                                   left: 10px;
+                                                   cursor: pointer;
+                                                   opacity: 0;" required id="anexo1" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo">
+                                                   
+                                               </div>
+                                               <div class="col-md-6 col-lg-6">
+                                                   <button type="button" class="btn btn-danger"><i class="fa fa-trash"></i></button>
+                                               </div>
+                                           </div>
+
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                           <p id="txtPermite"  class="ml-3"><i>Sólo se permite el registro de hasta 4 visitantes de manera individual.</i></p>
+                   </div>
+           </div>
+   </div>
 
         <!--Sedes a Visitar-->
         <div class="row mt-2">
@@ -389,13 +405,10 @@
 </div>
 
 <script>
-
-$( document ).ready(function() {
-    Consultaempresavisitar();
-});
-
-
+    $(document).ready(function(){
+        ocultaInput();
     
+    });
     //consultas en real time - Hs
     function consultarHora()
     {
@@ -423,7 +436,7 @@ $( document ).ready(function() {
         var texto = $('select[name="tipoIngreso"] option:selected').text();
         var txt = texto.substr(0,3);
         console.log(txt);
-        if(txt != "CON"){
+        if(txt != "CON" && txt != "Se"){
                 $("#contenedorContratista").hide();
                 $("#empresaContratista").val('')
             }else{
@@ -485,7 +498,7 @@ $( document ).ready(function() {
               
       
     }
-     let eliminar = function(obj, posicion)
+    let eliminar = function(obj, posicion)
     {
         var cant = parseInt(1);
         var primerEliminado =  $('#primerEliminado').val();
@@ -503,7 +516,7 @@ $( document ).ready(function() {
                 $('#inputs').hide();
                 $('#primerEliminado').val('s');
             }else{
-                $(obj).closest(".row").remove();
+                $(obj).closest("#clonado"+posicion).remove();
 
             }
             $("#cantRegis").val(cantidadRegistro);
@@ -621,6 +634,18 @@ $( document ).ready(function() {
             $("#contenedorFechaFin").hide();
 
             //cambia medidas de los contenedores
+            $("#btnDocu").hide();
+            $("#contenedorAnexos").css({"margin-left": "initial"});
+            $("#contenedorDocumento").removeClass("col-md-6");
+            $("#contenedorDocumento").removeClass("col-lg-6");
+            $("#contenedorDocumento").addClass("col-md-11");
+            $("#contenedorDocumento").addClass("col-lg-11");
+            $("#contenedorBorrar").removeClass("col-md-6");
+            $("#contenedorBorrar").removeClass("col-lg-6");
+            $("#contenedorBorrar").addClass("col-md-1");
+            $("#contenedorBorrar").addClass("col-lg-1");
+            $("#contenedorDocumento input").css({"position":"initial","opacity":"initial"});
+
             $("#contenedorNit").removeClass('col-md-4');
             $("#contenedorNit").removeClass('col-lg-4');
             $("#contenedorNit").addClass('col-md-6');
@@ -629,8 +654,8 @@ $( document ).ready(function() {
             $("#contenedorNomEmpresa").removeClass('col-lg-5');
             $("#contenedorNomEmpresa").addClass('col-md-6');
             $("#contenedorNomEmpresa").addClass('col-lg-6');
-            $("#contenedorColaboradores").removeClass('col-md-4');
-            $("#contenedorColaboradores").removeClass('col-lg-4');
+            $("#contenedorColaboradores").removeClass('col-md-1');
+            $("#contenedorColaboradores").removeClass('col-lg-1');
             $("#contenedorColaboradores").addClass('col-md-5');
             $("#contenedorColaboradores").addClass('col-lg-5');
 
@@ -691,18 +716,30 @@ $( document ).ready(function() {
             $("#contenedorFechaIni").show();
             $("#contenedorFechaFin").show();
             //cambia medidas de los contenedores
+            $("#btnDocu").show();
+            $("#contenedorAnexos").css({"margin-left": "-40px"});
+            $("#contenedorDocumento").removeClass("col-md-11");
+            $("#contenedorDocumento").removeClass("col-lg-11");
+            $("#contenedorDocumento").addClass("col-md-6");
+            $("#contenedorDocumento").addClass("col-lg-6");
+            $("#contenedorBorrar").removeClass("col-md-1");
+            $("#contenedorBorrar").removeClass("col-lg-1");
+            $("#contenedorBorrar").addClass("col-md-6");
+            $("#contenedorBorrar").addClass("col-lg-6");
+            $("#contenedorDocumento input").css({"position":"relative","opacity":"0"});
+
             $("#contenedorNit").removeClass('col-md-6');
             $("#contenedorNit").removeClass('col-lg-6');
-            $("#contenedorNit").addClass('col-md-4');
-            $("#contenedorNit").addClass('col-lg-4');
+            $("#contenedorNit").addClass('col-md-2');
+            $("#contenedorNit").addClass('col-lg-2');
             $("#contenedorNomEmpresa").removeClass('col-md-6');
             $("#contenedorNomEmpresa").removeClass('col-lg-6');
-            $("#contenedorNomEmpresa").addClass('col-md-5');
-            $("#contenedorNomEmpresa").addClass('col-lg-5');
+            $("#contenedorNomEmpresa").addClass('col-md-3');
+            $("#contenedorNomEmpresa").addClass('col-lg-3');
             $("#contenedorColaboradores").removeClass('col-md-5');
             $("#contenedorColaboradores").removeClass('col-lg-5');
-            $("#contenedorColaboradores").addClass('col-md-4');
-            $("#contenedorColaboradores").addClass('col-lg-4');
+            $("#contenedorColaboradores").addClass('col-md-1');
+            $("#contenedorColaboradores").addClass('col-lg-1');
 
             //cambia nombre  labels
             $("#lblIde").text('Identificación:');
@@ -742,9 +779,6 @@ $( document ).ready(function() {
             sedesSeleccionadas += idSede+",";
         }
        
-       
-        
-        console.log("SEDES SELECCIONADAS: "+sedesSeleccionadas);
         var token = '{{csrf_token()}}';
             var request=$.ajax({
                     type:  'GET',

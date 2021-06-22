@@ -69,6 +69,7 @@
                         <thead class="thead-light">
                             <tr>
                                 <th>Nombre de la Sede</th>
+                                <th>Eliminar</th>
                             </tr>
                         </thead>
                         <tbody id="cargaDatos">
@@ -242,6 +243,34 @@
                     });
         }
     }
+
+    function eliminarSede(sede, empresa)
+    {
+        var confirma = confirm("¿Está seguro de eliminar esta sede?");
+        if(confirm){
+            var token = '{{csrf_token()}}';
+                $.ajax({
+                        type:  'POST',
+                        async: true,
+                        url: "{{route('elimina.sede')}}", 
+                        data: {'sede':sede,'empresa':empresa, _token:token},
+                        cache: false,
+                        success: function(response){
+                            if(response != 1){
+                                listaSedes(empresa);
+                                actualizaSedes(1,codigo);
+                            }else{
+                                actualizaSedes(2,codigo);
+                            }
+                        },
+                        error:function(xhr, ajaxOptions, thrownError) {
+                            alert(thrownError);
+                            }
+                        });
+        }
+        
+    }
+
 </script>
 
 @endsection

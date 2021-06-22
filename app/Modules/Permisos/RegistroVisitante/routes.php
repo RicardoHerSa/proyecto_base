@@ -21,50 +21,7 @@ Route::group(['middleware' => 'web'], function () {
 
         Route::get('actualizarSedes/{sedes}', 'RegistroVisitanteController@actualizarSedes')->name('actualizarSedes');
 
-        Route::get('job', function () {
-                registrarPermisos::dispatch(8,2,2);
-        });
-        Route::get('excel', function () {
-            
-           require '../vendor\autoload.php';
-
-           $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
-           $reader->setReadDataOnly(TRUE);
-           $spreadsheet = $reader->load('C:xampp\htdocs\sica\public\hola.xlsx');
-           
-           $worksheet = $spreadsheet->getActiveSheet();
-           $i = 1;
-           $arrayPerson = array();
-           $arraynom = array();
-           foreach ($worksheet->getRowIterator() as $row) {
-               
-                $cellIterator = $row->getCellIterator();
-                $cellIterator->setIterateOnlyExistingCells(TRUE);
-                $j = 0;
-                $array = array();
-                foreach ($cellIterator as $cell) {
-                    if($i != 1){
-                        $array[$j] = $cell->getValue();
-                        if($j%2==0){
-                            $arrayPerson[] = array('iden'=>$array[$j]);
-                        }else{
-                            $arraynom[] = array('nom'=>$array[$j]);
-                        }
-                       
-                        echo $cell->getValue() .PHP_EOL;
-                    }
-                    $j++;
-                }
-                $i++;
-           }
-           echo "<pre>";
-           print_r($arrayPerson);
-           print_r($arraynom);
-           
-           for ($i=0; $i < count($arrayPerson) ; $i++) { 
-                echo $arrayPerson[$i]['iden']." ".$arraynom[$i]['nom']."<br>";
-           }
-        });
     });
+     
 
 });

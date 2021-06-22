@@ -138,7 +138,7 @@ class companyController extends Controller
     {
         $codigoEmpresa = $request->input('codigo');
         $listSedes = DB::table('ohxqc_ubicaciones as ubi')
-        ->select('ubi.descripcion as sed')
+        ->select('ubi.descripcion as sed', 'ubi.id_ubicacion')
         ->join('ohxqc_empresas as emp', 'emp.sede_especifica_id', 'ubi.id_ubicacion')
         ->where('emp.codigo_empresa', $codigoEmpresa)
         ->get();
@@ -147,6 +147,7 @@ class companyController extends Controller
             foreach($listSedes as $sedes){
                echo "<tr> 
                 <td>".$sedes->sed."</td>
+                <td><button onclick='eliminarSede(".$sedes->id_ubicacion.", ".$codigoEmpresa.")' class='btn btn-danger'><i class='fa fa-trash'><i></button></td>
                
                </tr>";
             }
@@ -223,6 +224,18 @@ class companyController extends Controller
             echo true;
         }else{
             echo false;
+        }
+    }
+
+    public function eliminarSede(Request $request)
+    {
+        $empresa = $request->input('empresa');
+        $sede = $request->input('sede');
+
+        if(DB::table('ohxqc_empresas')->where('codigo_empresa', $empresa)->where('sede_especifica_id', $sede)->delete()){
+            echo 1;
+        }else{
+            echo 2;
         }
     }
 }

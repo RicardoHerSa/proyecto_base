@@ -10,7 +10,7 @@
                 </div>
                 <div class="card-body">
                     <div class="float-left">
-                        <a href="{{url('/company').'/create'}}" class="btn btn-success my-3" title="Crear nueva empresa"> <i class="fa fa-plus" aria-hidden="true"></i> Crear Nueva Empresa</a>
+                        <a href="{{url('/company').'/create'}}" class="btn btn-success my-3" title="Crear nueva empresa"> <i class="fa fa-plus" aria-hidden="true"></i> Crear Empresa / Asociar Sedes</a>
                     </div>
                     <br>
                     <div class="table-responsive">

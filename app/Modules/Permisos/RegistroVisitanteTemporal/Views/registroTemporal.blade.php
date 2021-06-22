@@ -165,14 +165,10 @@
                                     <input id="cedula" name="cedulaR" required value="{{isset($cedula)?$cedula:''}}" type="text" class="form-control">
                                 </div>
                                 <div class="form-group">
-                                    <label for="empresa">Empresa Destino: </label>
-                                    <select name="empresa" id="empresa" class="form-control">
-                                            <option value="0">SELECCIONE</option>
-                                            @foreach ($listaEmpresas as $lista)
-                                            <option {{isset($idEmpresa) && $idEmpresa != null && $idEmpresa == $lista->codigo_empresa?'selected':''}} value="{{$lista->codigo_empresa}}">{{$lista->descripcion}}</option>
-                                        @endforeach
-                                    </select>
+                                    <label for="placa">Placa: </label>
+                                    <input id="placa" name="placa"  type="text" class="form-control" value="{{isset($placa)?$placa:''}}">
                                 </div>
+                              
                             </div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="form-group">
@@ -188,16 +184,24 @@
                                     <label for="vehiculo">Vehículo: </label>
                                     <input id="vehiculo" name="vehiculo"  type="text" class="form-control" value="{{isset($vehiculo)?$vehiculo:'Sin vehiculo'}}">
                                 </div>
-                                <div class="form-group">
-                                    <label for="placa">Placa: </label>
-                                    <input id="placa" name="placa"  type="text" class="form-control" value="{{isset($placa)?$placa:''}}">
-                                </div>
+                               
                             </div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="form-group">
                                     <label for="responsable">Autorizado Por: </label>
                                     <input id="responsable" name="responsable" required type="text" class="form-control" value="{{isset($responsable)?$responsable:''}}">
                                 </div>
+                                <div class="form-group">
+                                    
+                                    <label for="empresa">Empresa Destino: </label>
+                                    <select name="empresa" id="empresa" class="form-control">
+                                            <option value="0">SELECCIONE</option>
+                                            @foreach ($listaEmpresas as $lista)
+                                            <option {{isset($idEmpresa) && $idEmpresa != null && $idEmpresa == $lista->codigo_empresa?'selected':''}} value="{{$lista->codigo_empresa}}">{{$lista->descripcion}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <!--
                                   <div class="form-check form-check-inline mb-2">
                                     <input class="form-check-input" type="radio" name="puerta" id="ck_entrada" value="ENTRADA"  {{isset($estado)&&$estado=="ENTRADA"||$estado==""?'checked':''}}>
                                     <label class="form-check-label" for="ck_entrada">
@@ -215,7 +219,7 @@
                                   <div class="form-group mt-4">
                                     <label for="codigo">Código: </label>
                                     <input required id="codigo" name="codigo" type="text" class="form-control" value="{{isset($codigo)?$codigo:''}}">
-                                </div>
+                                </div>-->
                             </div>
                         </div>
                       
