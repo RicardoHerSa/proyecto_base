@@ -54,14 +54,12 @@ class companyController extends Controller
     public function show($codigoEmpresa)
     {
         $empresa = DB::table('ohxqc_empresas as emp')
-        ->select('emp.descripcion', 'emp.activo', 'ciu.descripcion as ciudad', 'emp.grupo_carvajal')
-        ->join('ohxqc_sedes as ciu', 'ciu.id', 'emp.id_sede')
+        ->select('emp.descripcion', 'emp.activo', 'emp.grupo_carvajal')
         ->where('codigo_empresa',$codigoEmpresa)
         ->get();
         foreach($empresa as $emp){
             $nombre = $emp->descripcion;
             $estado = $emp->activo;
-            $ciudad = $emp->ciudad;
             $grupo = $emp->grupo_carvajal;
 
         }
@@ -69,12 +67,12 @@ class companyController extends Controller
         if($grupo == 1){$grupo = "SI";}else{$grupo = "NO";}
 
         $sedesAsociadas = DB::table('ohxqc_ubicaciones as ubi')
-        ->select('ubi.descripcion')
+        ->select('ubi.descripcion', 'ubi.id_ubicacion')
         ->join('ohxqc_empresas as emp', 'emp.sede_especifica_id', 'ubi.id_ubicacion')
         ->where('emp.codigo_empresa', $codigoEmpresa)
         ->get();
 
-        return view('company.show', compact('nombre','estado','ciudad','grupo','codigoEmpresa','sedesAsociadas'));
+        return view('company.show', compact('nombre','estado','grupo','codigoEmpresa','sedesAsociadas'));
     }
 
     /**
@@ -199,8 +197,6 @@ class companyController extends Controller
     {
         $codigoEmpresa = $request->input('codigo');
         $nombre = $request->input('nombre');
-        $ciudad = $request->input('ciudad');
-        $siso = $request->input('siso');
         $grupo = $request->input('grupo');
         $sede = $request->input('sede');
         $estado = $request->input('estado');
@@ -210,12 +206,12 @@ class companyController extends Controller
             'codigo_empresa' => $codigoEmpresa,
             'descripcion' => $nombre,
             'activo' => $estado,
-            'usuario_Requesteacion' => 'admin',
-            'fecha_Requesteacion' => now(),
+            'usuario_creacion' => 'admin',
+            'fecha_creacion' => now(),
             'usuario_actualizacion' => 'admin',
             'fecha_actualizacion' => now(),
-            'id_sede' => $ciudad,
-            'id_siso' => $siso,
+            'id_sede' => 0,
+            'id_siso' => 0,
             'grupo_carvajal' =>$grupo,
             'sede_especifica_id' => $sede
         ]);
@@ -231,11 +227,24 @@ class companyController extends Controller
     {
         $empresa = $request->input('empresa');
         $sede = $request->input('sede');
-
-        if(DB::table('ohxqc_empresas')->where('codigo_empresa', $empresa)->where('sede_especifica_id', $sede)->delete()){
-            echo 1;
+        //contar cuantas sedes tiene la empresa, si solo tiene una , ponemos null a la sede_especifica_id
+        $cant = DB::table('ohxqc_empresas')->where('codigo_empresa', $empresa)->count();
+        if($cant == 1){
+           $actualiza = DB::table('ohxqc_empresas')->where('codigo_empresa', $empresa)->where('sede_especifica_id', $sede)->update([
+                'sede_especifica_id' => null
+            ]);
+            if($actualiza){
+                echo 1;
+            }else{
+                echo 2;
+            }
         }else{
-            echo 2;
+            //Si hay mas de una se pùede eliminar el registro
+            if(DB::table('ohxqc_empresas')->where('codigo_empresa', $empresa)->where('sede_especifica_id', $sede)->delete()){
+                echo 1;
+            }else{
+                echo 2;
+            }
         }
     }
 }

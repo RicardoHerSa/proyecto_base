@@ -8,7 +8,8 @@
                    <strong> Registrar Nueva Empresa </strong>
                 </div>
                 <div class="card-body">
-                    <div class="row">
+                    <a href="{{ url('/company') }}" title="Volver"><button class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
+                    <div class="row mt-3">
                         <div class="col-xs-12 col-md-3 col-lg-3" id="contenedorCodigo">
                             <div class="form-group">
                                 <label for="">Código de Empresa: *</label>
@@ -84,11 +85,11 @@
 
 <script>
     $("#codigo").blur(function(){
-        $("#lblNombre").text("Verificando código...");
-        $("#nombre").attr('disabled', true);
-        $("#carga").fadeIn();
         var codigo = $("#codigo").val();
         if(codigo.length != 0){
+            $("#lblNombre").text("Verificando código...");
+            $("#nombre").attr('disabled', true);
+            $("#carga").fadeIn();
             var token = '{{csrf_token()}}';
             $.ajax({
                     type:  'POST',
@@ -231,7 +232,8 @@
                     cache: false,
                     success: function(response){
                         if(response){
-                            listaSedes(codigo);
+                            $("#codigo").val('');
+                            $("#nombre").val('');
                             alert('Registro Exitoso');
                         }else{
                             alert('error')
@@ -247,7 +249,7 @@
     function eliminarSede(sede, empresa)
     {
         var confirma = confirm("¿Está seguro de eliminar esta sede?");
-        if(confirm){
+        if(confirma){
             var token = '{{csrf_token()}}';
                 $.ajax({
                         type:  'POST',

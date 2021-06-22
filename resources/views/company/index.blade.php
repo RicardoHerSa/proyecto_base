@@ -72,8 +72,7 @@
                                        <td style="display: inline-flex;">
                                         <a class='show-user' href='{{url('/company').'/'.$emp->codigo_empresa}}' title='Info empresa'><button class='btn btn-info btn-sm'><i class='fa fa-eye'></i></button></a>
                                         <a class='edit-user' href='{{url('company/')}}' title='Editar empresa'><button class='btn btn-warning btn-sm'><i class='fa fa-pencil-square-o' aria-hidden='true'></i></button></a>
-                                        <a class='deleted-user'href='{{url('company/')}}' title='Eliminar empresa'>
-                                        <button class='btn btn-danger btn-sm'><i class='fa fa-trash' aria-hidden='true'></i></button></a>  
+                                        <button onclick="eliminarEmpresa({{$emp->codigo_empresa}},'{{$emp->descripcion}}')" class='btn btn-danger btn-sm'><i class='fa fa-trash' aria-hidden='true'></i></button>
                                        </td>
                                     </tr>
                                 @endforeach
@@ -116,6 +115,29 @@
                         alert(thrownError);
                         }
                     });
+    }
+
+    function eliminarEmpresa(codigoEmpresa, descripcion)
+    {
+      var confirma = confirm('¿Está seguro de eliminar la empresa '+ descripcion+'?');
+      if(confirma){
+            var token = '{{csrf_token()}}';
+            var method = '{{method_field("DELETE")}}';
+            $.ajax({
+                    type:  'POST',
+                    async: true,
+                    url: "company/"+codigoEmpresa, 
+                    data: { _token:token, _method:method},
+                    cache: false,
+                    success: function(response){
+                       
+                        },
+                    error:function(xhr, ajaxOptions, thrownError) {
+                        alert(thrownError);
+                        }
+                    });
+         }
+      
     }
 </script>
 

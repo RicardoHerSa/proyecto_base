@@ -27,7 +27,6 @@
                                 <tr><th>Código</th><td>{{ $codigoEmpresa}}</td></tr>
                                 <tr><th>Nombre</th><td>{{ $nombre}}</td></tr>
                                 <tr><th>Estado</th><td>{{ $estado}}</td></tr>
-                                <tr> <th>Ciudad</th><td>{{ $ciudad}}</td></tr>
                                 <tr> <th>Grupo Carvajal</th><td>{{ $grupo}}</td></tr>
                                
                             </tbody>
@@ -41,16 +40,19 @@
     <div class="row mt-3">
         <div class="col-xs-12 col-md-1 col-lg-1"></div>
         <div class="col-xs-12 col-md-10 col-lg-10">
+            <h5 class="text-center">Lista de Sedes Asociadas</h5>
             <table class="table table-light">
                 <thead class="thead-light">
                     <tr>
-                        <th>Lista de Sedes Asociadas</th>
+                        <th>Nombre de la Sede</th>
+                        <th>Eliminar</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($sedesAsociadas as $sed)
                     <tr>
                         <td>{{$sed->descripcion}}</td>
+                        <td><button class="btn btn-danger" onclick="eliminarSede({{$sed->id_ubicacion}}, {{$codigoEmpresa}})"><i class="fa fa-trash"></i></button></td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -60,6 +62,31 @@
     </div>
 </div>
 
-
+<script>
+     function eliminarSede(sede, empresa)
+    {
+        var confirma = confirm("¿Está seguro de eliminar esta sede?");
+        if(confirma){
+            var token = '{{csrf_token()}}';
+                $.ajax({
+                        type:  'POST',
+                        async: true,
+                        url: "{{route('elimina.sede')}}", 
+                        data: {'sede':sede,'empresa':empresa, _token:token},
+                        cache: false,
+                        success: function(response){
+                            if(response != 1){
+                                alert('Sede eliminada.');
+                            }else{
+                                alert('No se pudo eliminar la sede');
+                            }
+                        },
+                        error:function(xhr, ajaxOptions, thrownError) {
+                            alert(thrownError);
+                            }
+                        });
+        }
+    }
+</script>
 
 @endsection
