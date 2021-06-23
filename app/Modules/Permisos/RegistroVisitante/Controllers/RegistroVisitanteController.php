@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Modules\Permisos\RegistroVisitante\Controllers;
-//require '/app/Portal_Sica/vendor/autoload.php';
-require '../vendor\autoload.php';
+require '/app/Portal_Sica/vendor/autoload.php';
+//require '../vendor\autoload.php';
 
 use DB;
 use App\Http\Controllers\Controller;
@@ -190,7 +190,8 @@ class RegistroVisitanteController extends Controller
                 'tipo_ingreso' => $nombreIngreso,
                 'empresa_contratista' => $empresaContratista,
                 'labor_realizar' => $labor,
-                'correo_solicitante' =>  $correoSolicitante
+                'correo_solicitante' =>  $correoSolicitante,
+                'id_solicitante' =>  auth()->user()->id,
             ]);
     
             if($guardaSolicitud){
@@ -853,7 +854,7 @@ class RegistroVisitanteController extends Controller
                      
                           //Enviar correo a todos los del flujo para informar aprobacion
                             $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
-                            ->select('correo_usuario')
+                            ->select(DB::raw('distinct usuario_aprobador_id'))
                             ->where('empresa_id', '=', $empresaId)
                             ->where('tipo_visitante', '=', $tipoVisi)
                             ->where('sede_id', '=', $sedeID)
@@ -862,11 +863,11 @@ class RegistroVisitanteController extends Controller
                             $users = Array();
                             $i = 0;
                         foreach($infoEmpresa as $inf){
-                                $users[$i] = $inf->correo_usuario;
+                                $users[$i] = $inf->usuario_aprobador_id;
                                 $i++;
                             }
                         
-                        $correos = User::whereIn('email',$users)->get();
+                        $correos = User::whereIn('id',$users)->get();
                         //consulto la info de esta solicitud 
                         $infSolicitud = DB::table('ohxqc_solicitud_ingreso')->select('solicitante','labor_realizar')->where('id_solicitud',$idSolicitud)->get();
                         foreach($infSolicitud as $info){
@@ -876,12 +877,13 @@ class RegistroVisitanteController extends Controller
                         
                         Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID));
 
-                        //Envia correo tambien al solicitante
-                          $correo = DB::table('ohxqc_solicitud_ingreso')->select('correo_solicitante')->where('id_solicitud',$idSolicitud)->get();
+                         //Envia correo tambien al solicitante
+                          $correo = DB::table('ohxqc_solicitud_ingreso')->select('id_solicitante')->where('id_solicitud',$idSolicitud)->get();
                           foreach($correo as $corr){
-                              $correo = $corr->correo_solicitante;
+                              $correo = $corr->id_solicitante;
                           }
-                          $user = User::where('email',$correo)->get();
+
+                          $user = User::where('id',$correo)->get();
                           Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID));
 
                         //Enviar correo a las porterias de la sede: ohxqc_correos_porterias
@@ -1159,8 +1161,8 @@ class RegistroVisitanteController extends Controller
     public function validarExcel($urlDocumento, $idSolicitud)
     {
         
-        $ruta = storage_path('app\public/'.$urlDocumento);
-       // $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
+        //$ruta = storage_path('app\public/'.$urlDocumento);
+        $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
         $reader->setReadDataOnly(TRUE);
         
