@@ -155,9 +155,12 @@ class RegistroVisitanteController extends Controller
         }
 
         
-        //validar que las fechas de ingreso no sean mayor a las de fin
+        //validar que las fechas de ingreso no sean mayor a las de fin o que no sean menor a la fecha actual
         $errorFechas = false;
-        if($request->input('fechaIngreso') > $request->input('fechaFinal'))
+        //Fecha Hoy
+        $fechaHoy = date('Y-m-d');
+
+        if($request->input('fechaIngreso') > $request->input('fechaFinal') || $request->input('fechaIngreso') < $fechaHoy  || $request->input('fechaFinal') < $fechaHoy)
         {
             $errorFechas = true;
         }
@@ -504,7 +507,7 @@ class RegistroVisitanteController extends Controller
                 return redirect('registro-visitante')->with('errSoli', 'No se pudo regisrar la solicitud');
              }
         }else{
-            return redirect('registro-visitante')->with('errFechas', 'Las fechas de Ingreso no deben ser mayor a las fechas de fin.');
+            return redirect('registro-visitante')->with('errFechas', 'Las fechas de Ingreso no deben ser mayor a las fechas de fin, ni deben ser menor a la fecha actual: '.$fechaHoy);
         }
     }
 
@@ -1214,6 +1217,9 @@ class RegistroVisitanteController extends Controller
         $conD = 0;
         $conE = 0;
         $conF = 0;
+
+        //Fecha Hoy
+        $fechaHoy = date('Y-m-d');
         
         while (strlen($worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)) > 0) {
             //echo $worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)."<br>";
@@ -1251,6 +1257,10 @@ class RegistroVisitanteController extends Controller
                     break;
                 case 3:
                     if($conG != 1){
+                        if($worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)->getValue() < $fechaHoy){
+
+                            return "error, Las fechas de ingreso y fecha fin, no deben ser menor a la fecha actual: ".$fechaHoy.", en la celda: D".$conG;
+                        }
                         $explode = explode('-',$worksheet->getCell($arrayColumnasPermitidas[$columns].$conG));
                         $explode[0];
                         $explode[1];
@@ -1268,6 +1278,10 @@ class RegistroVisitanteController extends Controller
                     break;
                 case 4:
                     if($conG != 1){
+                        if($worksheet->getCell($arrayColumnasPermitidas[$columns].$conG)->getValue() < $fechaHoy){
+
+                            return "error, Las fechas de ingreso y fecha fin, no deben ser menor a la fecha actual: ".$fechaHoy.", en la celda: E".$conG;
+                        }
                         $explode = explode('-',$worksheet->getCell($arrayColumnasPermitidas[$columns].$conG));
                         $explode[0]."<br>";
                         $explode[1]."<br>";
