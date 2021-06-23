@@ -190,13 +190,13 @@
                                <div class="col-xs-12 col-md-2 col-lg-2" id="contenedorFechaIni">
                                    <div class="form-group">
                                        <label for="fechaIngreso">Fecha Ingreso: </label>
-                                       <input type="date" class="form-control" id="fechaIngreso" name="fechaIngreso" >
+                                       <input type="date" min="<?php echo date('Y-m-d')?>" class="form-control" id="fechaIngreso" name="fechaIngreso" >
                                    </div>
                                </div>
                                <div class="col-xs-12 col-md-2 col-lg-2" id="contenedorFechaFin">
                                    <div class="form-group">
                                        <label for="fechaFinal">Fecha Final: </label>
-                                       <input onchange="validarFechas(0)" type="date" class="form-control" id="fechaFinal" name="fechaFinal" >
+                                       <input  type="date" min="<?php echo date('Y-m-d')?>" class="form-control" id="fechaFinal" name="fechaFinal" >
                                    </div>
                                </div>
                                <div class="col-xs-12 col-md-6 col-lg-6" id="comprimido" style="display: none">
@@ -210,13 +210,16 @@
                                    <label for="anexo" id="lblAnex">Anexo: </label>
                                    <div class="row" style="margin-left: -40px" id="contenedorAnexos">
                                        <div class="col-md-6 col-lg-6" id="contenedorDocumento">
-                                           <button id="btnDocu" class="btn btn-primary"><i class="fa fa-folder"></i></button>
-                                           <input data-toggle="tooltip" data-placement="bottom" title="Sólo archivos pdf, word, png, jpg, zip, rar" style="position: relative;
-                                           bottom: 38px;
+                                           <button type="button" id="btnDocu" class="btn btn-primary"><i class="fa fa-folder"></i></button>
+                                           <!--<i id="check" style="color:green" class="fa fa-check"></i>
+                                           <i id="close" style="color:red" class="fa fa-times-circle"></i>-->
+                                           <input  onchange="seleccionArchivo($(this))" data-toggle="tooltip" data-placement="bottom" title="Sólo archivos pdf, word, png, jpg, zip, rar" style="position: absolute;
+                                           bottom: 2px;
                                            left: 10px;
                                            cursor: pointer;
-                                           opacity: 0;" id="anexo" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo">
-                                           
+                                           opacity: 0;" id="anexo" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword" name="anexo">
+                                           <small style="display: none; position: relative;
+                                           top: 33px;" id="txtAnexo"></small>
                                        </div>
                                        <div class="col-md-6 col-lg-6" id="contenedorBorrar">
                                            <button style="height: 35px;" type="button" class="btn btn-danger" onclick="borrarAnexos()"><i class="fa fa-trash"></i></button>
@@ -260,25 +263,28 @@
                                    <div class="col-xs-12 col-md-2 col-lg-2">
                                        <div class="form-group">
                                            <label for="">Fecha Ingreso: </label>
-                                           <input type="date" class="form-control" id="fechaIngreso1" name="fechaIngreso1">
+                                           <input  min="<?php echo date('Y-m-d')?>" type="date" class="form-control" id="fechaIngreso1" name="fechaIngreso1">
                                        </div>
                                    </div>
                                    <div class="col-xs-12 col-md-2 col-lg-2">
                                        <div class="form-group">
                                            <label for="">Fecha Final: </label>
-                                           <input  type="date" class="form-control" id="fechaFinal1" name="fechaFinal1">
+                                           <input  min="<?php echo date('Y-m-d')?>"  type="date" class="form-control" id="fechaFinal1" name="fechaFinal1">
                                        </div>
                                    </div>
                                    <div class="col-xs-12 col-md-1 col-lg-1">
                                        <label for="anexo1">Anexo: </label>
                                            <div class="row" style="margin-left: -40px">
                                                <div class="col-md-6 col-lg-6">
-                                                   <a class="btn btn-primary"><i class="fa fa-camera"></i></a>
-                                                   <input data-toggle="tooltip" data-placement="bottom" title="Sólo archivos pdf, word, png, jpg, zip, rar" style="position: relative;
-                                                   bottom: 38px;
+                                                   <a class="btn btn-primary"><i class="fa fa-folder"></i></a>
+                                                   <!--<i id="check1" style="color:green" class="fa fa-check"></i>
+                                                   <i id="close1" style="color:red" class="fa fa-times-circle"></i>-->
+                                                   <input onchange="seleccionArchivo($(this))" data-toggle="tooltip" data-placement="bottom" title="Sólo archivos pdf, word, png, jpg, zip, rar" style="position: absolute;
+                                                   bottom: 2px;
                                                    left: 10px;
                                                    cursor: pointer;
-                                                   opacity: 0;"  id="anexo1" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar" name="anexo1">
+                                                   opacity: 0;"  id="anexo1" class="form-control" type="file" accept="image/png,image/jpg,.pdf,.doc,.docx,application/msword" name="anexo1">
+                                                   
                                                    
                                                </div>
                                                <div class="col-md-6 col-lg-6">
@@ -290,7 +296,24 @@
                                </div>
                            </div>
                        </div>
-                           <p id="txtPermite"  class="ml-3"><i>Sólo se permite el registro de hasta 4 visitantes de manera individual.</i></p>
+                           <p id="txtPermite"  class="ml-3"><i>Sólo se permite el registro de hasta 4 visitantes de manera individual.</i></p>  
+                           <div class="row">
+                               <div class="col-xs-12 col-md-8 col-lg-8"></div>
+                               <div class="col-xs-12 col-md-4 col-lg-4">
+                                <input type="hidden" id="adjSelecc" value="1">
+                                <div style="display: none; border: 1px solid darkblue;  height: 23px;
+                                background: aliceblue;
+                                cursor:pointer;" onclick="verAdjuntos()" id="archivosSubidos">
+
+                                    <h6 id="txtArchiSub" style="border: 1px solid darkblue;
+                                    background: steelblue;
+                                    color: white;" class="text-center">Archivos Subidos<h6>
+                                        <ul id="listadoAdj">
+
+                                        </ul>
+                                </div>
+                               </div>
+                           </div>
                    </div>
            </div>
    </div>
@@ -490,6 +513,7 @@
                     $("#clonado"+cantidadRegistro).find($('#fechaFinal'+cantidadRegistroActual)).attr("id", "fechaFinal"+cantidadRegistro);
                     $("#clonado"+cantidadRegistro).find($('#anexo'+cantidadRegistroActual)).attr("name", "anexo"+cantidadRegistro);
                     $("#clonado"+cantidadRegistro).find($('#anexo'+cantidadRegistroActual)).attr("id", "anexo"+cantidadRegistro);
+                   $("#clonado"+cantidadRegistro).find($('input #anexo'+cantidadRegistro)).removeAttr("onchange");
                                                     
             }
         
@@ -624,6 +648,9 @@
             if($("#empresaContratista").val().length != 0 && $("#tipoIngreso").val() == 2){
                 $("#nombre").val($("#empresaContratista").val());
                 $("#nombre").attr('readonly', true);
+            }else if($("#empresaContratista").val().length == 0 && $("#tipoIngreso").val() != 2){
+                $("#nombre").val('');
+                $("#nombre").removeAttr('readonly');
             }else{
                 $("#nombre").val($("#empresaContratista").val());
                 $("#nombre").attr('readonly', true);
@@ -651,7 +678,7 @@
             $("#contenedorBorrar").removeClass("col-lg-6");
             $("#contenedorBorrar").addClass("col-md-1");
             $("#contenedorBorrar").addClass("col-lg-1");
-            $("#contenedorDocumento input").css({"position":"initial","opacity":"initial"});
+            $("#contenedorDocumento input").css({"position":"absolute","opacity":"initial"});
 
             $("#contenedorNit").removeClass('col-md-4');
             $("#contenedorNit").removeClass('col-lg-4');
@@ -673,15 +700,15 @@
 
             //Muestra el comprimido
             $("#comprimido").show();
-            $("#comprimidoCola").attr('', true);
+            $("#comprimidoCola").attr('required', true);
 
             //quita los  de cedula1,nombre1,anexo1
-            $('#tipoId1').removeAttr('');
-            $('#cedula1').removeAttr('');
-            $('#nombre1').removeAttr('');
-            $('#fechaIngreso1').removeAttr('');
-            $('#fechaFinal1').removeAttr('');
-            $('#anexo1').removeAttr('');
+            $('#tipoId1').removeAttr('required');
+            $('#cedula1').removeAttr('required');
+            $('#nombre1').removeAttr('required');
+            $('#fechaIngreso1').removeAttr('required');
+            $('#fechaFinal1').removeAttr('required');
+            $('#anexo1').removeAttr('required');
             
             var hasta = parseInt($("#cantRegis").val());
             console.log(hasta);
@@ -710,6 +737,7 @@
             }
             //$("#clonado").css({'display':'none'});
             $("#txtAnexo").text('Sólo archivo .Xlsx');
+            $("#txtAnexo").fadeIn();
             $("#anexo").removeAttr('accept');
             $("#anexo").attr('accept', '.xlsx');
         }else{
@@ -735,7 +763,7 @@
             $("#contenedorBorrar").removeClass("col-lg-1");
             $("#contenedorBorrar").addClass("col-md-6");
             $("#contenedorBorrar").addClass("col-lg-6");
-            $("#contenedorDocumento input").css({"position":"relative","opacity":"0"});
+            $("#contenedorDocumento input").css({"position":"absolute","opacity":"0"});
 
             $("#contenedorNit").removeClass('col-md-6');
             $("#contenedorNit").removeClass('col-lg-6');
@@ -759,17 +787,10 @@
             $("#comprimido").hide();
             $("#comprimidoCola").removeAttr('');
 
-            //agrega los  de cedula1,nombre1,anexo1
-            $('#tipoId1').attr('required', true);
-            $('#cedula1').attr('required', true);
-            $('#nombre1').attr('required', true);
-            $('#fechaIngreso1').attr('required', true);
-            $('#fechaFinal1').attr('required', true);
-            $('#anexo1').attr('required', true);
-
+          
             $("#btnAñadirRegistro").show();
             $("#clonado").css({'display':'flex'});
-            $("#txtAnexo").text('Sólo archivos pdf, word, png, jpg, zip, rar');
+            $("#txtAnexo").fadeOut();
             $("#anexo").removeAttr('accept');
             $("#anexo").attr('accept', 'image/png,image/jpg,.pdf,.doc,.docx,application/msword,.zip,.rar');
         }
@@ -904,6 +925,7 @@
                                 document.getElementById('sede1').innerHTML = response;
                                 $("#btnAddSede").show();
                             }else{
+                                console.log(response);
                                 $("#lblSede").text('No se encontraron sedes asociadas.');
                                 $("#lblSede").addClass('text-danger');
                                 document.getElementById('sede').innerHTML = "<option value='0'>Sin registros</option>";
@@ -913,7 +935,7 @@
                             
                         },
                         error:function(xhr, ajaxOptions, thrownError) {
-                            alert(xhr.status);
+                            alert(xhr.status+ " "+ajaxOptions );
                             $("#bolaCarga").hide();
                             $("#lblSede").text('No se encontraron sedes.');
                         }
@@ -991,6 +1013,33 @@
             $("#nombre").removeAttr('readonly');
             $("#inlineRadio1").attr('checked', true);
             tipoRegistroV("RI");
+        }
+    }
+
+    function seleccionArchivo(valor)
+    {
+        console.log("datos input: "+valor);
+        console.log(valor[0].files[0].name);
+        if(valor[0].files[0].name.length > 0){
+            $("#archivosSubidos").fadeIn();
+            var cuentaLi = $("#listadoAdj li").length;
+            
+            console.log("cuenta: "+cuentaLi);
+            var suma = parseInt(cuentaLi) + parseInt(1); 
+            $("#txtArchiSub").text('Archivos Subidos ('+suma+')');
+        }else{
+            $("#archivosSubidos").fadeOut();
+        }
+        $("#listadoAdj").append("<li>"+valor[0].files[0].name+"</li>").html();  
+    }
+
+    function verAdjuntos(){
+        if($("#adjSelecc").val() == 1){
+            $("#archivosSubidos").css({'height':'auto'});
+            $("#adjSelecc").val(2);
+        }else{
+            $("#archivosSubidos").css({'height':'23px'});
+            $("#adjSelecc").val(1);
         }
     }
 

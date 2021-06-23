@@ -102,11 +102,6 @@
                                 Plantilla Subida: <a class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[3]}}" target="_blank" download>Descargar Excel</a>
                             </div>
                         </div>
-                       {{-- @if (strlen($docu->url_comprimido) > 0)
-                        <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_comprimido}}" target="_blank" download>Descargar Comprimido</a></td>
-                        @else
-                        <td><span class="badge badge-secondary"></span></td>
-                        @endif--}} 
                         @endif
                         <table class="table table-light">
                             <thead class="thead-light">
