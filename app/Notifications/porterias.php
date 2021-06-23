@@ -50,10 +50,10 @@ class porterias extends Notification
     {
         $sedeN =  DB::table('ohxqc_ubicaciones as ubi')
         ->select('ubi.descripcion')
-        ->where('ubi.id_ubicacion', $$this->sede)
+        ->where('ubi.id_ubicacion', $this->sede)
         ->get();
         foreach($sedeN as $name){
-            $nombreSede = $name->nombre;
+            $nombreSede = $name->descripcion;
         }
         return (new MailMessage)
                     ->subject('Solicitud #'.$this->idSolicitud.' Aprobada - Sede: '.$nombreSede.'.')

@@ -26,7 +26,6 @@ class RegistroVisitanteController extends Controller
     public $infoDeEmpresa  = "";
     public $tipoIngres = "";
     public $sedeId = "";
-    public $nuevaEmpresa = "";    
     
    
     /**
@@ -534,6 +533,14 @@ class RegistroVisitanteController extends Controller
         }
 
         
+        //traer nombre de la sede par aponer como titulo en el encabezado
+        $nombreSedeTitulo = DB::table('ohxqc_ubicaciones')
+        ->select('descripcion')
+        ->where('id_ubicacion', $sedeID)
+        ->get();
+        foreach($nombreSedeTitulo as $nm){
+            $nombreSedeTitulo = $nm->descripcion;
+        }
         //consulto toda la información de esta solicitud
         $consultarInfoGeneral= DB::table('ohxqc_solicitud_ingreso')
         ->where('id_solicitud', '=', $solicitud)
@@ -548,6 +555,9 @@ class RegistroVisitanteController extends Controller
         }
         
         $arrayInfo[] = array('solicitante'=>$solicitante, 'tipoIngreso'=>$tipoIngreso, 'empresaC'=>$empresaContratista,'horario'=>$idhorario,'empVisitar'=>$idEmpresa,'labor'=>$labor);
+        $this->infoDeEmpresa = $idEmpresa;
+        $this->tipoIngres = $ideIngreso;
+        $this->sedeId = $sedeID;
             //valido que el usuario quien intenta ingresar, esté autorizado para validar solicitudes de acuerdo
             //a la empresa y al tipo de visitante que debe validar, de no ser así, abortamos
             $consultaPermiso = DB::table('ohxqc_config_solicitud_empresas')
@@ -619,6 +629,9 @@ class RegistroVisitanteController extends Controller
                 ->whereIn('nivel_aprobador', function($query){
                     $query->select('nivel')
                     ->from('ohxqc_config_solicitud_empresas')
+                    ->where('empresa_id', $this->infoDeEmpresa)
+                    ->where('tipo_visitante', $this->tipoIngres)
+                    ->where('sede_id', $this->sedeId)
                     ->where('usuario_aprobador_id', '=', auth()->user()->id);
                 })
                 ->get();
@@ -732,7 +745,7 @@ class RegistroVisitanteController extends Controller
 
      
         if($accede){
-            return view('Permisos::validacionSolicitud', compact('solicitud','ideIngreso','sedeID','arrayInfo', 'documentos', 'sedesVisitar' ,'empresaVisitar','tiposVisitante', 'botonesAccion', 'msjRechazo', 'detalles', 'tipoR', 'arrayDatosEmpresa'));
+            return view('Permisos::validacionSolicitud', compact('solicitud','ideIngreso','sedeID','arrayInfo', 'documentos', 'sedesVisitar' ,'empresaVisitar','tiposVisitante', 'botonesAccion', 'msjRechazo', 'detalles', 'tipoR', 'arrayDatosEmpresa', 'nombreSedeTitulo'));
         }
 
 

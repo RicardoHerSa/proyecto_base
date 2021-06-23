@@ -37,7 +37,7 @@
         <div class="col-xs-12 col-md-12 col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>Solicitud de Aprobación, Caso #{{$solicitud}}</h4>
+                    <h4>Solicitud de Aprobación, Caso #{{$solicitud}} - Sede: {{$nombreSedeTitulo}}</h4>
                 </div>
             </div>
 
