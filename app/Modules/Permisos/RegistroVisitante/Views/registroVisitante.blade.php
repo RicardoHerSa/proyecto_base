@@ -1000,19 +1000,19 @@
 
     function ponerNombreMasivo()
     {
-        $("#inlineRadio1").removeAttr('checked');
-        $("#inlineRadio2").removeAttr('checked');
+        //$("#inlineRadio1").removeAttr('checked');
+        //$("#inlineRadio2").removeAttr('checked');
         var nombreeContratista = $("#empresaContratista").val();
         if(nombreeContratista.length != 0){
             $("#nombre").val(nombreeContratista);
-            $("#nombre").attr('readonly', true);
-            $("#inlineRadio2").attr('checked', true);
-            tipoRegistroV("RM");
+            //$("#nombre").attr('readonly', true);
+            //$("#inlineRadio2").attr('checked', true);
+            //tipoRegistroV("RM");
         }else{
             $("#nombre").val('');
-            $("#nombre").removeAttr('readonly');
-            $("#inlineRadio1").attr('checked', true);
-            tipoRegistroV("RI");
+           // $("#nombre").removeAttr('readonly');
+            //$("#inlineRadio1").attr('checked', true);
+            //tipoRegistroV("RI");
         }
     }
 

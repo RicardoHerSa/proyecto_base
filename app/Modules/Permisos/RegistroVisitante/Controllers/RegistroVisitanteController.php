@@ -159,18 +159,20 @@ class RegistroVisitanteController extends Controller
         $errorFechas = false;
         //Fecha Hoy
         $fechaHoy = date('Y-m-d');
-
-        if($request->input('fechaIngreso') > $request->input('fechaFinal') || $request->input('fechaIngreso') < $fechaHoy  || $request->input('fechaFinal') < $fechaHoy)
-        {
-            $errorFechas = true;
-        }
-        $cantidadAnexos = $request->input('cantR');
-        if($cantidadAnexos > 0){
-            for($i=1; $i <= $cantidadAnexos; $i++){
-                if($request->input('fechaIngreso'.$i) > $request->input('fechaFinal'.$i))
-                {
-                    $errorFechas = true;
-                } 
+        
+        if($tipoRegistroV == "RI"){
+            if($request->input('fechaIngreso') > $request->input('fechaFinal'))
+            {
+                $errorFechas = true;
+            }
+            $cantidadAnexos = $request->input('cantR');
+            if($cantidadAnexos > 0){
+                for($i=1; $i <= $cantidadAnexos; $i++){
+                    if($request->input('fechaIngreso'.$i) > $request->input('fechaFinal'.$i))
+                    {
+                        $errorFechas = true;
+                    } 
+                }
             }
         }
 
