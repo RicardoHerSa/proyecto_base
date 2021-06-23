@@ -63,7 +63,7 @@ class HomeController extends Controller
 
         }else{
                  
-           return redirect(Utilidad::UserRol());
+           return view('inicio');
            
         }
     }
