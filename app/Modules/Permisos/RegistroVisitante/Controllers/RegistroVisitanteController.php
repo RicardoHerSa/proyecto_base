@@ -1443,7 +1443,7 @@ class RegistroVisitanteController extends Controller
             $consulta = DB::table('ohxqc_empresas')
             ->select('codigo_empresa', 'descripcion')
             ->distinct('descripcion')
-            ->where('grupo_carvajal',2)
+            ->whereNull('grupo_carvajal')
             ->where('activo', 'S')
             ->orderBy('descripcion')
             ->get();
