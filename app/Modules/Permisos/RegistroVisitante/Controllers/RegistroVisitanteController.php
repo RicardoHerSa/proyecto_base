@@ -1135,8 +1135,8 @@ class RegistroVisitanteController extends Controller
     public function validarExcel($urlDocumento, $idSolicitud)
     {
         
-        $ruta = storage_path('app\public/'.$urlDocumento);
-       
+        //$ruta = storage_path('app\public/'.$urlDocumento);
+        $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
         $reader->setReadDataOnly(TRUE);
         
