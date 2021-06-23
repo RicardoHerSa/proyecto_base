@@ -336,7 +336,7 @@ class RegistroVisitanteController extends Controller
             
                                         ]);
                                             //Enviar el correo con esta solicitud, y la url
-                                             $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso, $request->input('sede'.$j),$idSolicitud, $solicitante, $labor);
+                                             $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso, $request->input('sede'.$j),$idSolicitud, $solicitante, $labor, $i);
                                            
                                         
                                     }else{
@@ -430,7 +430,7 @@ class RegistroVisitanteController extends Controller
                                         //Hasta aqui ya tendriamos la info importante, podemos notificar el registro
         
                                         //Enviar el correo con esta solicitud, y la url
-                                         $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso,$request->input('sede'), $idSolicitud, $solicitante, $labor);
+                                         $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso,$request->input('sede'), $idSolicitud, $solicitante, $labor, 0);
                                         return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
                                         
                                     }else{
@@ -752,7 +752,7 @@ class RegistroVisitanteController extends Controller
        
     }   
 
-    public function enviarCorreo($url, $empVisi, $tipoIngreso,$sedeId,$idSolicitud, $solicitante, $labor)
+    public function enviarCorreo($url, $empVisi, $tipoIngreso,$sedeId,$idSolicitud, $solicitante, $labor, $envioMultiple)
     {
         //var_dump($this->infoDeEmpresa);
         
@@ -776,8 +776,10 @@ class RegistroVisitanteController extends Controller
         //envía correo a los del primer flujo
         Notification::send($correos, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor, 1));
         //envía correo al solicitante avisando el registro de la solicitud
-        $correo = User::where('id', auth()->user()->id)->limit(1)->get();
-        Notification::send($correo, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor, 2));
+        if($envioMultiple == 0){
+            $correo = User::where('id', auth()->user()->id)->limit(1)->get();
+            Notification::send($correo, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor, 2));   
+        }
         echo true;
     }
 

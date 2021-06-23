@@ -132,7 +132,7 @@
                             <div class="col-xs-12 col-md-6 col-lg-6">
                                 <div class="form-group" id="contenedorContratista">
                                     <label for="empresaContratista">Empresa Contratista: </label>
-                                    <input onchange="ponerNombreMasivo()" id="empresaContratista" class="form-control" type="text" name="empresaContratista">
+                                    <input id="empresaContratista" class="form-control" type="text" name="empresaContratista">
                                 </div>
                             </div>
                         </div>
@@ -645,6 +645,7 @@
     function tipoRegistroV($event)
     {
         if($event == "RM"){
+            ponerNombreMasivo();
             if($("#empresaContratista").val().length != 0 && $("#tipoIngreso").val() == 2){
                 $("#nombre").val($("#empresaContratista").val());
                 $("#nombre").attr('readonly', true);
@@ -785,7 +786,7 @@
 
             //oculta comprimido
             $("#comprimido").hide();
-            $("#comprimidoCola").removeAttr('');
+            $("#comprimidoCola").removeAttr('required');
 
           
             $("#btnAñadirRegistro").show();
