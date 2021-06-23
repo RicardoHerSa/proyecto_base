@@ -1002,6 +1002,7 @@ class RegistroVisitanteController extends Controller
             $arrayPermisos[$i] = $per->id_ubicacion;
             $i++;
         }
+        array_push($arrayPermisos, 2); //ppne carvajal centro empresarial
         //consultamos los datos relevantes de la tabla: ohxqc_solicitud_ingreso, para insertar en visitantes
         $solicitudIngreso = DB::table('ohxqc_solicitud_ingreso')
         ->select('tipo_ingreso')
