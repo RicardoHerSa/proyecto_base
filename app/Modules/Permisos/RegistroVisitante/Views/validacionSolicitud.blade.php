@@ -96,10 +96,10 @@
                                 <b>NIT:</b> {{$arrayDatosEmpresa[1]}}
                             </div>
                             <div class="col-xs-12 col-md-3 col-lg-3">
-                                Comprimido Colaboradores: <a class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[2]}}" target="_blank" download>Descargar Comprimido</a>
+                                Comprimido Colaboradores: <a class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[2]}}" target="_blank" download><i class="fa fa-download"></i></a>
                             </div>
                             <div class="col-xs-12 col-md-3 col-lg-3">
-                                Plantilla Subida: <a class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[3]}}" target="_blank" download>Descargar Excel</a>
+                                Plantilla Subida: <a class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[3]}}" target="_blank" download><i class="fa fa-download"></i></a>
                             </div>
                         </div>
                         @endif

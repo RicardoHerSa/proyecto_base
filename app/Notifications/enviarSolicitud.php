@@ -67,7 +67,7 @@ class enviarSolicitud extends Notification implements ShouldQueue
 
         if($this->tipo == 1){
             return (new MailMessage)
-            ->subject('Solicitud para aprobar nuevo visitante')
+            ->subject('Solicitud #'. $this->idSolicitud.' para aprobar nuevo visitante')
             ->greeting('Hola')
             ->line('Según el flujo al que perteneces, has recibido este correo para poder validar la solicitud número: '.$this->idSolicitud)
             ->line('Solicitante: '.$this->solicitante)
@@ -78,7 +78,7 @@ class enviarSolicitud extends Notification implements ShouldQueue
             ->salutation('Cordialmente:');
         }else{
             return (new MailMessage)
-            ->subject('Solicitud Enviada a Aprobación')
+            ->subject('Solicitud #'. $this->idSolicitud.' Enviada a Aprobación')
             ->greeting('Hola')
             ->line('Su solicitud de número: '.$this->idSolicitud.', ha sido enviada para la respectiva validación; le estaremos notificando por este mismo medio el estado de la misma.')
             ->line('Solicitante: '.$this->solicitante)
