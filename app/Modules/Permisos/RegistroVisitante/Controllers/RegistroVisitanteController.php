@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Modules\Permisos\RegistroVisitante\Controllers;
-require '/app/Portal_Sica/vendor/autoload.php';
-//require '../vendor\autoload.php';
+//require '/app/Portal_Sica/vendor/autoload.php';
+require '../vendor\autoload.php';
 
 use DB;
 use App\Http\Controllers\Controller;
@@ -685,25 +685,30 @@ class RegistroVisitanteController extends Controller
         ->orderBy('id_registro', 'DESC')
         ->get();
 
+        //validar si esxiste una empresa para mostrar como encabezado
+        $arrayDatosEmpresa = array();
+        foreach($documentos as $docu){
+            if($docu->tipo_identificacion == "NIT"){
+                $arrayDatosEmpresa[0] = $docu->nombre;
+                $arrayDatosEmpresa[1] = $docu->identificacion;
+                $arrayDatosEmpresa[2] = $docu->url_comprimido;
+                $arrayDatosEmpresa[3] = $docu->url_documento;
+                break;
+            }
+        }
+
         $sedesVisitar = DB::table('ohxqc_sedes_solicitud as sol')
         ->select('sede.descripcion')
         ->join('ohxqc_ubicaciones as sede', 'sede.id_ubicacion', 'sol.id_sede')
         ->where('sol.id_solicitud', '=', $solicitud)
         ->get();
 
-        $empresas = DB::table('ohxqc_empresas')
+        $empresaVisitar = DB::table('ohxqc_empresas')
         ->select('codigo_empresa', 'descripcion')
-        ->whereIn('codigo_empresa', ['42681','119','24305','27027','130','21679','115','128','32506','701','702','703','705','706','707','708','709','710','711','713','714','716','718','720','721','722','723','724','725','726','727','728','729','730','732','733','734','735','736','737','738','739','740','742','743','744',
-        '745','129','132'])
+        ->where('codigo_empresa', $idEmpresa)
         ->orderBy('descripcion')
         ->get();
 
-       $horarios = DB::table('ohxqc_horarios')
-       ->select('id', 'descripcion')
-       ->get(); 
-
-       $sedes = DB::table('ohxqc_sede_fisica')
-       ->get();
 
        $tiposVisitante = DB::table('ohxqc_tipos_visitante')
        ->select('id_tipo_visitante', 'nombre')
@@ -720,11 +725,9 @@ class RegistroVisitanteController extends Controller
            $tipoR = $tipo->tipo_registro;
        }
 
-
-
      
         if($accede){
-            return view('Permisos::validacionSolicitud', compact('solicitud','ideIngreso','sedeID','arrayInfo', 'documentos', 'sedesVisitar' ,'empresas', 'horarios', 'sedes', 'tiposVisitante', 'botonesAccion', 'msjRechazo', 'detalles', 'tipoR'));
+            return view('Permisos::validacionSolicitud', compact('solicitud','ideIngreso','sedeID','arrayInfo', 'documentos', 'sedesVisitar' ,'empresaVisitar','tiposVisitante', 'botonesAccion', 'msjRechazo', 'detalles', 'tipoR', 'arrayDatosEmpresa'));
         }
 
 
@@ -1135,8 +1138,8 @@ class RegistroVisitanteController extends Controller
     public function validarExcel($urlDocumento, $idSolicitud)
     {
         
-        //$ruta = storage_path('app\public/'.$urlDocumento);
-        $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
+        $ruta = storage_path('app\public/'.$urlDocumento);
+       // $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
         $reader->setReadDataOnly(TRUE);
         
@@ -1390,7 +1393,7 @@ class RegistroVisitanteController extends Controller
         ->select('ubi.id_ubicacion', 'ubi.descripcion')
         ->join('ohxqc_empresas as emp', 'emp.sede_especifica_id', 'ubi.id_ubicacion')
         ->where('emp.codigo_empresa', $idempresa)
-       // ->where('emp.grupo_carvajal', 1)
+        ->whereNotIn('emp.sede_especifica_id',[2])  // poner la sede centro empresa
         ->orderBy('ubi.descripcion')
         ->get();
 
@@ -1405,7 +1408,8 @@ class RegistroVisitanteController extends Controller
     }
 
 
-    public function empresaVisitar(Request $request){
+    public function empresaVisitar(Request $request)
+    {
 
         $tipo = $request->input('tipoIngreso');
         $grupo = $request->input('grupo');
