@@ -29,7 +29,7 @@
                     </div>
                     <br>
                     <div class="table-responsive">
-                        <table id="empresas" class="table" width="100%">
+                        <table id="tblistado" class="table" width="100%">
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
@@ -84,7 +84,7 @@
                                                 }
                                             @endphp
                                        </td>
-                                       <td style="display: inline-flex;">
+                                       <td style="display: inline-flex;" id="td">
                                         <a class='show-user' href='{{url('/company').'/'.$emp->codigo_empresa}}' title='Info empresa'><button class='btn btn-info btn-sm'><i class='fa fa-eye'></i></button></a>
                                         <a class='edit-user' href='{{url('/company').'/'.$emp->codigo_empresa.'/edit'}}' title='Editar empresa'><button class='btn btn-warning btn-sm'><i class='fa fa-pencil-square-o' aria-hidden='true'></i></button></a>
                                         <button onclick="eliminarEmpresa({{$emp->codigo_empresa}},'{{$emp->descripcion}}')" class='btn btn-danger btn-sm'><i class='fa fa-trash' aria-hidden='true'></i></button>
@@ -101,6 +101,35 @@
 </div>
 
 <script>
+
+    $(document).ready(function(){
+        tabla= $('#tblistado').dataTable(
+        {
+            "aProcessing":true,//Activa el procesamiento del datatable
+            "aServerSide":true,//Paginacion y filtado realizados por servidor 
+            dom: 'Bfrtip',//Definimos los elemtos del contro de tabla 
+            buttons:[
+                        'copyHtml5',
+                        'excelHtml5',
+                        'csvHtml5',
+                        'pdf'
+            ],
+            "ajax":
+                    {
+                        url: "{{route('consultar.empresas')}}",
+                        type: "get",
+                        dataType: "json",
+                        data: {_token:'{{csrf_token()}}'},
+                        error: function(e){
+                            console.log(e.responseText);
+                        }
+                    },
+               "bDestroy": true,
+               "iDisplayLength": 10,//paginacion
+               "order": [[0, "desc"]] //ordenar (columna , orden) 
+        }).dataTable();
+        $("#td").css({'display':'flex'});
+    });
     function cambiarEstado(campo,codigoEmpresa)
     {
        
@@ -129,9 +158,9 @@
                     });
     }
 
-    function eliminarEmpresa(codigoEmpresa, descripcion)
+    function eliminarEmpresa(codigoEmpresa)
     {
-      var confirma = confirm('¿Está seguro de eliminar la empresa '+ descripcion+'?');
+      var confirma = confirm('¿Está seguro de eliminar la empresa ?');
       if(confirma){
             var token = '{{csrf_token()}}';
             $.ajax({

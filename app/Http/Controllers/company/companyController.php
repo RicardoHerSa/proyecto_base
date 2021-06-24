@@ -285,4 +285,60 @@ class companyController extends Controller
             }
         }
     }
+
+    public function consultarEmpresas()
+    {
+        $empresas = DB::table('ohxqc_empresas')->select(DB::raw("DISTINCT(codigo_empresa) as code"), 'descripcion', 'activo')->orderBy('descripcion','asc')
+        ->get();
+
+        $data = Array();
+        $i = 0;     
+        foreach($empresas as $emp){
+            $sedes = DB::table('ohxqc_ubicaciones as ubi')
+            ->select('ubi.descripcion')
+            ->join('ohxqc_empresas as emp', 'emp.sede_especifica_id', 'ubi.id_ubicacion')
+            ->where('emp.codigo_empresa', $emp->code)
+            ->get();
+            $cant = count($sedes);
+           
+            $asociada = array();
+            foreach($sedes as $se){
+                array_push($asociada, $se->descripcion);
+            }
+            $implode = implode(',', $asociada);
+            if($emp->activo == "S"){
+                $input = " <div style='cursor: pointer;' class='custom-control custom-switch'>
+                <input onchange='cambiarEstado('estado'".$i.",$emp->code)'  type='checkbox' checked class='custom-control-input' id='estado".$i."' value='s'>
+                <label class='custom-control-label' for='estado".$i."'></label>
+
+             </div> ";
+            }else{
+                $input = " <div style='cursor: pointer;' class='custom-control custom-switch'>
+                <input onchange='cambiarEstado('estado".$i."',$emp->code)'  type='checkbox' checked class='custom-control-input' id='estado".$i."' value='n'>
+                <label class='custom-control-label' for='estado".$i."'></label>
+
+             </div> ";
+            }
+            $urlShow = "/company/$emp->code";
+            $urlEdit = "/company/$emp->code/edit";
+            $onclick = "eliminarEmpresa($emp->code)";
+            $data[]= array(
+                "0"=>$emp->descripcion,
+                "1"=>$emp->code,
+                "2"=>$input,
+                "3"=>$implode,
+                "4"=>" <a class='show-user' href='".$urlShow."' title='Info empresa'><button class='btn btn-info btn-sm'><i class='fa fa-eye'></i></button></a>
+                <a class='edit-user' href='".$urlEdit."' title='Editar empresa'><button class='btn btn-warning btn-sm'><i class='fa fa-pencil-square-o' aria-hidden='true'></i></button></a>
+                <button onclick='".$onclick."' class='btn btn-danger btn-sm'><i class='fa fa-trash' aria-hidden='true'></i></button>" 
+            );
+            $i++;
+        } 
+        $results = array(
+            "eEcho"=>1, //Informarcion para el datatable
+            "iTotalRecors"=>count($data),//enviamos el total de registros  al datatable
+            "iTotalDisplayRescors"=>count($data),//enviamos el total de registros a vizualizar
+            "aaData"=>$data
+        );
+        echo json_encode($results);
+    }
 }
