@@ -85,22 +85,26 @@
                 <div class="card">
                     <div class="card-body" style="height: 300px;overflow-y: scroll;" id="anexos">
                         <h4 class="text-center mt-2">Personas Que Ingresan</h4>
-                        <hr>
-                        <br>
                         @if ($tipoR == "RM")
-                        <div class="row mb-4">
-                            <div class="col-xs-12 col-md-3 col-lg-3">
-                                <b>Empresa:</b> {{$arrayDatosEmpresa[0]}}
-                            </div>
-                            <div class="col-xs-12 col-md-3 col-lg-3">
-                                <b>NIT:</b> {{$arrayDatosEmpresa[1]}}
-                            </div>
-                            <div class="col-xs-12 col-md-3 col-lg-3">
-                                Comprimido Colaboradores: <a class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[2]}}" target="_blank" download><i class="fa fa-download"></i></a>
-                            </div>
-                            <div class="col-xs-12 col-md-3 col-lg-3">
-                                Plantilla Subida: <a class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[3]}}" target="_blank" download><i class="fa fa-download"></i></a>
-                            </div>
+                        <div class="row mb-3">
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>Empresa</th>
+                                    <th>Nit</th>
+                                    <th>Comprimido Colaboradores</th>
+                                    <th>Plantilla Subida</th>
+                                </tr>
+                                <tbody>
+                                    <tr>
+                                        <td>{{$arrayDatosEmpresa[0]}}</td>
+                                        <td>{{$arrayDatosEmpresa[1]}}</td>
+                                        <td><a style="width: 40px" class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[2]}}" target="_blank" download><i class="fa fa-download"></i></a></td>
+                                        <td><a style="width: 40px" class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[3]}}" target="_blank" download><i class="fa fa-download"></i></a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <hr>
+                          
                         </div>
                         @endif
                         <table class="table table-light">

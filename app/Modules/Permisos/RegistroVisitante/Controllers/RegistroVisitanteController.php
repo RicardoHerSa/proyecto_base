@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Modules\Permisos\RegistroVisitante\Controllers;
-require '/app/Portal_Sica/vendor/autoload.php';
-//require '../vendor\autoload.php';
+//require '/app/Portal_Sica/vendor/autoload.php';
+require '../vendor\autoload.php';
 
 use DB;
 use App\Http\Controllers\Controller;
@@ -38,9 +38,7 @@ class RegistroVisitanteController extends Controller
         $empresas = DB::table('ohxqc_empresas')
         ->select('codigo_empresa', 'descripcion')
         ->distinct('descripcion')
-        /*->whereIn('codigo_empresa', ['42681','119','24305','27027','130','21679','115','128','32506','701','702','703','705','706','707','708','709','710','711','713','714','716','718','720','721','722','723','724','725','726','727','728','729','730','732','733','734','735','736','737','738','739','740','742','743','744',
-        '745','129','132'])*/
-        ->where('grupo_carvajal',-1)
+        ->where('tipo_empresa','CARVAJAL')
         ->where('activo', 'S')
         ->orderBy('descripcion')
         ->get();
@@ -60,20 +58,20 @@ class RegistroVisitanteController extends Controller
         3.SI EL ID DE ORGANIZACION NO ES UNA EMPRESA DEL GRUPO CARVAJAL Y  ES GESTOR EXTERNO, se habilitn solo los tipos de ingreso: USUARIO EMPRESA EXTERNA  
         ***/
        $consultaGrupo = DB::table('ohxqc_empresas')
-       ->select('grupo_carvajal')
+       ->select('tipo_empresa')
        ->where('codigo_empresa', auth()->user()->profile_orgcountry)
        ->get();
        foreach($consultaGrupo as $gr){
-            $grupo = $gr->grupo_carvajal;
+            $grupo = $gr->tipo_empresa;
        }
        //Grupo Carvajal y es gestor externo
-       if($grupo == 1 && auth()->user()->gestor_externo == 1){
+       if($grupo == 'CARVAJAL' && auth()->user()->gestor_externo == 1){
             $tiposVisitante = DB::table('ohxqc_tipos_visitante')
             ->select('id_tipo_visitante', 'nombre')
             ->where('estado', '=', 1)
             ->get();
        //Grupo Carvajal y no es gestor externo
-       }else if($grupo == 1 && auth()->user()->gestor_externo == 0){
+       }else if($grupo == 'CARVAJAL' && auth()->user()->gestor_externo == 0){
             $tiposVisitante = DB::table('ohxqc_tipos_visitante')
             ->select('id_tipo_visitante', 'nombre')
             ->where('estado', '=', 1)
@@ -1161,8 +1159,8 @@ class RegistroVisitanteController extends Controller
     public function validarExcel($urlDocumento, $idSolicitud)
     {
         
-        //$ruta = storage_path('app\public/'.$urlDocumento);
-        $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
+        $ruta = storage_path('app\public/'.$urlDocumento);
+       // $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
         $reader->setReadDataOnly(TRUE);
         
@@ -1452,7 +1450,7 @@ class RegistroVisitanteController extends Controller
             $consulta = DB::table('ohxqc_empresas')
             ->select('codigo_empresa', 'descripcion')
             ->distinct('descripcion')
-            ->where('grupo_carvajal',1)
+            ->where('tipo_empresa','CARVAJAL')
             ->where('activo', 'S')
             ->orderBy('descripcion')
             ->get();
@@ -1462,7 +1460,7 @@ class RegistroVisitanteController extends Controller
             $consulta = DB::table('ohxqc_empresas')
             ->select('codigo_empresa', 'descripcion')
             ->distinct('descripcion')
-            ->whereNull('grupo_carvajal')
+            ->where('tipo_empresa', 'EXTERNA')
             ->where('activo', 'S')
             ->orderBy('descripcion')
             ->get();

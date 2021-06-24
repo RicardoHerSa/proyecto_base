@@ -462,8 +462,10 @@
         if(txt != "CON" && txt != "Se"){
                 $("#contenedorContratista").hide();
                 $("#empresaContratista").val('')
+                $("#anexo").removeAttr('required');
             }else{
                 $("#contenedorContratista").fadeIn();
+                $("#anexo").attr('required', true);
             }
 
         
@@ -524,6 +526,8 @@
     }
     let eliminar = function(obj, posicion)
     {
+        eliminarAdj(posicion);
+
         var cant = parseInt(1);
         var primerEliminado =  $('#primerEliminado').val();
         var cantidadRegistroActual = parseInt($("#cantRegis").val());
@@ -639,7 +643,10 @@
         $("#fechaIngreso").val('');
         $("#fechaFinal").val('');
         $("#anexo").val('');
-
+        if($("#listadoAdj li").length > 0){
+            $("#listadoAdj").find($("#li0")).remove();
+            contadorAdjs();
+        }
     }
 
     function tipoRegistroV($event)
@@ -1024,14 +1031,11 @@
         if(valor[0].files[0].name.length > 0){
             $("#archivosSubidos").fadeIn();
             var cuentaLi = $("#listadoAdj li").length;
-            
-            console.log("cuenta: "+cuentaLi);
-            var suma = parseInt(cuentaLi) + parseInt(1); 
-            $("#txtArchiSub").text('Archivos Subidos ('+suma+')');
+            $("#listadoAdj").append("<li id='li"+cuentaLi+"'>"+valor[0].files[0].name+"</li>").html();  
+            contadorAdjs();
         }else{
             $("#archivosSubidos").fadeOut();
         }
-        $("#listadoAdj").append("<li>"+valor[0].files[0].name+"</li>").html();  
     }
 
     function verAdjuntos(){
@@ -1042,6 +1046,47 @@
             $("#archivosSubidos").css({'height':'23px'});
             $("#adjSelecc").val(1);
         }
+    }
+
+    function contadorAdjs()
+    {
+        var cuentaLi = $("#listadoAdj li").length;
+        console.log("cuenta: "+cuentaLi);
+        $("#txtArchiSub").text('Archivos Subidos ('+cuentaLi+')');  
+        if(cuentaLi == 0){
+            $("#archivosSubidos").fadeOut();
+        }
+    }
+
+    function eliminarAdj(posicion)
+    {
+        var cantidadFilas = $("#cantRegis").val();
+        if($("#listadoAdj li").length > 0){
+            switch (cantidadFilas) {
+                case '1':
+                     $("#listadoAdj").find($("#li1")).remove();
+                break;
+                case '2':
+                    if(posicion == 1){
+                        $("#listadoAdj").find($("#li2")).remove();
+                    }else if(posicion == 2){
+                        $("#listadoAdj").find($("#li1")).remove();
+                    }
+                break;
+
+                case '3':
+                    if(posicion == 1){
+                        $("#listadoAdj").find($("#li2")).remove();
+                    }else if(posicion == 2){
+                        $("#listadoAdj").find($("#li3")).remove();
+                    }else if(posicion == 3){
+                        $("#listadoAdj").find($("#li1")).remove();
+                    }
+                break;
+            }
+            
+            contadorAdjs();
+        }       
     }
 
 
