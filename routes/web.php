@@ -83,4 +83,5 @@ Route::post('consutarsedesempresa', 'company\companyController@consultarSedesEmp
 Route::post('actualizarsedesempresa', 'company\companyController@actualizarSedesEmpresa')->name('actualiza.sedes');
 Route::post('registraempresa', 'company\companyController@registrarEmpresa')->name('registra.empresa');
 Route::post('eliminarsede', 'company\companyController@eliminarSede')->name('elimina.sede');
+Route::post('eliminarempresa', 'company\companyController@eliminarEmpresa')->name('eliminar.empresa');
 

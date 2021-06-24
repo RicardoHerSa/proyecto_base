@@ -28,8 +28,8 @@
                         <div class="col-xs-12 col-md-4 col-lg-4" id="contenedorPertenece">
                             <label for="">¿Pertenece al grupo Carvajal?: *</label>
                             <select class="form-control" name="" id="grupo">
-                              <option value="1">SI</option>
-                              <option value="0">NO</option>
+                              <option value="CARVAJAL">SI</option>
+                              <option value="EXTERNA">NO</option>
                             </select>
                         </div>
                     </div>
@@ -53,7 +53,10 @@
                 </div>
                 <div class="card-footer">
                     <input type="hidden" id="encontrada">
-                    <button class="btn btn-success" id="btnRegistrar" onclick="registrarEmpresa()">Registrar</button>
+                    <button class="btn btn-success" id="btnRegistrar" onclick="registrarEmpresa()">
+                        <span id="loadBtn" style="display: none" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+  
+                        <span id="txtBtnRegistrar">Registrar Empresa</span></button>
                 </div>
             </div>
         </div>
@@ -65,7 +68,24 @@
                 <div class="card-header">
                    Sedes Asociadas
                 </div>
-                <div class="card-body">
+                <div class="mt-3" id="loadSedes" style="margin-left:35%;display: none">
+                      <div class="spinner-grow text-success" role="status">
+                        <span class="sr-only">Cargando...</span>
+                      </div>
+                      <div class="spinner-grow text-danger" role="status">
+                      </div>
+                      <div class="spinner-grow text-warning" role="status">
+                      </div>
+                      <div class="spinner-grow text-info" role="status">
+                      </div>
+                </div>
+                <div class="ml-4 mt-3" id="loadElimina" style="display: none">
+                    <div class="align-items-center">
+                        <strong>Eliminando Sede...</strong>
+                        <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+                      </div>
+                </div>
+                <div class="card-body" style="overflow-y: auto;height: 300px;">
                     <table class="table table-light">
                         <thead class="thead-light">
                             <tr>
@@ -101,7 +121,7 @@
                         if(response != "n"){
                             $("#nombre").val(response);
                             $("#nombre").attr('readonly', true);
-                            $("#btnRegistrar").text('Asociar Sede');
+                            $("#txtBtnRegistrar").text('Asociar Sede');
                             $("#lblNombre").text("Empresa Encontrada:");
                             $("#encontrada").val(1);
                             //acomodo medidas de campos
@@ -122,7 +142,6 @@
                             listaSedes(codigo);
 
                         }else{
-                            $("#btnRegistrar").text('Registrar Empresa');
                             $("#lblNombre").text("Digite Nombre:");
                             $("#nombre").removeAttr('readonly');
                             $("#nombre").val("");
@@ -215,32 +234,43 @@
     {
         var codigo = $("#codigo").val();
         var nombre = $("#nombre").val();
-        var ciudad = $("#ciudad").val();
-        var siso = $("#siso").val();
         var grupo = $("#grupo").val();
         var sede = $("#selectSedes").val();
         var estado = $("#estado").val();
         if(codigo.length == 0 || nombre.length == 0){
             alert('Campos Incompletos');
         }else{
+            $("#loadBtn").fadeIn();
+            $("#txtBtnRegistrar").text('Procesando...');
             var token = '{{csrf_token()}}';
             $.ajax({
                     type:  'POST',
                     async: true,
                     url: "{{route('registra.empresa')}}", 
-                    data: {'codigo':codigo,'nombre':nombre,'ciudad':ciudad,'siso':siso,'grupo':grupo,'sede':sede,'estado':estado, _token:token},
+                    data: {'codigo':codigo,'nombre':nombre,'grupo':grupo,'sede':sede,'estado':estado, _token:token},
                     cache: false,
                     success: function(response){
                         if(response){
-                            $("#codigo").val('');
-                            $("#nombre").val('');
-                            alert('Registro Exitoso');
+                            if($("#encontrada").val() != 1){
+                                $("#codigo").val('');
+                                $("#nombre").val('');
+                                alert('Registro Exitoso');
+                            }else{
+                                alert('Sede Asociada Con Éxito');
+                                $('#loadSedes').fadeIn();
+                                listaSedes(codigo);
+                                $('#loadSedes').fadeOut();
+                            }
                         }else{
                             alert('error')
                         }
+                          $("#txtBtnRegistrar").text('Registrar');
+                          $("#loadBtn").fadeOut();
                     },
                     error:function(xhr, ajaxOptions, thrownError) {
                         alert(thrownError);
+                        $("#txtBtnRegistrar").text('Registrar');
+                        $("#loadBtn").fadeOut();   
                         }
                     });
         }
@@ -250,6 +280,7 @@
     {
         var confirma = confirm("¿Está seguro de eliminar esta sede?");
         if(confirma){
+            $("#loadElimina").fadeIn();
             var token = '{{csrf_token()}}';
                 $.ajax({
                         type:  'POST',
@@ -258,6 +289,7 @@
                         data: {'sede':sede,'empresa':empresa, _token:token},
                         cache: false,
                         success: function(response){
+                            $("#loadElimina").fadeOut();
                             if(response != 1){
                                 listaSedes(empresa);
                                 actualizaSedes(1,codigo);
@@ -267,6 +299,7 @@
                         },
                         error:function(xhr, ajaxOptions, thrownError) {
                             alert(thrownError);
+                            $("#loadElimina").fadeOut();
                             }
                         });
         }

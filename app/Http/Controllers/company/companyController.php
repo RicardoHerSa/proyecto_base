@@ -54,17 +54,17 @@ class companyController extends Controller
     public function show($codigoEmpresa)
     {
         $empresa = DB::table('ohxqc_empresas as emp')
-        ->select('emp.descripcion', 'emp.activo', 'emp.grupo_carvajal')
+        ->select('emp.descripcion', 'emp.activo', 'emp.tipo_empresa')
         ->where('codigo_empresa',$codigoEmpresa)
         ->get();
         foreach($empresa as $emp){
             $nombre = $emp->descripcion;
             $estado = $emp->activo;
-            $grupo = $emp->grupo_carvajal;
+            $grupo = $emp->tipo_empresa;
 
         }
         if($estado == "S"){ $estado = "Activo";}else{$estado = "Inactivo";}
-        if($grupo == 1){$grupo = "SI";}else{$grupo = "NO";}
+        if($grupo == 'CARVAJAL'){$grupo = "SI";}else{$grupo = "NO";}
 
         $sedesAsociadas = DB::table('ohxqc_ubicaciones as ubi')
         ->select('ubi.descripcion', 'ubi.id_ubicacion')
@@ -81,9 +81,17 @@ class companyController extends Controller
      * @param  \App\Models\Request  $Request
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $Request)
+    public function edit($codigoEmpresa)
     {
-        //
+        $empresa = DB::table('ohxqc_empresas')->where('codigo_empresa',$codigoEmpresa)->get();
+
+        $sedesAsociadas = DB::table('ohxqc_ubicaciones as ubi')
+        ->select('ubi.descripcion', 'ubi.id_ubicacion')
+        ->join('ohxqc_empresas as emp', 'emp.sede_especifica_id', 'ubi.id_ubicacion')
+        ->where('emp.codigo_empresa', $codigoEmpresa)
+        ->get();
+
+        return  view('company/edit', compact('empresa', 'codigoEmpresa', 'sedesAsociadas'));
     }
 
     /**
@@ -93,9 +101,25 @@ class companyController extends Controller
      * @param  \App\Models\Request  $Request
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Request $Request)
+    public function update(Request $request)
     {
-        //
+       $datos =  $request->except(['_token','_method']);
+        //var_dump($datos);
+        //echo $datos['codigo'];
+        $actualizar = DB::table('ohxqc_empresas')->where('codigo_empresa', $datos['antiguo'])->update([
+            'id_empresa' => $datos['codigo'],
+            'codigo_empresa' => $datos['codigo'],
+            'descripcion' => $datos['nombre'],
+            'activo' => $datos['estado'],
+            'tipo_empresa' => $datos['grupo'],
+            'usuario_actualizacion' => auth()->user()->username,
+            'fecha_actualizacion' => now()
+        ]);
+        if($actualizar){
+            return redirect()->to('company/'.$datos['codigo'].'/edit')->with('msj', 'ok');
+        }else{
+            return redirect()->to('company/'.$datos['codigo'].'/edit')->with('msj', 'error');
+        }
     }
 
     /**
@@ -107,9 +131,19 @@ class companyController extends Controller
     public function destroy($codigoEmpresa)
     {
         if(DB::table('ohxqc_empresas')->where('codigo_empresa', $codigoEmpresa)->delete()){
-            return redirect('company')->with('msj', 'ok');
+                return redirect('company')->with('msj', 'ok');
         }else{
-            return redirect('company')->with('msj', 'err');
+                return redirect('company')->with('msj', 'err');
+        }
+    }
+
+    public function eliminarEmpresa(Request $request)
+    {
+        $codigoEmpresa = $request->input('codigo');
+        if(DB::table('ohxqc_empresas')->where('codigo_empresa', $codigoEmpresa)->delete()){
+            echo 1;
+        }else{
+            echo 2;
         }
     }
 
@@ -216,7 +250,7 @@ class companyController extends Controller
             'fecha_actualizacion' => now(),
             'id_sede' => 0,
             'id_siso' => 0,
-            'grupo_carvajal' =>$grupo,
+            'tipo_empresa' =>$grupo,
             'sede_especifica_id' => $sede
         ]);
 

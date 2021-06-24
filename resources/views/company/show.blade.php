@@ -45,14 +45,12 @@
                 <thead class="thead-light">
                     <tr>
                         <th>Nombre de la Sede</th>
-                        <th>Eliminar</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($sedesAsociadas as $sed)
                     <tr>
                         <td>{{$sed->descripcion}}</td>
-                        <td><button class="btn btn-danger" onclick="eliminarSede({{$sed->id_ubicacion}}, {{$codigoEmpresa}})"><i class="fa fa-trash"></i></button></td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -61,32 +59,5 @@
         <div class="col-xs-12 col-md-1 col-lg-1"></div>
     </div>
 </div>
-
-<script>
-     function eliminarSede(sede, empresa)
-    {
-        var confirma = confirm("¿Está seguro de eliminar esta sede?");
-        if(confirma){
-            var token = '{{csrf_token()}}';
-                $.ajax({
-                        type:  'POST',
-                        async: true,
-                        url: "{{route('elimina.sede')}}", 
-                        data: {'sede':sede,'empresa':empresa, _token:token},
-                        cache: false,
-                        success: function(response){
-                            if(response != 1){
-                                alert('Sede eliminada.');
-                            }else{
-                                alert('No se pudo eliminar la sede');
-                            }
-                        },
-                        error:function(xhr, ajaxOptions, thrownError) {
-                            alert(thrownError);
-                            }
-                        });
-        }
-    }
-</script>
 
 @endsection
