@@ -36,61 +36,10 @@
                                     <th>Código</th>
                                     <th>Estado</th>
                                     <th>Sedes Asociadas</th>
-                                    <th>Opciones</th>
+                                    <th style="display: flex;width:100%;">Opciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($empresas as $emp)
-
-                                    <tr>
-                                        <td>{{$emp->descripcion}}</td>
-                                        <td>{{$emp->codigo_empresa}}</td>
-                                        @if ($emp->activo == "S")
-                                          <td>
-                                              <div style="cursor: pointer;" class="custom-control custom-switch">
-                                                <input onchange="cambiarEstado('estado{{$loop->index}}',{{$emp->codigo_empresa}})"  type="checkbox" checked class="custom-control-input" id="estado{{$loop->index}}" value="s">
-                                                <label class="custom-control-label" for="estado{{$loop->index}}"></label>
-
-                                             </div>
-                                         </td>
-                                        @else 
-                                        <td>
-                                            <div style="cursor: pointer;" class="custom-control custom-switch">
-                                              <input onchange="cambiarEstado('estado{{$loop->index}}',{{$emp->codigo_empresa}})"  type="checkbox" class="custom-control-input" id="estado{{$loop->index}}" value="n">
-                                              <label class="custom-control-label" for="estado{{$loop->index}}"></label>
-
-                                           </div>
-                                       </td>
-                                        @endif
-                                        <td>
-                                            @php
-                                            $codigo = $emp->codigo_empresa;
-                                                
-                                                $sedes = DB::table('ohxqc_ubicaciones as ubi')
-                                                ->select('ubi.descripcion')
-                                                ->join('ohxqc_empresas as emp', 'emp.sede_especifica_id', 'ubi.id_ubicacion')
-                                                ->where('emp.codigo_empresa', $codigo)
-                                                ->get();
-                                                $cant = count($sedes);
-                                                $i = 0;
-                                                foreach($sedes as $se){
-                                                    echo $se->descripcion;
-                                                    $i++;
-                                                    if($i != $cant){
-                                                        echo ", ";
-                                                    }else{
-                                                        echo ".";
-                                                    }
-                                                }
-                                            @endphp
-                                       </td>
-                                       <td style="display: inline-flex;" id="td">
-                                        <a class='show-user' href='{{url('/company').'/'.$emp->codigo_empresa}}' title='Info empresa'><button class='btn btn-info btn-sm'><i class='fa fa-eye'></i></button></a>
-                                        <a class='edit-user' href='{{url('/company').'/'.$emp->codigo_empresa.'/edit'}}' title='Editar empresa'><button class='btn btn-warning btn-sm'><i class='fa fa-pencil-square-o' aria-hidden='true'></i></button></a>
-                                        <button onclick="eliminarEmpresa({{$emp->codigo_empresa}},'{{$emp->descripcion}}')" class='btn btn-danger btn-sm'><i class='fa fa-trash' aria-hidden='true'></i></button>
-                                       </td>
-                                    </tr>
-                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -103,8 +52,30 @@
 <script>
 
     $(document).ready(function(){
+        listar();
+      
+    });
+    function listar()
+    {
         tabla= $('#tblistado').dataTable(
         {
+            language: {  
+                processing: "Procesando...", 
+                search: "Buscar&nbsp;:", 
+                lengthMenu: "Registros _MENU_ ", 
+                info: "Registros del _START_ al _END_ ", 
+                loadingRecords: "Cargando...", 
+                infoFiltered: "", 
+                zeroRecords: "No se encontraron registros.", 
+                emptyTable: "No hay información", 
+                infoEmpty: "",
+                paginate: { 
+                    first: "Primero", 
+                    previous: "Anterior", 
+                    next: "Siguiente", 
+                    last: "Ultimo" 
+                } 
+            }, 
             "aProcessing":true,//Activa el procesamiento del datatable
             "aServerSide":true,//Paginacion y filtado realizados por servidor 
             dom: 'Bfrtip',//Definimos los elemtos del contro de tabla 
@@ -128,19 +99,18 @@
                "iDisplayLength": 10,//paginacion
                "order": [[0, "desc"]] //ordenar (columna , orden) 
         }).dataTable();
-        $("#td").css({'display':'flex'});
-    });
-    function cambiarEstado(campo,codigoEmpresa)
+    }
+    function cambiarEstado(codigoEmpresa)
     {
        
-      var estado =  $("#"+campo).val();;
+      var estado =  $("#estado"+codigoEmpresa).val();;
       if(estado == "s"){
         estado = "N";
-        $("#"+campo).val("n");
+        $("#"+codigoEmpresa).val("n");
 
       }else{
         estado = "S";
-        $("#"+campo).val("s")
+        $("#"+codigoEmpresa).val("s")
       }
       var token = '{{csrf_token()}}';
             $.ajax({
@@ -150,7 +120,7 @@
                     data: {'codigo':codigoEmpresa, 'estado':estado, _token:token},
                     cache: false,
                     success: function(response){
-                       
+                        toastr.success('Estado Cambiado');
                         },
                     error:function(xhr, ajaxOptions, thrownError) {
                         alert(thrownError);
@@ -171,7 +141,8 @@
                     cache: false,
                     success: function(response){
                        if(response == 1){
-                            alert('Empresa eliminada');
+                            toastr.success('Empresa Eliminada');
+                            listar();
                        }else{
                            alert('Error al eliminar');
                        }

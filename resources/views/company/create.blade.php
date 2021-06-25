@@ -254,9 +254,9 @@
                             if($("#encontrada").val() != 1){
                                 $("#codigo").val('');
                                 $("#nombre").val('');
-                                alert('Registro Exitoso');
+                                toastr.success('Registro Exitoso');
                             }else{
-                                alert('Sede Asociada Con Éxito');
+                                toastr.success('Sede Asociada Con Éxito');
                                 $('#loadSedes').fadeIn();
                                 listaSedes(codigo);
                                 $('#loadSedes').fadeOut();

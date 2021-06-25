@@ -113,7 +113,7 @@
                         cache: false,
                         success: function(response){
                             if(response != 1){
-                                alert('Sede eliminada.');
+                                toastr.success('Sede eliminada.'');
                             }else{
                                 alert('No se pudo eliminar la sede');
                             }

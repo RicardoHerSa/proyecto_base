@@ -308,14 +308,14 @@ class companyController extends Controller
             $implode = implode(',', $asociada);
             if($emp->activo == "S"){
                 $input = " <div style='cursor: pointer;' class='custom-control custom-switch'>
-                <input onchange='cambiarEstado('estado'".$i.",$emp->code)'  type='checkbox' checked class='custom-control-input' id='estado".$i."' value='s'>
-                <label class='custom-control-label' for='estado".$i."'></label>
+                <input onchange='cambiarEstado($emp->code)'  type='checkbox' checked class='custom-control-input' id='estado".$emp->code."' value='s'>
+                <label class='custom-control-label' for='estado".$emp->code."'></label>
 
              </div> ";
             }else{
                 $input = " <div style='cursor: pointer;' class='custom-control custom-switch'>
-                <input onchange='cambiarEstado('estado".$i."',$emp->code)'  type='checkbox' checked class='custom-control-input' id='estado".$i."' value='n'>
-                <label class='custom-control-label' for='estado".$i."'></label>
+                <input onchange='cambiarEstado($emp->code)'  type='checkbox' class='custom-control-input' id='estado".$emp->code."' value='n'>
+                <label class='custom-control-label' for='estado".$emp->code."'></label>
 
              </div> ";
             }
