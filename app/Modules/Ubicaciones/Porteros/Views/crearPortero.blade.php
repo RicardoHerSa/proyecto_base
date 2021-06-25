@@ -22,10 +22,10 @@
                 <div class="card-header">
                    <strong> Registrar Nuevo Portero </strong>
                 </div>
-            <form method="POST" action="{{url('/porteros')}}" onsubmit="return validarFormulario()">
+            <form method="POST" action="{{url('/Porteros')}}" onsubmit="return validarFormulario()">
                 @csrf
                 <div class="card-body">
-                    <a href="{{ url('/porteros') }}" title="Volver"><button type="button" class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
+                    <a href="{{ url('/Porteros') }}" title="Volver"><button type="button" class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
                     <div class="row mt-3">
                         <div class="col-xs-12 col-md-4 col-lg-4" id="contenedorUsuario">
                             <div class="form-group">
