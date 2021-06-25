@@ -25,7 +25,7 @@
                 </div>
                 <div class="card-body">
                     <div class="float-left">
-                        <a href="{{url('/porteros').'/create'}}" class="btn btn-success my-3" title="Crear nuevo portero"> <i class="fa fa-plus" aria-hidden="true"></i> Crear Portero</a>
+                        <a href="{{url('/Porteros').'/create'}}" class="btn btn-success my-3" title="Crear nuevo portero"> <i class="fa fa-plus" aria-hidden="true"></i> Crear Portero</a>
                         <a href="{{route('asociar.porterias')}}" class="btn btn-primary my-3" title="Asociar Porterías"> <i class="fa fa-plus" aria-hidden="true"></i> Asociar Porterías</a>
                     </div>
                     <br>
