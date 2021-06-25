@@ -89,8 +89,7 @@ class PermisosUnitariosController extends Controller
                 $idhorario = $q->id_horario;
                 
             }
-            $queries =  DB::connection()->enableQueryLog();
-            DB::connection()->enableQueryLog();
+          
                 
             $consulta = DB::table('ohxqc_ubicaciones')->whereIn('id_ubicacion', function($query){
                     $query->select('id_ubicacion')
@@ -122,8 +121,7 @@ class PermisosUnitariosController extends Controller
                 // })
                 // ->get();
             
-                Log::info("TREE");
-                Log::info(DB::getQueryLog());
+             
                 // $consulta = DB::table('ohxqc_ubicaciones')->whereIn('id_ubicacion', function($query){
                 //     $query->select('id_ubicacion')
                 //     ->from('ohxqc_permisos') 
@@ -208,19 +206,30 @@ class PermisosUnitariosController extends Controller
             if($permisos[0]!="" && $activo=='S'){
                     //Elimina primero los permisos
                     //echo "<br><br>THIS CEDULA:".$this->cedula;
-                    $delete = DB::table('ohxqc_permisos')->where('identificacion_responsable',$this->cedula)
+                    // $delete = db::table('ohxqc_permisos')->where('identificacion_responsable',$this->cedula)
+                    // ->wherein('id_empresa_visitante', function($query){
+                    //     $query->select('id_empresa_visitante')
+                    //     ->from('ohxqc_empresas_visitante') 
+                    //     ->wherein('id_visitante', function($querydos){
+                    //         $querydos->select('id_visitante')
+                    //         ->from('ohxqc_visitantes')
+                    //         ->where('identificacion', '=', $this->cedula);
+                    //     })->limit(1);
+                        
+                    // })
+                   
+                    // ->delete();
+                  
+
+                    $delete = DB::table('ohxqc_permisos')//->where('id_empresa_visitante',$this->cedula)
                     ->whereIn('id_empresa_visitante', function($query){
-                        $query->select('id_empresa_visitante')
-                        ->from('ohxqc_empresas_visitante') 
-                        ->whereIn('id_visitante', function($queryDos){
-                            $queryDos->select('id_visitante')
+                        $query->select('id_visitante')
                             ->from('ohxqc_visitantes')
                             ->where('identificacion', '=', $this->cedula);
-                        })->limit(1);
-                        
-                    })
-                   
-                    ->delete();
+                    })->delete();
+
+
+
 
                 //Agrega los nuevos permisos
                  //consulta id empresa visitante
@@ -249,12 +258,14 @@ class PermisosUnitariosController extends Controller
                         $arrayInfo[1] = $info->fecha_ingreso;
                         $arrayInfo[2] = $info->fecha_fin;
                     }
-                   // var_dump($informacion);
+                    //var_dump($informacion);
                    // echo "<br>IDENTI: ".$arrayInfo[0]."<br>Fecha Ingreso: ".$arrayInfo[1]."<br>Fecha Fin: ".$arrayInfo[2];
                    // echo count($permisos)."<br>";
-                   Log::info($permisos);
+                   
+                 
+                 
                     for($i=0;$i<(count($permisos)-1);$i++){
-                      /*  $inserta = DB::table('ohxqc_permisos')->insert([
+                        $inserta = DB::table('ohxqc_permisos')->insert([
                             'id_empresa_visitante' => $idEmpresaVisitante,
                             'id_ubicacion' =>  $permisos[$i],
                             'id_horario' => $id_horario,
@@ -266,9 +277,10 @@ class PermisosUnitariosController extends Controller
                             'fecha_creacion' => now(),
                             'usuario_actualizacion' => 'admin',
                             'fecha_actualizacion' => now()
-                        ]);*/
+                        ]);
                        // echo "<br>RESULTADO DEL INSERT: ";var_dump($inserta);
                     }
+
                     $actualiza = DB::table('ohxqc_visitantes')
                     ->where('identificacion', '=', $this->cedula)
                     ->update([

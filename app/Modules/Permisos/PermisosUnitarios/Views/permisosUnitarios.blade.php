@@ -24,7 +24,7 @@
                     <div class="card-body">
                       <form method="post" action="{{route('consultarCedula')}}">
                         @csrf
-                        <h4 style="color:#666666">Consulta de Visitante</h4>
+                        <h4 style="color:#666666">Consulta de Usuario</h4>
                         <hr>
                         <div class="form-group">
                             <label class="title" for="cc_visitante"><b>Cedula:</b></label>
@@ -40,16 +40,16 @@
                         </div>
                         <div class="submit">
                             <input type="submit" id="btn_consulta" name="btn_consulta" value="Consultar" class="btn btn-primary"/>
+
+                        </div>
+                        <span id = 'text-b' class="text-b" style="display: none" >Buscando...</span>
+                        <div class="spinner-border text-primary float-right mb-1" style="display: none" role="status" id="bolaCarga_b">
+                        <span class="sr-only">...</span>
                         </div>
                       </form>
                         @if(isset($nombre))
                             <hr>
-                           
-
                             <img onerror="this.src='{{asset('../storage/app/public/fotos/person.png')}}'"  title="{{$nombre}}" class='img-thumbnail' src='{{asset('../storage/app/public/fotos').'/'.$cc.'.jpg'}}' WIDTH='100%' >
-
-
-            
                         @endif
                        
                     </div>
@@ -71,12 +71,12 @@
                         
                             <label id='cc' name='cc'><B>Cedula:</B>{{isset($cc)?$cc:''}}</label>
                             <label><B>Cargo:</B> {{isset($cargo)?$cargo:''}}</label>
-                            <label><B>Empresa:</B> {{isset($empresa)?$empresa:''}}</label>
+                            <label><B>Empresa:</B> {{isset($empresa)?$empresa:''}}</label><br>
                             <label><B>Tipo:</B> {{isset($tipo)?$tipo:''}}</label><br>
-                            <label><B>Jefe:</B> {{isset($jefe)?$jefe:''}}</label>
+                            <label><B>Jefe:</B> {{isset($jefe)?$jefe:''}}</label><br>
                             <label><B>Ciudad:</B> {{isset($ciudad)?$ciudad:''}}</label>
-                            <label><B>Tipo de Contrato:</B> {{isset($contrato)?$contrato:''}}</label>
-                            <label><B>Fecha Inicio:</B> {{isset($fechaIni)?$fechaIni:''}}</label>
+                            <label><B>Tipo de Contrato:</B> {{isset($contrato)?$contrato:''}}</label> 
+                            <br><label><B>Fecha Inicio:</B> {{isset($fechaIni)?$fechaIni:''}}</label><br>
                             <label><B>Fecha Fin:</B> {{isset($fechaFin)?$fechaFin:''}}</label>
                         
                             <div class="element-checkbox">
@@ -92,7 +92,7 @@
                                     <label><input type="checkbox" name="check_parqueadero" id="check_parqueadero" value="0" {{isset($parqueadero) && !empty($parqueadero) && $parqueadero == '1' ?'checked':''}} / ><span> Parqueadero</span></label>
                                 </div>
                                 <span class="clearfix"></span>
-                            </div>
+                            </div> 
                     
                      <label class="title"><B>Horario</B></label>
                       
@@ -105,8 +105,15 @@
                         <div class="submit">
                                 @isset($btn)
                                     <hr>
-                                     <input type="submit" id="btn_actualizar" name="btn_actualizar" value="Guardar" class="btn btn-primary"/>
-                                @endisset
+                                     <input type="submit" id="btn_actualizar" name="btn_actualizar" value=" Guardar" class="btn btn-primary"/>
+                                     <span id = 'text-g' class="text-g" style="display: none" >Guardando...</span>
+                                     <div class="spinner-border text-primary float-right mb-1" style="display: none" role="status" id="bolaCarga">
+                                        <span class="sr-only">Guardando...</span>
+                                     </div>
+                                     <div id="aprobado" style="visibility: hidden;display:none" class="mt-5">
+                                        <img src="{{asset('permisosUnitarios/img/aprobado.png')}}" border="0" style="width: 40px"><strong>Los cambios fueron guardados</strong>
+                                     </div>
+                               @endisset
                         </div>
                     </form>
                     @else 
@@ -128,9 +135,9 @@
                   <hr>
                   @if (isset($nombre))
                     <div id="jqxTree"></div>
-                    <div id="aprobado" style="visibility: hidden;display:none" class="mt-5">
+                    {{-- <div id="aprobado" style="visibility: hidden;display:none" class="mt-5">
                      <img src="{{asset('permisosUnitarios/img/aprobado.png')}}" border="0" style="width: 40px">Los cambios fueron guardados
-                    </div>
+                    </div> --}}
                   @else 
                     <p><i>Los permisos asociados cargarán aquí.</i></p>    
                   @endif
@@ -186,6 +193,18 @@
     var check_parqueadero ="";
 
     $(document).ready(function (){
+
+        $("#btn_consulta").click(function(){
+           
+            if($('#cc_visitante').val() != ''){
+                $("#btn_consulta").hide();
+                $("#bolaCarga_b").fadeIn();
+                $('#text-b').show();
+              }      
+        })
+
+     
+
     var source2 =
                 {
                     datatype: "json",
@@ -238,7 +257,10 @@
             getHorario();
             getEstado();
             getParqueadero();
-		
+                        
+		    $('#btn_actualizar').hide();
+            $("#bolaCarga").fadeIn();
+            $('#text-g').show();
 			var items = $('#jqxTree').jqxTree('getCheckedItems');
             console.log(items);
 				if(id_tree!=""){
@@ -263,11 +285,14 @@
                                 console.log(response);
                                 if(response == 1 ){
                                                 $('#aprobado').css('visibility', 'visible');
-                                                $('#aprobado').show('slow').delay(1000).hide('slow');
+                                                $('#aprobado').show('slow').delay(1500).hide('slow');
+                                            
                                             }else{
-                                                alert("no llego");
+                                                alert("Error:: No se Retorna respuesta");
                                             }
-                                    
+                                            $('#btn_actualizar').show('slow');
+                                            $("#bolaCarga").hide('slow');
+                                            $('#text-g').hide();
                                         },
                             error:function(xhr, ajaxOptions, thrownError) {
                                             alert(xhr.status);
