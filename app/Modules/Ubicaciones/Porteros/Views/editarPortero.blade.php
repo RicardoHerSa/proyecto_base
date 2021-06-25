@@ -26,18 +26,18 @@
                     
                 </div>
                 <div class="card-body">
-                    <a href="{{ url('/porteros') }}" title="Volver"><button class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
-                    <form method="POST" action="{{ url('porteros' . '/' . $portero[0]->id) }}" accept-charset="UTF-8" style="display:inline">
+                    <a href="{{ url('/Porteros') }}" title="Volver"><button type="button" class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
+                    <form method="POST" action="{{ url('Porteros' . '/' . $portero[0]->id) }}" accept-charset="UTF-8" style="display:inline">
                         {{ method_field('DELETE') }}
                         {{ csrf_field() }}
                         <button type="submit" class="btn btn-danger" title="Eliminar Portero" onclick="return confirm(&quot;¿Estás seguro de eliminar el portero {{ $portero[0]->id }}?&quot;)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                     </form>
                     <br/>
-                    <br/>
+                    <br/> 
         
                     <div class="table-responsive">
                         <table class="table">
-                          <form  onsubmit="return validarFormulario()" method="POST" action="{{ url('porteros' . '/' . $portero[0]->id) }}" accept-charset="UTF-8" style="display:inline">
+                          <form  onsubmit="return validarFormulario()" method="POST" action="{{ url('Porteros' . '/' . $portero[0]->id) }}" accept-charset="UTF-8" style="display:inline">
                             @csrf
                             @method('PATCH')
                             <tbody>
@@ -84,6 +84,30 @@
                 </div>
             </div>
         </div>
+        <div class="col-xs-12 col-md-1 col-lg-1"></div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-xs-12 col-md-1 col-lg-1"></div>
+            <div class="col-xs-12 col-md-10 col-lg-10">
+                <h5 class="text-center">Lista de Porterías Asociadas</h5>
+                <table class="table table-light">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Nombre Portería</th>
+                            <th>Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="regPorterias">
+                        @foreach ($porteriasAsociadas as $por)
+                        <tr>
+                            <td>{{$por->descripcion}}</td>
+                            <td><button class="btn btn-danger" type="button" onclick="eliminarPorteria({{$por->id_ubicacion}})"> <i class="fa fa-trash"></i></button></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         <div class="col-xs-12 col-md-1 col-lg-1"></div>
     </div>
 </div>
@@ -157,5 +181,50 @@
                                 }
                             });
                 }
+        }
+
+        function eliminarPorteria(idubicacion)
+        {   
+            var confirma = confirm('¿Eliminar esta portería?');
+            var usuario = $("#usuViej").val();
+            if(confirma){
+                var token = '{{csrf_token()}}';
+                $.ajax({
+                        type:  'POST',
+                        async: true,
+                        url: "{{route('eliminar.porteria')}}", 
+                        data: {'id':idubicacion, 'usu':usuario, _token:token},
+                        cache: false,
+                        success: function(response){
+                            if(response != 2){
+                                toastr.success('Portería Eliminada');
+                                document.getElementById("regPorterias").innerHTML= response;
+                            }else{
+                                alert('Error al eliminar.');
+                            }
+                            },
+                        error:function(xhr, ajaxOptions, thrownError) {
+                            alert(thrownError);
+                            }
+                        });
+            }
+         
+        }
+
+        function recargaTabla()
+        {
+            $.ajax({
+                type:  'POST',
+                async: true,
+                url: "{{route('recarga.porterias')}}", 
+                data: {'id':idubicacion, _token:token},
+                cache: false,
+                success: function(response){
+                    toastr.success('Portería Eliminada');
+                    },
+                error:function(xhr, ajaxOptions, thrownError) {
+                    alert(thrownError);
+                    }
+                });
         }
 </script>

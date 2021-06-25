@@ -10,10 +10,10 @@
                     <strong>Portero: #{{$porteros[0]->id}}</strong>
                 </div>
                 <div class="card-body">
-                    <a href="{{ url('/porteros') }}" title="Volver"><button class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
-                    <a href="{{ url('/porteros/' . $porteros[0]->id . '/edit') }}" title="Editar Portero"><button class="btn btn-primary"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></a>
+                    <a href="{{ url('/Porteros') }}" title="Volver"><button class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
+                    <a href="{{ url('/Porteros/' . $porteros[0]->id . '/edit') }}" title="Editar Portero"><button class="btn btn-primary"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></a>
         
-                    <form method="POST" action="{{ url('porteros' . '/' . $porteros[0]->id) }}" accept-charset="UTF-8" style="display:inline">
+                    <form method="POST" action="{{ url('Porteros' . '/' . $porteros[0]->id) }}" accept-charset="UTF-8" style="display:inline">
                         {{ method_field('DELETE') }}
                         {{ csrf_field() }}
                         <button type="submit" class="btn btn-danger" title="Eliminar Portero" onclick="return confirm(&quot;¿Estás seguro de eliminar el portero {{ $porteros[0]->id }}?&quot;)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
@@ -35,6 +35,28 @@
                 </div>
             </div>
         </div>
+        <div class="col-xs-12 col-md-1 col-lg-1"></div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-xs-12 col-md-1 col-lg-1"></div>
+            <div class="col-xs-12 col-md-10 col-lg-10">
+                <h5 class="text-center">Lista de Porterías Asociadas</h5>
+                <table class="table table-light">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Nombre Portería</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($porteriasAsociadas as $por)
+                        <tr>
+                            <td>{{$por->descripcion}}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         <div class="col-xs-12 col-md-1 col-lg-1"></div>
     </div>
    

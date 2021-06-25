@@ -26,8 +26,8 @@
                     
                 </div>
                 <div class="card-body">
-                    <a href="{{ url('/company') }}" title="Volver"><button class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
-                    <form method="POST" action="{{ url('company' . '/' . $codigoEmpresa) }}" accept-charset="UTF-8" style="display:inline">
+                    <a href="{{ url('/Empresas') }}" title="Volver"><button class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
+                    <form method="POST" action="{{ url('Empresas' . '/' . $codigoEmpresa) }}" accept-charset="UTF-8" style="display:inline">
                         {{ method_field('DELETE') }}
                         {{ csrf_field() }}
                         <button type="submit" class="btn btn-danger" title="Eliminar Empresa" onclick="return confirm(&quot;¿Estás seguro de eliminar la empresa {{ $codigoEmpresa }}?&quot;)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
@@ -37,7 +37,7 @@
         
                     <div class="table-responsive">
                         <table class="table">
-                          <form  onsubmit="return validarFormulario()" method="POST" action="{{ url('company' . '/' . $codigoEmpresa) }}" accept-charset="UTF-8" style="display:inline">
+                          <form  onsubmit="return validarFormulario()" method="POST" action="{{ url('Empresas' . '/' . $codigoEmpresa) }}" accept-charset="UTF-8" style="display:inline">
                             @csrf
                             @method('PATCH')
                             <tbody>
@@ -113,7 +113,7 @@
                         cache: false,
                         success: function(response){
                             if(response != 1){
-                                toastr.success('Sede eliminada.'');
+                                toastr.success('Sede eliminada.');
                             }else{
                                 alert('No se pudo eliminar la sede');
                             }

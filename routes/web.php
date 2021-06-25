@@ -74,21 +74,3 @@ Route::get('p/{key}', function ($key) {return  response(array( 'auto' => Hash::m
 //Creacion de usuarios
 //Route::get('createuser',  'Services\ManagerUserController@UserCreate')->name('createuser')->middleware('authorization');
 //Route::get('updatepas',   'Services\ManagerUserController@updatepas')->name('createuser')->middleware('authorization');
-
-//Gestor de Empresas
-Route::resource('company', 'company\companyController')->middleware('authorization');
-Route::post('actualizarestadoempresa', 'company\companyController@actualizarEstado')->name('actual.estado');
-Route::post('consultarnombreempresa', 'company\companyController@consultarNombreEmpresa')->name('consult.empresa');
-Route::post('consutarsedesempresa', 'company\companyController@consultarSedesEmpresa')->name('consult.sedes');
-Route::post('actualizarsedesempresa', 'company\companyController@actualizarSedesEmpresa')->name('actualiza.sedes');
-Route::post('registraempresa', 'company\companyController@registrarEmpresa')->name('registra.empresa');
-Route::post('eliminarsede', 'company\companyController@eliminarSede')->name('elimina.sede');
-Route::post('eliminarempresa', 'company\companyController@eliminarEmpresa')->name('eliminar.empresa');
-Route::get('consultarempresas', 'company\companyController@consultarEmpresas')->name('consultar.empresas');
-
-//Gestor de Porteros
-Route::resource('porteros', 'porteros\porteroController')->middleware('authorization');
-Route::post('consultarnombreusuario', 'porteros\porteroController@consultarNombreUsuario')->name('consult.usuario');
-Route::post('actualizarestadoportero', 'porteros\porteroController@actualizarEstado')->name('actual.portero');
-Route::post('eliminarportero', 'porteros\porteroController@eliminarPortero')->name('eliminar.portero');
-Route::get('consultarporteros', 'porteros\porteroController@consultarPorteros')->name('consultar.porteros');

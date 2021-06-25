@@ -6,14 +6,14 @@
         <div class="col-xs-12 col-md-12 col-lg-12">
             @if (Session::has('msj') && Session::get('msj') == "ok")
                 <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
-                    <strong>Información!</strong> Portero eliminado con éxito.
+                    <strong>Información!</strong> Empresa eliminada con éxito.
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
             @elseif(Session::has('msj') && Session::get('msj') == "err")
             <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
-                <strong>Información!</strong> Error al eliminar portero.
+                <strong>Información!</strong> Error al eliminar empresa.
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
                 </button>
@@ -21,22 +21,21 @@
              @endif
             <div class="card">
                 <div class="card-header">
-                   <strong> Gestor de Porteros </strong>
+                   <strong> Gestor de Empresas </strong>
                 </div>
                 <div class="card-body">
                     <div class="float-left">
-                        <a href="{{url('/porteros').'/create'}}" class="btn btn-success my-3" title="Crear nueva empresa"> <i class="fa fa-plus" aria-hidden="true"></i> Crear Portero</a>
-                        <a href="{{url('/porteros').'/create'}}" class="btn btn-primary my-3" title="Asociar Porterías"> <i class="fa fa-plus" aria-hidden="true"></i> Asociar Porterías</a>
+                        <a href="{{url('/Empresas').'/create'}}" class="btn btn-success my-3" title="Crear nueva empresa"> <i class="fa fa-plus" aria-hidden="true"></i> Crear Empresa / Asociar Sedes</a>
                     </div>
                     <br>
                     <div class="table-responsive">
                         <table id="tblistado" class="table" width="100%">
                             <thead>
                                 <tr>
-                                    <th>Usuario</th>
-                                    <th>Tipo</th>
+                                    <th>Nombre</th>
+                                    <th>Código</th>
                                     <th>Estado</th>
-                                    <th>Sede Asociada</th>
+                                    <th>Sedes Asociadas</th>
                                     <th style="display: flex;width:100%;">Opciones</th>
                                 </tr>
                             </thead>
@@ -88,7 +87,7 @@
             ],
             "ajax":
                     {
-                        url: "{{route('consultar.porteros')}}",
+                        url: "{{route('consultar.empresas')}}",
                         type: "get",
                         dataType: "json",
                         data: {_token:'{{csrf_token()}}'},
@@ -101,24 +100,24 @@
                "order": [[0, "desc"]] //ordenar (columna , orden) 
         }).dataTable();
     }
-    function cambiarEstado(idPortero)
+    function cambiarEstado(codigoEmpresa)
     {
        
-      var estado =  $("#estado"+idPortero).val();;
+      var estado =  $("#estado"+codigoEmpresa).val();;
       if(estado == "s"){
         estado = "N";
-        $("#estado"+idPortero).val("n");
+        $("#"+codigoEmpresa).val("n");
 
       }else{
         estado = "S";
-        $("#estado"+idPortero).val("s")
+        $("#"+codigoEmpresa).val("s")
       }
       var token = '{{csrf_token()}}';
             $.ajax({
                     type:  'POST',
                     async: true,
-                    url: "{{route('actual.portero')}}", 
-                    data: {'id':idPortero, 'estado':estado, _token:token},
+                    url: "{{route('actual.estado')}}", 
+                    data: {'codigo':codigoEmpresa, 'estado':estado, _token:token},
                     cache: false,
                     success: function(response){
                         toastr.success('Estado Cambiado');
@@ -129,20 +128,20 @@
                     });
     }
 
-    function eliminarPortero(idPortero)
+    function eliminarEmpresa(codigoEmpresa)
     {
-      var confirma = confirm('¿Está seguro de eliminar el portero ?');
+      var confirma = confirm('¿Está seguro de eliminar la empresa ?');
       if(confirma){
             var token = '{{csrf_token()}}';
             $.ajax({
                     type:  'POST',
                     async: true,
-                    url: "{{route('eliminar.portero')}}", 
-                    data: { _token:token, id:idPortero},
+                    url: "{{route('eliminar.empresa')}}", 
+                    data: { _token:token, codigo:codigoEmpresa},
                     cache: false,
                     success: function(response){
                        if(response == 1){
-                            toastr.success('Portero Eliminado');
+                            toastr.success('Empresa Eliminada');
                             listar();
                        }else{
                            alert('Error al eliminar');

@@ -8,7 +8,7 @@
                    <strong> Registrar Nueva Empresa </strong>
                 </div>
                 <div class="card-body">
-                    <a href="{{ url('/company') }}" title="Volver"><button class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
+                    <a href="{{ url('/Empresas') }}" title="Volver"><button class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
                     <div class="row mt-3">
                         <div class="col-xs-12 col-md-3 col-lg-3" id="contenedorCodigo">
                             <div class="form-group">

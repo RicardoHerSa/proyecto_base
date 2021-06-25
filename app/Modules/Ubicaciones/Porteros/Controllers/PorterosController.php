@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\porteros;
+namespace App\Modules\Ubicaciones\Porteros\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use DB;
 
-class porteroController extends Controller
+class PorterosController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,7 +16,7 @@ class porteroController extends Controller
     public function index()
     {
       
-       return view('porteros.index');
+       return view('Ubicaciones::inicioPortero');
     }
 
     /**
@@ -27,7 +27,7 @@ class porteroController extends Controller
     public function create()
     {
         $sedes = DB::table('ohxqc_ubicaciones')->select('id_ubicacion', 'descripcion')->where('id_padre', 1)->get();
-        return view('porteros.create', compact('sedes'));
+        return view('Ubicaciones::crearPortero', compact('sedes'));
     }
 
     /**
@@ -49,9 +49,9 @@ class porteroController extends Controller
         ]);
 
         if($insertar){
-            return redirect('porteros/create')->with('msj', 'ok');
+            return redirect('Porteros/create')->with('msj', 'ok');
         }else{
-            return redirect('porteros/create')->with('msj', 'error');
+            return redirect('Porteros/create')->with('msj', 'error');
         }
     }
 
@@ -68,7 +68,13 @@ class porteroController extends Controller
         ->where('id', $id)
         ->get();
 
-        return view('porteros.show', compact('porteros'));
+        $porteriasAsociadas = DB::table('ohxqc_porteros_ubicaciones as por')
+        ->select('ubi.descripcion')
+        ->join('ohxqc_ubicaciones as ubi', 'ubi.id_ubicacion', 'por.id_ubicacion')
+        ->where('id_portero', $id)
+        ->get();
+
+        return view('Ubicaciones::verPortero', compact('porteros', 'porteriasAsociadas'));
     }
 
     /**
@@ -80,12 +86,21 @@ class porteroController extends Controller
     public function edit($id)
     {
         $portero = DB::table('ohxqc_porteros as por')
+        ->select('por.activo', 'por.tipo', 'por.usuario', 'por.id', 'por.id_sede')
         ->join('ohxqc_ubicaciones as ubi', 'ubi.id_ubicacion', 'por.id_sede')
         ->where('id', $id)
         ->get();
 
         $sedes = DB::table('ohxqc_ubicaciones')->select('id_ubicacion','descripcion')->where('id_padre', 1)->get();
-        return  view('porteros/edit', compact('portero', 'sedes'));
+
+        
+        $porteriasAsociadas = DB::table('ohxqc_porteros_ubicaciones as por')
+        ->select('ubi.descripcion', 'ubi.id_ubicacion')
+        ->join('ohxqc_ubicaciones as ubi', 'ubi.id_ubicacion', 'por.id_ubicacion')
+        ->where('id_portero', $id)
+        ->get();
+
+        return  view('Ubicaciones::editarPortero', compact('portero', 'sedes', 'porteriasAsociadas'));
     }
 
     /**
@@ -106,9 +121,9 @@ class porteroController extends Controller
             'id_sede' => $datos['sede'],
         ]);
         if($actualizar){
-            return redirect()->to('porteros/'.$datos['id'].'/edit')->with('msj', 'ok');
+            return redirect()->to('Porteros/'.$datos['id'].'/edit')->with('msj', 'ok');
         }else{
-            return redirect()->to('porteros/'.$datos['id'].'/edit')->with('msj', 'error');
+            return redirect()->to('Porteros/'.$datos['id'].'/edit')->with('msj', 'error');
         }
     }
 
@@ -121,9 +136,9 @@ class porteroController extends Controller
     public function destroy($id)
     {
         if(DB::table('ohxqc_porteros')->where('id', $id)->delete()){
-                return redirect('porteros')->with('msj', 'ok');
+                return redirect('Porteros')->with('msj', 'ok');
         }else{
-                return redirect('porteros')->with('msj', 'err');
+                return redirect('Porteros')->with('msj', 'err');
         }
     }
 
@@ -183,8 +198,8 @@ class porteroController extends Controller
 
              </div> ";
             }
-            $urlShow = "/porteros/$por->id";
-            $urlEdit = "/porteros/$por->id/edit";
+            $urlShow = "/Porteros/$por->id";
+            $urlEdit = "/Porteros/$por->id/edit";
             $onclick = "eliminarPortero($por->id)";
             $data[]= array(
                 "0"=>$por->usuario,
@@ -204,5 +219,105 @@ class porteroController extends Controller
             "aaData"=>$data
         );
         echo json_encode($results);
+    }
+
+    public function asociarPorterias()
+    {
+        $porteros = DB::table('ohxqc_porteros')->select('id', 'usuario')->where('activo', 'S')->get(); 
+
+        return view('Ubicaciones::asociarPorterias', compact('porteros'));
+    }
+
+    public function porteriasDisponibles(Request $request)
+    {
+        $id = $request->input('id');
+        $sedePertenece = DB::table('ohxqc_porteros')->select('id_sede')->where('id', $id)->get();
+
+        $porteriasActuales = DB::table('ohxqc_porteros_ubicaciones')->select('id_ubicacion')->where('id_portero', $id)->get();
+
+        //saber si tiene porterias asociadas
+        if(count($porteriasActuales) > 0){
+            $arrayActuales = array();
+            foreach($porteriasActuales as $actual){
+                array_push($arrayActuales, $actual->id_ubicacion);
+            }
+
+            if($sedePertenece[0]->id_sede == 1){
+                $porteriasNuevas = DB::table('ohxqc_ubicaciones')
+                ->select('id_ubicacion', 'descripcion')
+                ->whereIn('id_padre', [6,15,11,96,35,43,87,91,2] )
+                ->get();
+            }else{
+                $porteriasNuevas = DB::table('ohxqc_ubicaciones')
+                ->select('id_ubicacion', 'descripcion')
+                ->where('id_padre', $sedePertenece[0]->id_sede)
+                ->whereNotIn('id_ubicacion', $arrayActuales)
+                ->get();
+            }
+
+           
+
+        }else{
+            //si no tiene porterias asociadas se muestran todas de acuerdo a la sede a la que pertenece
+            if($sedePertenece[0]->id_sede == 1){
+                $porteriasNuevas = DB::table('ohxqc_ubicaciones')
+                ->select('id_ubicacion', 'descripcion')
+                ->whereIn('id_padre', [6,15,11,96,35,43,87,91,2] )
+                ->get();
+            }else{
+                $porteriasNuevas = DB::table('ohxqc_ubicaciones')
+                ->select('id_ubicacion', 'descripcion')
+                ->where('id_padre', $sedePertenece[0]->id_sede)
+                ->get();
+            }
+        
+        }   
+
+        foreach($porteriasNuevas as $nuevas){
+            echo 
+            " <option value='".$nuevas->id_ubicacion."'>".$nuevas->descripcion."</option>
+            ";
+        }
+    }
+
+    public function guardarAsociacion(Request $request)
+    {
+        $datos = $request->except(['_token']);
+
+        $insertar = DB::table('ohxqc_porteros_ubicaciones')->insert([
+         'id' => DB::table('ohxqc_porteros_ubicaciones')->max('id')+1,
+         'id_portero' => $datos['usuario'],
+         'id_ubicacion' => $datos['porteria']   
+        ]);
+        if($insertar){
+            return redirect('asociarporterias')->with('msj', 'ok');
+        }else{
+            return redirect('asociarporterias')->with('msj', 'error');
+        }
+
+    }
+
+    public function eliminarPorteria(Request $request)
+    {
+        $id = $request->input('id');
+        $idUsu = $request->input('usu');
+        $elimina = DB::table('ohxqc_porteros_ubicaciones')->where('id_ubicacion', $id)->delete();
+        if($elimina){
+            $porteriasAsociadas = DB::table('ohxqc_porteros_ubicaciones as por')
+            ->select('ubi.descripcion', 'ubi.id_ubicacion')
+            ->join('ohxqc_ubicaciones as ubi', 'ubi.id_ubicacion', 'por.id_ubicacion')
+            ->where('id_portero', $idUsu)
+            ->get();
+            foreach($porteriasAsociadas as $aso){
+                    echo "
+                    <tr>    
+                        <td>".$aso->descripcion."</td>
+                        <td><button class='btn btn-danger' type='button' onclick='eliminarPorteria(".$aso->id_ubicacion.")'> <i class='fa fa-trash'></i></button></td>
+                    </tr>
+                    ";
+            }
+        }else{
+            echo 2;
+        }
     }
 }

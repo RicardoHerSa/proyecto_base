@@ -10,10 +10,10 @@
                     <strong>Empresa: #{{$codigoEmpresa}}</strong>
                 </div>
                 <div class="card-body">
-                    <a href="{{ url('/company') }}" title="Volver"><button class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
-                    <a href="{{ url('/company/' . $codigoEmpresa . '/edit') }}" title="Editar Empresa"><button class="btn btn-primary"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></a>
+                    <a href="{{ url('/Empresas') }}" title="Volver"><button class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
+                    <a href="{{ url('/Empresas/' . $codigoEmpresa . '/edit') }}" title="Editar Empresa"><button class="btn btn-primary"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button></a>
         
-                    <form method="POST" action="{{ url('company' . '/' . $codigoEmpresa) }}" accept-charset="UTF-8" style="display:inline">
+                    <form method="POST" action="{{ url('Empresas' . '/' . $codigoEmpresa) }}" accept-charset="UTF-8" style="display:inline">
                         {{ method_field('DELETE') }}
                         {{ csrf_field() }}
                         <button type="submit" class="btn btn-danger" title="Eliminar Empresa" onclick="return confirm(&quot;¿Estás seguro de eliminar la empresa {{ $codigoEmpresa }}?&quot;)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>

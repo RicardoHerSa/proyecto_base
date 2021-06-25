@@ -15,7 +15,9 @@ return  [
        'Ubicaciones' => [
            'Ubicaciones',
            'Porteria',
-           'Horario'
+           'Horario',
+           'Empresas',
+           'Porteros'
        ],
        'CargueMasivo',
        'Reportes' => [

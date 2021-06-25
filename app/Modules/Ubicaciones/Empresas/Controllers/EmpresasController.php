@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\company;
+namespace App\Modules\Ubicaciones\Empresas\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use DB;
 
-class companyController extends Controller
+class EmpresasController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -18,7 +18,7 @@ class companyController extends Controller
         $empresas = DB::table('ohxqc_empresas')->select(DB::raw("DISTINCT(codigo_empresa)"), 'descripcion', 'activo')->orderBy('descripcion','asc')
         ->get();
        // var_dump($empresas);
-       return view('company.index', compact('empresas'));
+       return view('Ubicaciones::inicioEmpresa', compact('empresas'));
     }
 
     /**
@@ -31,7 +31,7 @@ class companyController extends Controller
         $sedes = DB::table('ohxqc_ubicaciones')->select('id_ubicacion', 'descripcion')->where('id_padre', 1)->get();
         $ciudades = DB::table('ohxqc_sedes')->get();
 
-        return view('company.create', compact('sedes', 'ciudades'));
+        return view('Ubicaciones::crearEmpresa', compact('sedes', 'ciudades'));
     }
 
     /**
@@ -72,7 +72,7 @@ class companyController extends Controller
         ->where('emp.codigo_empresa', $codigoEmpresa)
         ->get();
 
-        return view('company.show', compact('nombre','estado','grupo','codigoEmpresa','sedesAsociadas'));
+        return view('Ubicaciones::verEmpresa', compact('nombre','estado','grupo','codigoEmpresa','sedesAsociadas'));
     }
 
     /**
@@ -91,7 +91,7 @@ class companyController extends Controller
         ->where('emp.codigo_empresa', $codigoEmpresa)
         ->get();
 
-        return  view('company/edit', compact('empresa', 'codigoEmpresa', 'sedesAsociadas'));
+        return  view('Ubicaciones::editarEmpresa', compact('empresa', 'codigoEmpresa', 'sedesAsociadas'));
     }
 
     /**
@@ -116,9 +116,9 @@ class companyController extends Controller
             'fecha_actualizacion' => now()
         ]);
         if($actualizar){
-            return redirect()->to('company/'.$datos['codigo'].'/edit')->with('msj', 'ok');
+            return redirect()->to('Empresas/'.$datos['codigo'].'/edit')->with('msj', 'ok');
         }else{
-            return redirect()->to('company/'.$datos['codigo'].'/edit')->with('msj', 'error');
+            return redirect()->to('Empresas/'.$datos['codigo'].'/edit')->with('msj', 'error');
         }
     }
 
@@ -131,9 +131,9 @@ class companyController extends Controller
     public function destroy($codigoEmpresa)
     {
         if(DB::table('ohxqc_empresas')->where('codigo_empresa', $codigoEmpresa)->delete()){
-                return redirect('company')->with('msj', 'ok');
+                return redirect('Empresas')->with('msj', 'ok');
         }else{
-                return redirect('company')->with('msj', 'err');
+                return redirect('Empresas')->with('msj', 'err');
         }
     }
 
@@ -319,8 +319,8 @@ class companyController extends Controller
 
              </div> ";
             }
-            $urlShow = "/company/$emp->code";
-            $urlEdit = "/company/$emp->code/edit";
+            $urlShow = "/Empresas/$emp->code";
+            $urlEdit = "/Empresas/$emp->code/edit";
             $onclick = "eliminarEmpresa($emp->code)";
             $data[]= array(
                 "0"=>$emp->descripcion,
