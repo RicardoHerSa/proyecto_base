@@ -288,7 +288,7 @@ class EmpresasController extends Controller
 
     public function consultarEmpresas()
     {
-        $empresas = DB::table('ohxqc_empresas')->select(DB::raw("DISTINCT(codigo_empresa) as code"), 'descripcion', 'activo')->orderBy('descripcion','asc')
+        $empresas = DB::table('ohxqc_empresas')->select(DB::raw("DISTINCT(codigo_empresa) as code"), 'descripcion', 'activo')->orderBy('activo','desc')
         ->get();
 
         $data = Array();
@@ -323,8 +323,8 @@ class EmpresasController extends Controller
             $urlEdit = "/Empresas/$emp->code/edit";
             $onclick = "eliminarEmpresa($emp->code)";
             $data[]= array(
-                "0"=>$emp->descripcion,
-                "1"=>$emp->code,
+                "0"=>$emp->code,
+                "1"=>$emp->descripcion,
                 "2"=>$input,
                 "3"=>$implode,
                 "4"=>" <a class='show-user' href='".$urlShow."' title='Info empresa'><button class='btn btn-info btn-sm'><i class='fa fa-eye'></i></button></a>
@@ -332,6 +332,7 @@ class EmpresasController extends Controller
                 <button onclick='".$onclick."' class='btn btn-danger btn-sm'><i class='fa fa-trash' aria-hidden='true'></i></button>" 
             );
             $i++;
+           
         } 
         $results = array(
             "eEcho"=>1, //Informarcion para el datatable

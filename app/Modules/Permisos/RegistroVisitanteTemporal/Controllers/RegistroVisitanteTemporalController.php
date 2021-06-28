@@ -145,7 +145,7 @@ class RegistroVisitanteTemporalController extends Controller
               }
             $data_v = RegistroVisitanteTemporalController::getDataV($cedula);
             
-            if($data_v[0] !=''){
+            if(isset($data_v[0]) && $data_v[0] == null){
                 $id_empresa=$data_v[2];
                 $id_ciudad=$data_v[3];
             }else{
@@ -266,7 +266,7 @@ class RegistroVisitanteTemporalController extends Controller
         ->join('ohxqc_empresas_visitante as ev', 'ev.id_visitante','=','v.id_visitante')
         ->join('ohxqc_codigobidimensional as c', 'c.id_visitante','=','v.id_visitante')
         ->where('c.activo', '=', 'S')
-        ->where('v.identificacion', '=', '1130614392')
+        ->where('v.identificacion', '=', $cedula)
         ->get();
         $row = array();
         if(count($sql)>0){
@@ -276,8 +276,8 @@ class RegistroVisitanteTemporalController extends Controller
                 $row[3] = $s->ciudad;
             }   
         }else{
-            return $row;
         }
+        return $row;
     }
 
     public function getDataBasica($cedula)
@@ -411,8 +411,9 @@ class RegistroVisitanteTemporalController extends Controller
               $tabla = "0";
           }
         $data_v = RegistroVisitanteTemporalController::getDataV($cedula);
+      
         
-        if($data_v[0] !=''){
+        if(isset($data_v[0]) && $data_v[0] != null){
             $id_empresa=$data_v[2];
             $id_ciudad=$data_v[3];
         }else{

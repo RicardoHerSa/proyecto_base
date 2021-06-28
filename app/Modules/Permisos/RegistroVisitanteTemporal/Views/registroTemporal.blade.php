@@ -2,7 +2,7 @@
 <div class="container">
     <br>
     @php
-        if(isset($data_v) && $data_v[0] != ''){
+        if(isset($data_v[0]) && $data_v[0] != null){
             //echo "uno";
             $nombre=$data_v[0];
             $cedula=$data_v[1];
@@ -11,7 +11,7 @@
             $estado=$data_v[6];
             $codigo=$data_v[7];
             $responsable=$data_v[8];
-        }elseif (isset($data_b)&& $data_b[0] != ''){
+        }elseif (isset($data_b)&& $data_b[0] != null){
             //echo "dos";
             $nombre=$data_b[0];
             $cedula=$data_b[1];

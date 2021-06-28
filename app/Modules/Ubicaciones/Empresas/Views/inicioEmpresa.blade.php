@@ -32,8 +32,8 @@
                         <table id="tblistado" class="table" width="100%">
                             <thead>
                                 <tr>
-                                    <th>Nombre</th>
                                     <th>Código</th>
+                                    <th>Nombre</th>
                                     <th>Estado</th>
                                     <th>Sedes Asociadas</th>
                                     <th style="display: flex;width:100%;">Opciones</th>
@@ -97,7 +97,7 @@
                     },
                "bDestroy": true,
                "iDisplayLength": 10,//paginacion
-               "order": [[0, "desc"]] //ordenar (columna , orden) 
+               //"order": [[3, "desc"]] //ordenar (columna , orden) 
         }).dataTable();
     }
     function cambiarEstado(codigoEmpresa)
