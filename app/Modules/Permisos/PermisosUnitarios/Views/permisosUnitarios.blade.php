@@ -50,8 +50,7 @@
                         @if(isset($nombre))
                             <hr>
                             {{----}}
-                            <img  onerror="this.src='{{asset('../storage/app/public/fotos/person.png')}}'"  title="{{$nombre}}" class='img-thumbnail' 
-                            src='{{asset('../storage/app/public/fotos'.'/'.$cc.'.jpg')}}' width='100%' >
+                            <img  onerror="this.src='{{asset('../storage/app/public/fotos/person.png')}}'"  title="{{$nombre}}" class='img-thumbnail' src='{{asset('../storage/app/public/fotos'.'/'.$cc.'.jpg')}}' width='100%' >
                             
                          
                         @endif

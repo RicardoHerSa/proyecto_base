@@ -9,24 +9,24 @@
                         <div class="row mt-3 mb-3">
                             <div class="col-xs-12 col-md-3 col-lg-3">
                                 <div class="alert alert-primary" role="alert">
-                                    <h5>Total: <span>45</span></h5>
+                                    <h5>Total: <span>{{$total}}</span></h5>
                                 </div>
                                 
                             </div>
                             <div class="col-xs-12 col-md-3 col-lg-3">
                                 <div class="alert alert-success" role="alert">
-                                    <h5>Aprobadas: <span">45</span></h5>
+                                    <h5>Aprobadas: <span">{{$totalApr}}</span></h5>
                                 </div>
                                 
                             </div>
                             <div class="col-xs-12 col-md-3 col-lg-3">
                                 <div class="alert alert-warning" role="alert">
-                                    <h5>Pendientes: <span>45</span></h5>
+                                    <h5>Pendientes: <span>{{$totalPen}}</span></h5>
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-3 col-lg-3">
                                 <div class="alert alert-danger" role="alert">
-                                    <h5>Rechazadas: <span>45</span></h5>
+                                    <h5>Rechazadas: <span>{{$totalRe}}</span></h5>
                                 </div>
                             </div>
                         </div>

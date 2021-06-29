@@ -1446,7 +1446,7 @@ class RegistroVisitanteController extends Controller
         $tipo = $request->input('tipoIngreso');
         $grupo = $request->input('grupo');
         //Siendo colaborador y Si es visitante o contratista, deberia ver todas las empresas de grupo
-        if($tipo == 2 || $tipo == 3 && $grupo == 1){
+        if($tipo == 2 || $tipo == 3 && $grupo == 'CARVAJAL'){
             $consulta = DB::table('ohxqc_empresas')
             ->select('codigo_empresa', 'descripcion')
             ->distinct('descripcion')
@@ -1456,7 +1456,7 @@ class RegistroVisitanteController extends Controller
             ->get();
 
         //Siendo colaborador y escoge empresa externa, debe ver todas las empresas externas
-        }else if($tipo == 4 && $grupo == 1){
+        }else if($tipo == 4 && $grupo == 'CARVAJAL'){
             $consulta = DB::table('ohxqc_empresas')
             ->select('codigo_empresa', 'descripcion')
             ->distinct('descripcion')
@@ -1466,7 +1466,7 @@ class RegistroVisitanteController extends Controller
             ->get();
 
         //Si no es colaborador, solo debe ver la empresa de él mismo
-        }else if($tipo == 4 && $grupo == 2){
+        }else if($tipo == 4 && $grupo == 'EXTERNA'){
             
             $consulta = DB::table('ohxqc_empresas')
             ->select('codigo_empresa', 'descripcion')
@@ -1500,7 +1500,26 @@ class RegistroVisitanteController extends Controller
         ->where('id_solicitante', auth()->user()->id)
         ->get();
         $opcion = "lista";
-        return view('Permisos::validacionSolicitud' , compact('consulta', 'opcion'));
+
+        $total = DB::table('ohxqc_solicitud_ingreso')
+        ->where('id_solicitante', auth()->user()->id)
+        ->count('id_solicitud');
+
+        $totalApr = DB::table('ohxqc_solicitud_por_aprobar')
+        ->where('estado', 'Aprobado')
+        ->where('id_solicitud', $consulta[0]->id_solicitud)
+        ->count('id_solicitud');
+
+        $totalPen = DB::table('ohxqc_solicitud_por_aprobar')
+        ->where('estado', 'Pendiente')
+        ->where('id_solicitud', $consulta[0]->id_solicitud)
+        ->count('id_solicitud');
+
+        $totalRe = DB::table('ohxqc_solicitud_por_aprobar')
+        ->where('estado', 'Rechazado')
+        ->where('id_solicitud', $consulta[0]->id_solicitud)
+        ->count('id_solicitud');
+        return view('Permisos::validacionSolicitud' , compact('consulta', 'opcion', 'total', 'totalApr', 'totalPen', 'totalRe'));
 
     }
 
