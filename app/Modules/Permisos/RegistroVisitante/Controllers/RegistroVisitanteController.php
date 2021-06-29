@@ -1492,7 +1492,16 @@ class RegistroVisitanteController extends Controller
 
     public function misSolicitudes()
     {
-        //Validar si este usuario es colaborador y 
+        //Validar si este usuario es colaborador(pendiente) y si tiene solicitudes creadas
+        $consulta = DB::table('ohxqc_solicitud_ingreso as sol')
+        ->distinct('sol.id_solicitud')
+        ->join('ohxqc_empresas as emp', DB::raw("cast(emp.id_empresa as numeric)"), 'sol.empresa_id')
+        ->join('ohxqc_solicitud_por_aprobar as ap', 'ap.id_solicitud', 'sol.id_solicitud')
+        ->where('id_solicitante', auth()->user()->id)
+        ->get();
+        $opcion = "lista";
+        return view('Permisos::validacionSolicitud' , compact('consulta', 'opcion'));
+
     }
 
    
