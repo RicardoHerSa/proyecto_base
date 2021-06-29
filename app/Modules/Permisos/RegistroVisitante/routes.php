@@ -20,7 +20,11 @@ Route::group(['middleware' => 'web'], function () {
         Route::post('empresavisitar', 'RegistroVisitanteController@empresaVisitar')->name('empresavisitar')->middleware('authorization');
 
         Route::get('actualizarSedes/{sedes}', 'RegistroVisitanteController@actualizarSedes')->name('actualizarSedes');
+
+        //Pantalla para ver solicitudes creadas por el usuario
         Route::get('missolicitudes', 'RegistroVisitanteController@misSolicitudes');
+        Route::get('detallesdesolicitud/{idSolicitud}/{tipoIngreso}/{sedeId}/{estado}', 'RegistroVisitanteController@verSolicitud');
+        Route::get('consultrmissolicitudes', 'RegistroVisitanteController@consultarMisSolicitudes')->name('consultar.missolicitudes');
 
     });
      

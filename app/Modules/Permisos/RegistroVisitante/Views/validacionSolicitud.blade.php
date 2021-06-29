@@ -31,40 +31,18 @@
                             </div>
                         </div>
                     </div>
-                    <table class="table table-light table-hover">
+                    <table  id="tblistado" class="table table-light table-hover">
                         <thead class="thead-light">
                             <tr>
                                 <th>#Solicitud</th>
                                 <th>Tipo de Ingreso</th>
                                 <th>Labor a Realizar</th>
-                                <th>Empresa a Visitar</th>
+                                <th>Sede a Visitar</th>
                                 <th>Estado</th>
                                 <th>Visualizar</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($consulta as $detalles)
-                                <tr>
-                                    <td>{{$detalles->id_solicitud}}</td>
-                                    <td>{{$detalles->tipo_ingreso}}</td>
-                                    <td>{{$detalles->labor_realizar}}</td>
-                                    <td>{{$detalles->descripcion}}</td>
-                                    @switch($detalles->estado)
-                                        @case('Aprobado')
-                                             <td><span class="badge badge-success">{{$detalles->estado}}</span></td>
-                                            @break
-                                        @case('Pendiente')
-                                            <td><span class="badge badge-warning">{{$detalles->estado}}</span></td>
-                                            @break
-                                        @case('Rechazado')
-                                            <td><span class="badge badge-danger">{{$detalles->estado}}</span></td>
-                                           @break
-                                            
-                                    @endswitch
-                                   
-                                    <td></td>
-                                </tr>
-                            @endforeach
                         </tbody>
                     </table>
 
@@ -72,6 +50,238 @@
             </div>
 
         @elseif(isset($opcion) && $opcion == 'vista')
+            <div class="row mt-2">
+              
+                <div class="float-left mt-3 mb-3">
+                    <a href="{{URL::previous()}}" class="btn btn-warning">Volver</a>
+                </div>
+                @switch($estado)
+                    @case('Aprobado')
+                        <div class="alert alert-success  fade show mt-2 ml-5" role="alert">
+                            <strong>Información!</strong> Esta Solicitud ha sido aprobada.<b> <a  data-toggle="modal" data-target="#modalDetalles" href="#">Ver Detalles</a></b>.
+                        
+                        </div>
+                        @break
+                    @case('Pendiente')
+                        <div class="alert alert-warning  fade show mt-2 ml-5" role="alert">
+                            <strong>Información!</strong> Esta Solicitud se encuentra pendiente.<b> <a  data-toggle="modal" data-target="#modalDetalles" href="#">Ver Detalles</a></b>.
+                        
+                        </div>
+                        @break
+                    @case('Rechazado')
+                        <div class="alert alert-danger  fade show mt-2 ml-5" role="alert">
+                            <strong>Información!</strong> Esta Solicitud ha sido rechazada.<b> <a  data-toggle="modal" data-target="#modalDetalles" href="#">Ver Detalles</a></b>.
+                        
+                        </div>
+                        @break
+                    @default
+                @endswitch
+                    <div class="modal fade " id="modalDetalles" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLongTitle">Detalles de la Solicitud # {{$solicitud}}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            </div>
+                            <div class="modal-body">
+                                @if ($estado == "Pendiente")
+                                  <p><i>Esta solicitud aún no ha sido validada por el flujo correspondiente. Te avisaremos por correo electrónico el estado de la misma.</i></p>
+                                @else
+                                <table class="table table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Usuario</th>
+                                        <th scope="col">Fecha</th>
+                                        <th scope="col">Estado</th>
+                                        <th scope="col">Comentario</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($detalles as $det)
+                                            <tr>
+                                                <td>{{$det->usuario}}</td>
+                                                <td>{{$det->fecha}}</td>
+                                                <td><span class="badge badge-{{$det->estado=='A'?'success':'danger'}}">{{$det->estado=='A'?'Aprobado':'Rechazado'}}</span></td>
+                                                <td>{{$det->comentario}}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                @endif
+                            </div>
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                <div class="col-xs-12 col-md-12 col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Detalles de la solicitud #{{$solicitud}} - Sede: {{$nombreSedeTitulo}}</h4>
+                        </div>
+                    </div>
+
+                    <!--Solicitante-->
+                    <div class="row mt-2">
+                        <div class="col-xs-12 col-md-12 col-lg-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-xs-12 col-md-6 col-lg-6">
+                                            <div class="form-group">
+                                                <label for="solicitante">Solicitante, Correo, Ext: </label>
+                                                <input id="solicitante" class="form-control" type="text" name="solicitante" readonly value="{{$arrayInfo[0]['solicitante']}}">
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md-6 col-lg-6">
+                                            <div class="form-group">
+                                                <label for="tipoIngreso">Tipo de Ingreso: </label>
+                                                <input type="text" readonly class="form-control" value="{{$arrayInfo[0]['tipoIngreso']}}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if ($arrayInfo[0]['empresaC'] != "0")
+                                        <div class="row" id="empContra">
+                                            <div class="col-xs-12 col-md-6 col-lg-6">
+                                                <div class="form-group" id="contenedorContratista">
+                                                    <label for="empresaContratista">Empresa Contratista: </label>
+                                                    <input id="empresaContratista" class="form-control" type="text" name="empresaContratista" value="{{$arrayInfo[0]['empresaC']}}" readonly>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                    <!--Anexos-->
+                    <div class="row mt-2">
+                        <div class="col-xs-12 col-md-12 col-lg-12">
+                            <div class="card">
+                                <div class="card-body" style="height: 300px;overflow-y: scroll;" id="anexos">
+                                    <h4 class="text-center mt-2">Personas Que Ingresan</h4>
+                                    @if ($tipoR == "RM")
+                                    <div class="row mb-3">
+                                        <table class="table table-hover">
+                                            <tr>
+                                                <th>Empresa</th>
+                                                <th>Nit</th>
+                                                <th>Comprimido Colaboradores</th>
+                                                <th>Plantilla Subida</th>
+                                            </tr>
+                                            <tbody>
+                                                <tr>
+                                                    <td>{{$arrayDatosEmpresa[0]}}</td>
+                                                    <td>{{$arrayDatosEmpresa[1]}}</td>
+                                                    <td><a style="width: 40px" class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[2]}}" target="_blank" download><i class="fa fa-download"></i></a></td>
+                                                    <td><a style="width: 40px" class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[3]}}" target="_blank" download><i class="fa fa-download"></i></a></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <hr>
+                                    
+                                    </div>
+                                    @endif
+                                    <table class="table table-light">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Tipo Identificación</th>
+                                                <th>Identificación</th>
+                                                <th>Nombre</th>
+                                                <th>Fecha Ingreso</th>
+                                                <th>Fecha Fin</th>
+                                                <th>Estado</th>
+                                                @if (!$tipoR == "RM")
+                                                    <th>Anexo</th>
+                                                @endif
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($documentos as $docu)
+                                                @if ($docu->tipo_identificacion != "NIT")
+                                                    <tr>
+                                                        <td>{{$docu->tipo_identificacion}}</td>
+                                                        <td>{{$docu->identificacion}}</td>
+                                                        <td>{{$docu->nombre}}</td>
+                                                        <td>{{$docu->fecha_inicio}}</td>
+                                                        <td>{{$docu->fecha_fin}}</td>
+                                                        <td>{{$docu->estado}}</td>
+                                                        @if (!$tipoR == "RM")
+                                                            @if (strlen($docu->url_documento) > 0)
+                                                                <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
+                                                            @else
+                                                                <td><span class="badge badge-secondary"></span></td>
+                                                            @endif
+                                                        @endif
+                                                    </tr>
+                                                    
+                                                @endif
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+
+                    <!--Sedes a Visitar-->
+                    <div class="row mt-2">
+                        <div class="col-xs-12 col-md-12 col-lg-12">
+                            <div class="card" id="anexarSedes">
+                                <div class="card-body">
+                                    <h4 class="card-title text-center">Sedes a Visitar </h4>
+                                    <hr>
+                                    <br>
+                                    <div class="row mb-3">
+                                        <div class="col-xs-12 col-md-6 col-lg-6">
+                                            <h6><b>Empresa a Visitar:</b> {{$empresaVisitar[0]->descripcion}}</h6>
+                                        </div>
+                                        <div class="col-xs-12 col-md-6 col-lg-6">
+                                            <h6><b>Código de la Empresa:</b> {{$empresaVisitar[0]->codigo_empresa}}</h6>
+                                        </div>
+                                    </div>
+                                    <table class="table table-light">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Nombre de la Sede</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($sedesVisitar as $sede)
+                                                    <tr>
+                                                        <td>{{$sede->descripcion}}</td>
+                                                    
+                                                    </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!--Labor a realizar-->
+                    <div class="row mt-2">
+                        <div class="col-xs-12 col-md-12 col-lg-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="labor">Labor a Realizar: </label>
+                                        <textarea name="labor" id="labor" cols="15" rows="5" class="form-control" readonly>{{$arrayInfo[0]['labor']}}</textarea>
+                                    </div>
+                                
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div> 
             
         @else
     
@@ -447,6 +657,58 @@
             @endif
         @endif
      <script>
+         
+    $(document).ready(function(){
+        listar();
+      
+    });
+    function listar()
+    {
+        tabla= $('#tblistado').dataTable(
+        {
+            language: {  
+                processing: "Procesando...", 
+                search: "Buscar&nbsp;:", 
+                lengthMenu: "Registros _MENU_ ", 
+                info: "Registros del _START_ al _END_ ", 
+                loadingRecords: "Cargando...", 
+                infoFiltered: "", 
+                zeroRecords: "No se encontraron registros.", 
+                emptyTable: "No hay información", 
+                infoEmpty: "",
+                paginate: { 
+                    first: "Primero", 
+                    previous: "Anterior", 
+                    next: "Siguiente", 
+                    last: "Ultimo" 
+                } 
+            }, 
+            "aProcessing":true,//Activa el procesamiento del datatable
+            "aServerSide":true,//Paginacion y filtado realizados por servidor 
+            dom: 'Bfrtip',//Definimos los elemtos del contro de tabla 
+            buttons:[
+                        'copyHtml5',
+                        'excelHtml5',
+                        'csvHtml5',
+                        'pdf'
+            ],
+            "ajax":
+                    {
+                        url: "{{route('consultar.missolicitudes')}}",
+                        type: "get",
+                        dataType: "json",
+                        data: {_token:'{{csrf_token()}}'},
+                        error: function(e){
+                            console.log(e.responseText);
+                        }
+                    },
+               "bDestroy": true,
+               "iDisplayLength": 10,//paginacion
+               "ordering": false  //evitar el orden por parte de DataTable y dejar el de PGSQL
+               //"order": [[5, "desc"]] //ordenar (columna , orden) 
+        }).dataTable();
+    }
+
         function load(opcion){
             var comentario = $("#comentario").val();
             if(opcion == 1){

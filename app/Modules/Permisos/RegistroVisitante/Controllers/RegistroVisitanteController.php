@@ -1494,33 +1494,204 @@ class RegistroVisitanteController extends Controller
     {
         //Validar si este usuario es colaborador(pendiente) y si tiene solicitudes creadas
         $consulta = DB::table('ohxqc_solicitud_ingreso as sol')
-        ->distinct('sol.id_solicitud')
-        ->join('ohxqc_empresas as emp', DB::raw("cast(emp.id_empresa as numeric)"), 'sol.empresa_id')
+        
         ->join('ohxqc_solicitud_por_aprobar as ap', 'ap.id_solicitud', 'sol.id_solicitud')
-        ->where('id_solicitante', auth()->user()->id)
+        ->join('ohxqc_ubicaciones as ubi', 'ubi.id_ubicacion', 'ap.sede_id')
+        ->where('sol.id_solicitante', auth()->user()->id)
+        ->orderBy('sol.id_solicitud')
         ->get();
         $opcion = "lista";
 
-        $total = DB::table('ohxqc_solicitud_ingreso')
+        $total = DB::table('ohxqc_solicitud_por_aprobar as ap')
+        ->join('ohxqc_solicitud_ingreso as sol', 'sol.id_solicitud', 'ap.id_solicitud')
         ->where('id_solicitante', auth()->user()->id)
-        ->count('id_solicitud');
+        ->count('ap.id_solicitud');
 
-        $totalApr = DB::table('ohxqc_solicitud_por_aprobar')
+        $totalApr = DB::table('ohxqc_solicitud_por_aprobar as ap')
         ->where('estado', 'Aprobado')
-        ->where('id_solicitud', $consulta[0]->id_solicitud)
-        ->count('id_solicitud');
+        ->join('ohxqc_solicitud_ingreso as sol', 'sol.id_solicitud', 'ap.id_solicitud')
+        ->where('id_solicitante', auth()->user()->id)
+        ->count('ap.id_solicitud');
 
-        $totalPen = DB::table('ohxqc_solicitud_por_aprobar')
+        $totalPen = DB::table('ohxqc_solicitud_por_aprobar as ap')
         ->where('estado', 'Pendiente')
-        ->where('id_solicitud', $consulta[0]->id_solicitud)
-        ->count('id_solicitud');
+        ->join('ohxqc_solicitud_ingreso as sol', 'sol.id_solicitud', 'ap.id_solicitud')
+        ->where('id_solicitante', auth()->user()->id)
+        ->count('ap.id_solicitud');
 
-        $totalRe = DB::table('ohxqc_solicitud_por_aprobar')
+
+        $totalRe = DB::table('ohxqc_solicitud_por_aprobar as ap')
         ->where('estado', 'Rechazado')
-        ->where('id_solicitud', $consulta[0]->id_solicitud)
-        ->count('id_solicitud');
+        ->join('ohxqc_solicitud_ingreso as sol', 'sol.id_solicitud', 'ap.id_solicitud')
+        ->where('id_solicitante', auth()->user()->id)
+        ->count('ap.id_solicitud');
+
         return view('Permisos::validacionSolicitud' , compact('consulta', 'opcion', 'total', 'totalApr', 'totalPen', 'totalRe'));
 
+    }
+
+    public function verSolicitud($solicitud, $ideIngreso, $sedeID, $estado)
+    {
+        //validar que los datos recibidos existan, sino abortamos
+        switch ($estado) {
+            case 'A':
+                $estado = "Aprobado";
+                break;
+            case 'P':
+                $estado = "Pendiente";
+                break;
+            case 'R':
+                $estado = "Rechazado";
+                break;
+            
+            default:
+                abort(403);
+                break;
+        }
+        $validaInfoRecibida = DB::table('ohxqc_solicitud_por_aprobar')
+        ->where('estado', $estado)
+        ->where('id_solicitud', $solicitud)
+        ->where('tipo_visitante', $ideIngreso)
+        ->where('sede_id', $sedeID)
+        ->get();
+        if(count($validaInfoRecibida) > 0){
+            //Validar si el usuario quien intenta verla, fue el creador
+            $valida = DB::table('ohxqc_solicitud_ingreso')
+            ->where('id_solicitud', $solicitud)
+            ->where('id_solicitante', auth()->user()->id)
+            ->get();
+            if(count($valida) > 0){
+                //Le permito la entrada para ver la solicitud
+                    $botonesAccion = false;
+                    //traer nombre de la sede para aponer como titulo en el encabezado
+                    $nombreSedeTitulo = DB::table('ohxqc_ubicaciones')
+                    ->select('descripcion')
+                    ->where('id_ubicacion', $sedeID)
+                    ->get();
+                    foreach($nombreSedeTitulo as $nm){
+                        $nombreSedeTitulo = $nm->descripcion;
+                    }
+                    //consulto toda la información de esta solicitud
+                    $consultarInfoGeneral= DB::table('ohxqc_solicitud_ingreso')
+                    ->where('id_solicitud', '=', $solicitud)
+                    ->get();
+                    foreach($consultarInfoGeneral as $info){
+                        $idEmpresa = $info->empresa_id;
+                        $idhorario = $info->horario_id;
+                        $solicitante = $info->solicitante;
+                        $tipoIngreso = $info->tipo_ingreso;
+                        $empresaContratista = $info->empresa_contratista;
+                        $labor = $info->labor_realizar;
+                    }
+                    
+                    $arrayInfo[] = array('solicitante'=>$solicitante, 'tipoIngreso'=>$tipoIngreso, 'empresaC'=>$empresaContratista,'horario'=>$idhorario,'empVisitar'=>$idEmpresa,'labor'=>$labor);
+                    $this->infoDeEmpresa = $idEmpresa;
+                    $this->tipoIngres = $ideIngreso;
+                    $this->sedeId = $sedeID;
+                    
+                    $detalles = DB::table('ohxqc_historico_solicitud as hs')
+                    ->select('nivel_aprobador as nivel', 'name as usuario', 'fecha_diligenciado as fecha','estado' ,'comentario')
+                    ->join('jess_users as j', 'j.id', '=', 'hs.usuario_aprobador')
+                    ->where('hs.id_solicitud', '=', $solicitud)
+                    ->where('hs.sede_id', '=', $sedeID)
+                    ->get();
+
+                    $documentos = DB::table('ohxqc_documentos_solicitud')
+                    ->where('solicitud_id', '=', $solicitud)
+                    ->orderBy('id_registro', 'DESC')
+                    ->get();
+            
+                    //validar si esxiste una empresa para mostrar como encabezado
+                    $arrayDatosEmpresa = array();
+                    foreach($documentos as $docu){
+                        if($docu->tipo_identificacion == "NIT"){
+                            $arrayDatosEmpresa[0] = $docu->nombre;
+                            $arrayDatosEmpresa[1] = $docu->identificacion;
+                            $arrayDatosEmpresa[2] = $docu->url_comprimido;
+                            $arrayDatosEmpresa[3] = $docu->url_documento;
+                            break;
+                        }
+                    }
+            
+                    $sedesVisitar = DB::table('ohxqc_sedes_solicitud as sol')
+                    ->select('sede.descripcion')
+                    ->join('ohxqc_ubicaciones as sede', 'sede.id_ubicacion', 'sol.id_sede')
+                    ->where('sol.id_solicitud', '=', $solicitud)
+                    ->get();
+            
+                    $empresaVisitar = DB::table('ohxqc_empresas')
+                    ->select('codigo_empresa', 'descripcion')
+                    ->where('codigo_empresa', $idEmpresa)
+                    ->orderBy('descripcion')
+                    ->get();
+            
+            
+                    $tiposVisitante = DB::table('ohxqc_tipos_visitante')
+                    ->select('id_tipo_visitante', 'nombre')
+                    ->where('estado', '=', 1)
+                    ->get();
+            
+                    $tipoSolicitud = DB::table('ohxqc_solicitud_por_aprobar')
+                    ->select('tipo_registro')
+                    ->where('id_solicitud', $solicitud)
+                    ->where('sede_id', $sedeID)
+                    ->where('tipo_visitante', $ideIngreso)
+                    ->get();
+                    foreach($tipoSolicitud as $tipo){
+                        $tipoR = $tipo->tipo_registro;
+                    }
+
+                    $opcion = "vista";
+
+                    return view('Permisos::validacionSolicitud', compact('solicitud','ideIngreso','sedeID','arrayInfo', 'documentos', 'sedesVisitar' ,'empresaVisitar','tiposVisitante', 'botonesAccion', 'detalles', 'tipoR', 'arrayDatosEmpresa', 'nombreSedeTitulo', 'opcion', 'estado'));
+                
+            }else{
+                //Retornaria un abort, porque no puede ver esa solicitud
+                abort(403);
+            }
+        }else{
+            abort(403);
+        }
+       
+    }
+
+    public function consultarMisSolicitudes()
+    {
+        $consulta = DB::table('ohxqc_solicitud_ingreso as sol')
+        
+        ->join('ohxqc_solicitud_por_aprobar as ap', 'ap.id_solicitud', 'sol.id_solicitud')
+        ->join('ohxqc_ubicaciones as ubi', 'ubi.id_ubicacion', 'ap.sede_id')
+        ->where('sol.id_solicitante', auth()->user()->id)
+        ->orderBy('sol.id_solicitud')
+        ->get();
+
+        $data = Array();
+        foreach ($consulta as $detalles) {
+            if($detalles->estado == "Aprobado"){
+                $badge =  '<td><span class="badge badge-success">'.$detalles->estado.'</span></td>';
+            }else if($detalles->estado == "Pendiente"){
+                $badge =  '<td><span class="badge badge-warning">'.$detalles->estado.'</span></td>';
+            }else{
+                $badge =  '<td><span class="badge badge-danger">'.$detalles->estado.'</span></td>';
+            }
+
+             $data[]= array(
+                "0"=>$detalles->id_solicitud,
+                "1"=>$detalles->tipo_ingreso,
+                "2"=>$detalles->labor_realizar,
+                "3"=>$detalles->descripcion,
+                "4"=>$badge,
+                "5"=>"<td><a href='detallesdesolicitud/$detalles->id_solicitud/$detalles->tipo_visitante/$detalles->sede_id/".substr($detalles->estado, 0,1)."' class='btn btn-primary'><span class='fa fa-eye'></span></a></td>" ,
+            );
+        } 
+        $results = array(
+            "eEcho"=>1, //Informarcion para el datatable
+            "iTotalRecors"=>count($data),//enviamos el total de registros  al datatable
+            "iTotalDisplayRescors"=>count($data),//enviamos el total de registros a vizualizar
+            "aaData"=>$data
+        );
+        echo json_encode($results);
+        
     }
 
    
