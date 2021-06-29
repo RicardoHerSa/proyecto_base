@@ -1490,6 +1490,11 @@ class RegistroVisitanteController extends Controller
 
     }
 
+    public function misSolicitudes()
+    {
+        //Validar si este usuario es colaborador y 
+    }
+
    
    
     

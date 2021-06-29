@@ -49,7 +49,11 @@
                       </form>
                         @if(isset($nombre))
                             <hr>
-                            <img onerror="this.src='{{asset('../storage/app/public/fotos/person.png')}}'"  title="{{$nombre}}" class='img-thumbnail' src='{{asset('../storage/app/public/fotos').'/'.$cc.'.jpg'}}' WIDTH='100%' >
+                            {{----}}
+                            <img  onerror="this.src='{{asset('storage/app/public/fotos/person.png')}}'"  title="{{$nombre}}" class='img-thumbnail' 
+                            src='{{asset('storage/app/public/fotos'.'/'.$cc.'.jpg')!=null?asset('storage/app/public/fotos'.'/'.$cc.'.jpg'):''}}' width='100%' >
+                            {{asset('storage/app/public/fotos'.'/'.$cc.'.jpg')}}
+                         
                         @endif
                        
                     </div>

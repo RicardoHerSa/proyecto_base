@@ -16,10 +16,11 @@ Route::group(['middleware' => 'web'], function () {
         Route::get('solicitud/link', 'RegistroVisitanteController@getLinkSubscribe')->name('event.getLinkSubscribe')->middleware('authorization');
 
         Route::post('validarSolicitud', 'RegistroVisitanteController@validarSolicitud')->name('validarSolicitud')->middleware('authorization');
-        Route::post('consultasedes', 'RegistroVisitanteController@consultaSedes')->name('consultasedes')->middleware('authorization');
+        Route::post('consultasedesemp', 'RegistroVisitanteController@consultaSedes')->name('consulta.sedesd')->middleware('authorization');
         Route::post('empresavisitar', 'RegistroVisitanteController@empresaVisitar')->name('empresavisitar')->middleware('authorization');
 
         Route::get('actualizarSedes/{sedes}', 'RegistroVisitanteController@actualizarSedes')->name('actualizarSedes');
+        Route::get('missolicitudes', 'RegistroVisitanteController@misSolicitudes');
 
     });
      

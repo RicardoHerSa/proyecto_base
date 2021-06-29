@@ -923,7 +923,7 @@
             var token = '{{csrf_token()}}';
                 var request=$.ajax({
                         type:  'POST',
-                        url: "consultasedes",
+                        url: "{{route('consulta.sedesd')}}",
                         data: {'idempresa':idempresa,  _token:token},
                         cache: false,
                         success: function(response){

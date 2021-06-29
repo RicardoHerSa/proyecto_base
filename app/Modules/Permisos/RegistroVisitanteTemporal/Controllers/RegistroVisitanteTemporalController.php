@@ -724,7 +724,7 @@ class RegistroVisitanteTemporalController extends Controller
                     $insertaPermisos = DB::table('ohxqc_permisos')->insert([
                         'id_empresa_visitante' => $id_empresa_v,
                         'id_ubicacion' => $id_ub,
-                        'id_horario' => 5,
+                        'id_horario' => 8,
                         'identificacion_responsable' => null,
                         'fecha_inicio' =>  $fecha_ini,
                         'fecha_fin' => $fecha_fin,
