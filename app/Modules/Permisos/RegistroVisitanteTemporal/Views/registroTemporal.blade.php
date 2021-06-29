@@ -7,9 +7,6 @@
             $nombre=$data_v[0];
             $cedula=$data_v[1];
             $vehiculo=$data_v[4];
-            $placa=$data_v[5];
-            $estado=$data_v[6];
-            $codigo=$data_v[7];
             $responsable=$data_v[8];
         }elseif (isset($data_b)&& $data_b[0] != null){
             //echo "dos";
@@ -17,13 +14,10 @@
             $cedula=$data_b[1];
             $nombreCiudad = $data_b[2];
             $responsable = $data_b[3];
-            $codigo = $data_b[4];
-            $vehiculo= $data_b[5];
-            $placa= $data_b[6];
             $idEmpresa = $data_b[7];
             $estado="";
         }else{
-            //echo "tres";
+           //echo "tres";
             $nombre="";
             $vehiculo="";
             $placa="";
@@ -42,7 +36,11 @@
      @endif
     <div class="row justify-content-center">
         <!--Formulario de consulta-->
-        <div class="col-xs-12 col-md-{{isset($tabla)?'3':'12'}} col-lg-{{isset($tabla)?'3':'12'}} ">
+        @if (!isset($tabla))
+            <div class="col-xs-12 col-md-2 col-lg-2""></div>
+            
+        @endif
+        <div class="col-xs-12 col-md-{{isset($tabla)?'3':'8'}} col-lg-{{isset($tabla)?'3':'8'}} ">
                 <!-- Formulario de consulta-->
                 @if (isset($tabla))
                     <a href="{{url('registro-visitante-temporal')}}" class="btn btn-primary mb-3">Volver</a>
@@ -72,7 +70,7 @@
         </div>
 
         <!--Resultado encabezado info personal-->
-        <div class="col-xs-12 col-md-{{isset($tabla)?'9':''}} col-lg-{{isset($tabla)?'9':''}}" style="margin-top: 5%">
+        <div class="col-xs-12 col-md-{{isset($tabla)?'9':'2'}} col-lg-{{isset($tabla)?'9':'2'}}" style="margin-top: 5%">
             @if (isset($tabla) && $tabla != '0')
                 <div class="row" style="background-color: #00BFFF;
                 border-radius: 10px; 
@@ -98,10 +96,6 @@
                             <li><b>{{$row[0]." ".$row[1]}}</b></li>
                             <li id='cc'><b>{{$row[2]}}</b></li>
                             <li><b>{{$row[3]}}</b></li>
-                            @if(trim($row[5])!='' && trim($row[6])!='')
-                            <li><b>{{$row[5]}}</b></li>
-                            <li><b>{{$row[6]}}</b></li>
-                            @endif
                             <li><b>Autorizado Por: {{$row[7]}}</b></li>
                         </ul>
                     </div>
@@ -164,11 +158,15 @@
                                     <label for="cedula">Cedula: </label>
                                     <input id="cedula" name="cedulaR" required value="{{isset($cedula)?$cedula:''}}" type="text" class="form-control">
                                 </div>
-                                <div class="form-group">
+                               
+                                {{--
+                                     <div class="form-group">
                                     <label for="placa">Placa: </label>
                                     <input id="placa" name="placa"  type="text" class="form-control" value="{{isset($placa)?$placa:''}}">
-                                </div>
-                              
+                                      </div>
+                            -->
+                                    --}}
+                               
                             </div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="form-group">
@@ -181,9 +179,22 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
+                                    
+                                    <label for="empresa">Empresa Destino: </label>
+                                    <select onchange="cargaSedes()" name="empresa" id="empresa" class="form-control">
+                                            <option value="0">SELECCIONE</option>
+                                            @foreach ($listaEmpresas as $lista)
+                                            <option {{isset($idEmpresa) && $idEmpresa != null && $idEmpresa == $lista->codigo_empresa?'selected':''}} value="{{$lista->codigo_empresa}}">{{$lista->descripcion}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                {{-- 
+                                     <div class="form-group">
                                     <label for="vehiculo">Vehículo: </label>
                                     <input id="vehiculo" name="vehiculo"  type="text" class="form-control" value="{{isset($vehiculo)?$vehiculo:'Sin vehiculo'}}">
                                 </div>
+                                    --}}
+                               
                                
                             </div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
@@ -191,17 +202,15 @@
                                     <label for="responsable">Autorizado Por: </label>
                                     <input id="responsable" name="responsable" required type="text" class="form-control" value="{{isset($responsable)?$responsable:''}}">
                                 </div>
-                                <div class="form-group">
-                                    
-                                    <label for="empresa">Empresa Destino: </label>
-                                    <select name="empresa" id="empresa" class="form-control">
-                                            <option value="0">SELECCIONE</option>
-                                            @foreach ($listaEmpresas as $lista)
-                                            <option {{isset($idEmpresa) && $idEmpresa != null && $idEmpresa == $lista->codigo_empresa?'selected':''}} value="{{$lista->codigo_empresa}}">{{$lista->descripcion}}</option>
-                                        @endforeach
-                                    </select>
+                                <div class="align-items-center mt-5" id="load" style="display: none">
+                                    <strong>Buscando Sedes...</strong>
+                                    <div class="spinner-border ms-auto" role="status" aria-hidden="true"></div>
                                 </div>
-                                <!--
+                                <div class="listado" id="listado">
+                                  
+                                </div>
+                              
+                                {{--
                                   <div class="form-check form-check-inline mb-2">
                                     <input class="form-check-input" type="radio" name="puerta" id="ck_entrada" value="ENTRADA"  {{isset($estado)&&$estado=="ENTRADA"||$estado==""?'checked':''}}>
                                     <label class="form-check-label" for="ck_entrada">
@@ -219,7 +228,7 @@
                                   <div class="form-group mt-4">
                                     <label for="codigo">Código: </label>
                                     <input required id="codigo" name="codigo" type="text" class="form-control" value="{{isset($codigo)?$codigo:''}}">
-                                </div>-->
+                                </div>--}}
                             </div>
                         </div>
                       
@@ -239,16 +248,48 @@
         @endif
        
     </div>
-
+    
   
 </div>
+<script>
+       function cargaSedes()
+ {
+   
+    var idEmpresa = $("#empresa").val();
+    if(idEmpresa != 0){
+        $("#listado").hide();
+        $("#load").fadeIn();
+        var token = '{{csrf_token()}}';
+                var request=$.ajax({
+                        type:  'POST',
+                        url: "{{route('consulta.sedes')}}",
+                        data: {'id':idEmpresa,  _token:token},
+                        cache: false,
+                        async: true,
+                        success: function(response){
+                         document.getElementById('listado').innerHTML = response;
+                            $("#load").hide();
+                            $("#listado").fadeIn();
+                        },
+                        error:function(xhr, ajaxOptions, thrownError) {
+                            alert(xhr.status+ " "+ajaxOptions );
+                           $("#load").hide();
+                        }
+                    
+                    });
+    }else{
+        $("#listado").hide();
+    }
+  
+ }
+</script>
  <!--CSS y JS PARA EL MÓDULO DE PERMISOS UNITARIOS-->
  <script src="{{ asset('permisosUnitarios/js/jquery.min.js')}}"></script> 
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/formoid-flat-blue.js')}}"></script>
  <link rel="stylesheet" href="{{asset('permisosUnitarios/styles/jqx.base.css')}}" type="text/css" />
     
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/jqxcore.js')}}"></script>
- <script src="{{ asset('permisosUnitarios/js/jqxTree.js')}}"></script>
+ <script src="{{ asset('permisosUnitarios/js/jqxtree.js')}}"></script>
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/jqxbuttons.js')}}"></script>
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/jqxscrollbar.js')}}"></script>
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/jqxpanel.js')}}"></script>
@@ -269,7 +310,8 @@
  <script type="text/javascript" src="{{asset('permisosUnitarios/js/jqxgrid.edit.js')}}"></script>
 
  <script>
- var datos = <?php echo isset($dataV)?$dataV:"l"; ?>;
+ 
+ var datos = <?php echo isset($dataV)?$dataV:"'l'"; ?>;
  var dataV;
  if(datos != 'l'){
      dataV = datos;
@@ -286,6 +328,7 @@
  var insertar=true;
 
  $(document).ready(function(){
+ 
  
      var generaterow = function (i) {
              var row = {};
@@ -412,6 +455,8 @@
          
             } 
  });
+
+ 
     
  </script>
 @include('layouts.footer', ['modulo' => 'unitario'])

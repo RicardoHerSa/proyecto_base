@@ -98,7 +98,8 @@
                     },
                "bDestroy": true,
                "iDisplayLength": 10,//paginacion
-               "order": [[0, "desc"]] //ordenar (columna , orden) 
+               "ordering":false
+               //"order": [[0, "desc"]] //ordenar (columna , orden) 
         }).dataTable();
     }
     function cambiarEstado(idPortero)

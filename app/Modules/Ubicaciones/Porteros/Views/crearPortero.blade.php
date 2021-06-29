@@ -17,7 +17,8 @@
         </div>
         @endif
     <div class="row">
-        <div class="col-xs-12 col-md-12 col-lg-12">
+        <div class="col-xs-12 col-md-2 col-lg-2"></div>
+        <div class="col-xs-12 col-md-8 col-lg-8">
             <div class="card">
                 <div class="card-header">
                    <strong> Registrar Nuevo Portero </strong>
@@ -76,6 +77,7 @@
             </form>
             </div>
         </div>
+        <div class="col-xs-12 col-md-2 col-lg-2"></div>
     </div>
 
 </div>

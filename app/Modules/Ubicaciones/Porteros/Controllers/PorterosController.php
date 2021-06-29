@@ -179,6 +179,7 @@ class PorterosController extends Controller
         $porteros = DB::table('ohxqc_porteros as por')
         ->select('por.id', 'por.usuario', 'por.activo as estado', 'por.tipo', 'por.id_sede', 'ubi.descripcion')
         ->join('ohxqc_ubicaciones as ubi', 'ubi.id_ubicacion', 'por.id_sede')
+        ->orderBy('por.activo', 'desc')
         ->get();
 
         $data = Array();
@@ -223,7 +224,7 @@ class PorterosController extends Controller
 
     public function asociarPorterias()
     {
-        $porteros = DB::table('ohxqc_porteros')->select('id', 'usuario')->where('activo', 'S')->get(); 
+        $porteros = DB::table('ohxqc_porteros')->select('id', 'usuario')->where('activo', 'S')->where('id_sede', '>', 0)->get(); 
 
         return view('Ubicaciones::asociarPorterias', compact('porteros'));
     }
@@ -234,9 +235,12 @@ class PorterosController extends Controller
         $sedePertenece = DB::table('ohxqc_porteros')->select('id_sede')->where('id', $id)->get();
 
         $porteriasActuales = DB::table('ohxqc_porteros_ubicaciones')->select('id_ubicacion')->where('id_portero', $id)->get();
+        
+        $nombreSede = DB::table('ohxqc_ubicaciones')->select('descripcion')->where('id_ubicacion', $sedePertenece[0]->id_sede)->get();
 
         //saber si tiene porterias asociadas
         if(count($porteriasActuales) > 0){
+            
             $arrayActuales = array();
             foreach($porteriasActuales as $actual){
                 array_push($arrayActuales, $actual->id_ubicacion);
@@ -245,29 +249,37 @@ class PorterosController extends Controller
             if($sedePertenece[0]->id_sede == 1){
                 $porteriasNuevas = DB::table('ohxqc_ubicaciones')
                 ->select('id_ubicacion', 'descripcion')
+                ->where('activo', 'S')
                 ->whereIn('id_padre', [6,15,11,96,35,43,87,91,2] )
+                ->orderBy('descripcion')
                 ->get();
             }else{
                 $porteriasNuevas = DB::table('ohxqc_ubicaciones')
                 ->select('id_ubicacion', 'descripcion')
+                ->where('activo', 'S')
                 ->where('id_padre', $sedePertenece[0]->id_sede)
                 ->whereNotIn('id_ubicacion', $arrayActuales)
+                ->orderBy('descripcion')
                 ->get();
             }
 
            
 
         }else{
-            //si no tiene porterias asociadas se muestran todas de acuerdo a la sede a la que pertenece
             if($sedePertenece[0]->id_sede == 1){
                 $porteriasNuevas = DB::table('ohxqc_ubicaciones')
                 ->select('id_ubicacion', 'descripcion')
+                ->where('activo', 'S')
                 ->whereIn('id_padre', [6,15,11,96,35,43,87,91,2] )
+                ->orderBy('descripcion')
                 ->get();
             }else{
+                //si no tiene porterias asociadas se muestran todas de acuerdo a la sede a la que pertenece
                 $porteriasNuevas = DB::table('ohxqc_ubicaciones')
                 ->select('id_ubicacion', 'descripcion')
+                ->where('activo', 'S')
                 ->where('id_padre', $sedePertenece[0]->id_sede)
+                ->orderBy('descripcion')
                 ->get();
             }
         
@@ -275,7 +287,7 @@ class PorterosController extends Controller
 
         foreach($porteriasNuevas as $nuevas){
             echo 
-            " <option value='".$nuevas->id_ubicacion."'>".$nuevas->descripcion."</option>
+            " <option value='".$nuevas->id_ubicacion."'>".$nuevas->descripcion." - (".$nombreSede[0]->descripcion.")</option>
             ";
         }
     }

@@ -28,7 +28,7 @@
                     <div class="card-body">
                         <a href="{{ url('/Porteros') }}" title="Volver"><button type="button" class="btn btn-warning mb-3"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
                         <div class="form-group">
-                            <label for="usuario">Seleccione Portero: </label>
+                           <label for="usuario">Seleccione Portero: </label><br>
                             <select name="usuario" id="usuario" class="form-control" onchange="consultarPorterias()">
                                 @foreach ($porteros as $por)
                                     <option value="{{$por->id}}">{{$por->usuario}}</option>   

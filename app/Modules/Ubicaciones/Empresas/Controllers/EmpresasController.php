@@ -329,7 +329,7 @@ class EmpresasController extends Controller
                 "3"=>$implode,
                 "4"=>" <a class='show-user' href='".$urlShow."' title='Info empresa'><button class='btn btn-info btn-sm'><i class='fa fa-eye'></i></button></a>
                 <a class='edit-user' href='".$urlEdit."' title='Editar empresa'><button class='btn btn-warning btn-sm'><i class='fa fa-pencil-square-o' aria-hidden='true'></i></button></a>
-                <button onclick='".$onclick."' class='btn btn-danger btn-sm'><i class='fa fa-trash' aria-hidden='true'></i></button>" 
+                <button onclick='".$onclick."' class='btn btn-danger btn-sm'><i class='fa fa-trash' aria-hidden='true'></i></button>" ,
             );
             $i++;
            

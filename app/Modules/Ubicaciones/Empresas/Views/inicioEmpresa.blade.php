@@ -37,6 +37,7 @@
                                     <th>Estado</th>
                                     <th>Sedes Asociadas</th>
                                     <th style="display: flex;width:100%;">Opciones</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody>
@@ -97,7 +98,8 @@
                     },
                "bDestroy": true,
                "iDisplayLength": 10,//paginacion
-               //"order": [[3, "desc"]] //ordenar (columna , orden) 
+               "ordering": false  //evitar el orden por parte de DataTable y dejar el de PGSQL
+               //"order": [[5, "desc"]] //ordenar (columna , orden) 
         }).dataTable();
     }
     function cambiarEstado(codigoEmpresa)

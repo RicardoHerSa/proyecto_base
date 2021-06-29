@@ -198,7 +198,9 @@
                            console.log(item.label)
                         }
                 });
-			//$('#jqxTree').jqxTree('expandAll');
+                //Permite abrir las dos filas principales del arbol (Empresas grupo carvajal y Grupo Restringido)
+			$('#jqxTree').jqxTree('expandItem',  $("#1")[0]);
+            $('#jqxTree').jqxTree('expandItem',  $("#58")[0]);
 		});
 	</script>
 @include('layouts.footer', ['modulo' => 'horarios'])

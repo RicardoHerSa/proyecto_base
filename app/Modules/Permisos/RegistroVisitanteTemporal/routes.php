@@ -12,6 +12,7 @@ Route::group(['middleware' => 'web'], function () {
         
         Route::get('tomarfototemporal/{cedula}', 'RegistroVisitanteTemporalController@tomarFotoTemporal');
         Route::post('guardarFotoVisitanteTemporal', 'RegistroVisitanteTemporalController@guardarFoto')->name('guardarFotoVisitanteTemporal');
+        Route::post('consultasedes', 'RegistroVisitanteTemporalController@cargaSedes')->name('consulta.sedes');
 
     });
 
