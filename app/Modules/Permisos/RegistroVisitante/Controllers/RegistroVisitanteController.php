@@ -756,18 +756,31 @@ class RegistroVisitanteController extends Controller
         //var_dump($this->infoDeEmpresa);
         
         $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
-        ->select('nivel','correo_usuario')
+        ->select('nivel','correo_usuario', 'usuario_aprobador_id')
         ->where('empresa_id', '=', $empVisi)
         ->where('tipo_visitante', '=', $tipoIngreso)
         ->where('sede_id', '=', $sedeId)
         ->get();
 
         $users = Array();
+        
         $i = 0;
          foreach($infoEmpresa as $inf){
             if($inf->nivel == 1){
                 $users[$i] = $inf->correo_usuario;
                 $i++;
+                //guardar la notificacion de esta solicitud ohxqc_notificacion_solicitud
+                DB::table('ohxqc_notificacion_solicitud')->insert([
+                    'id_reg' => DB::table('ohxqc_notificacion_solicitud')->max('id_reg')+1,
+                    'id_aprobador' => $inf->usuario_aprobador_id,
+                    'id_solicitante' => $idSolicitud,
+                    'id_sede' => $sedeId,
+                    'id_empresa' => $empVisi,
+                    'id_tipov' => $tipoIngreso,
+                    'url' => $url,
+                    'nivel_aprobador' => 1,
+                    'visto' => 'N'
+                ]);
             }
         }
         $correos = User::whereIn('email', $users)->limit(1)->get();
@@ -905,7 +918,7 @@ class RegistroVisitanteController extends Controller
 
                     //despues enviaría el nuevo correo a las personas del siguiente nivel
                     $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
-                    ->select('correo_usuario')
+                    ->select('correo_usuario', 'usuario_aprobador_id')
                     ->where('empresa_id', '=', $empresaId)
                     ->where('nivel', '=', $siguienteNivel)
                     ->where('tipo_visitante', '=', $tipoVisi)
@@ -914,9 +927,26 @@ class RegistroVisitanteController extends Controller
                    
                     $users = Array();
                     $i = 0;
+                     //Obtengo nuevamente el token de esta solicitud
+                     $infoToken = DB::table('ohxqc_solicitud_por_aprobar')->select('token')->where('id_solicitud',$idSolicitud)->where('sede_id', '=', $sedeID)->get();
+                     foreach($infoToken as $tok){
+                         $token = $tok->token;
+                     }
                    foreach($infoEmpresa as $inf){
                         $users[$i] = $inf->correo_usuario;
                         $i++;
+                         //guardar la notificacion de esta solicitud ohxqc_notificacion_solicitud
+                        DB::table('ohxqc_notificacion_solicitud')->insert([
+                            'id_reg' => DB::table('ohxqc_notificacion_solicitud')->max('id_reg')+1,
+                            'id_aprobador' => $inf->usuario_aprobador_id,
+                            'id_solicitante' => $idSolicitud,
+                            'id_sede' => $sedeID,
+                            'id_empresa' => $empresaId,
+                            'id_tipov' => $tipoVisi,
+                            'url' => $token,
+                            'nivel_aprobador' => $siguienteNivel,
+                            'visto' => 'N'
+                        ]);
                     }
 
                     $correos = User::whereIn('email',$users)->get();
@@ -926,11 +956,7 @@ class RegistroVisitanteController extends Controller
                         $solicitante = $info->solicitante;
                         $labor = $info->labor_realizar;
                     }
-                    //Obtengo nuevamente el token de esta solicitud
-                    $infoToken = DB::table('ohxqc_solicitud_por_aprobar')->select('token')->where('id_solicitud',$idSolicitud)->where('sede_id', '=', $sedeID)->get();
-                    foreach($infoToken as $tok){
-                        $token = $tok->token;
-                    }
+                   
                     Notification::send($correos, new enviarSolicitud($token,$idSolicitud, $solicitante, $labor, 1));
 
                     if($infoEmpresa){
@@ -947,6 +973,12 @@ class RegistroVisitanteController extends Controller
             }
         }else{
             //si no fue aprobada
+              //Obtengo nuevamente el token de esta solicitud
+              $infoToken = DB::table('ohxqc_solicitud_por_aprobar')->select('token')->where('id_solicitud',$idSolicitud)->where('sede_id', '=', $sedeID)->get();
+              foreach($infoToken as $tok){
+                  $token = $tok->token;
+              }
+              
              //Insertamos la información en el histórico
              $guardaHistorico = DB::table('ohxqc_historico_solicitud')->insert([
                 'id_his' => DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
@@ -982,6 +1014,31 @@ class RegistroVisitanteController extends Controller
              foreach($infoEmpresa as $inf){
                   $users[$i] = $inf->correo_usuario;
                   $i++;
+              }
+
+              //Crear la notificacion con el caso de rechazo a los niveles posteriores
+              $infoNivelSig = DB::table('ohxqc_config_solicitud_empresas')
+              ->select('usuario_aprobador_id', 'nivel')
+              ->where('empresa_id', '=', $empresaId)
+              ->where('nivel', '>', $nivel)
+              ->where('tipo_visitante', '=', $tipoVisi)
+              ->where('sede_id', '=', $sedeID)
+              ->get();
+              if(count($infoNivelSig) > 0){
+                foreach ($infoNivelSig as $level) {
+                      //guardar la notificacion de esta solicitud ohxqc_notificacion_solicitud
+                      DB::table('ohxqc_notificacion_solicitud')->insert([
+                        'id_reg' => DB::table('ohxqc_notificacion_solicitud')->max('id_reg')+1,
+                        'id_aprobador' => $level->usuario_aprobador_id,
+                        'id_solicitante' => $idSolicitud,
+                        'id_sede' => $sedeID,
+                        'id_empresa' => $empresaId,
+                        'id_tipov' => $tipoVisi,
+                        'url' => $token,
+                        'nivel_aprobador' => $level->nivel,
+                        'visto' => 'N'
+                    ]);
+                }
               }
           
             $correos = User::whereIn('email',$users)->get();
@@ -1492,14 +1549,7 @@ class RegistroVisitanteController extends Controller
 
     public function misSolicitudes()
     {
-        //Validar si este usuario es colaborador(pendiente) y si tiene solicitudes creadas
-        $consulta = DB::table('ohxqc_solicitud_ingreso as sol')
-        
-        ->join('ohxqc_solicitud_por_aprobar as ap', 'ap.id_solicitud', 'sol.id_solicitud')
-        ->join('ohxqc_ubicaciones as ubi', 'ubi.id_ubicacion', 'ap.sede_id')
-        ->where('sol.id_solicitante', auth()->user()->id)
-        ->orderBy('sol.id_solicitud')
-        ->get();
+       
         $opcion = "lista";
 
         $total = DB::table('ohxqc_solicitud_por_aprobar as ap')
@@ -1526,7 +1576,51 @@ class RegistroVisitanteController extends Controller
         ->where('id_solicitante', auth()->user()->id)
         ->count('ap.id_solicitud');
 
-        return view('Permisos::validacionSolicitud' , compact('consulta', 'opcion', 'total', 'totalApr', 'totalPen', 'totalRe'));
+        //Validar si el usuario es aprobador de algun flujo, para saber si mostrar las notificaciones
+        $aprobador = DB::table('ohxqc_config_solicitud_empresas')
+        ->where('usuario_aprobador_id', auth()->user()->id)->get();
+        if(count($aprobador) > 0){
+            $notificaciones = DB::table('ohxqc_notificacion_solicitud')
+            ->where('id_aprobador', auth()->user()->id)
+            ->orderBy('id_solicitante', 'DESC')
+            ->get();
+            
+            $arrayInfoNoti = array();
+            if(count($notificaciones) > 0){
+               foreach($notificaciones as $noti){
+                    $infoSolicitud = DB::table('ohxqc_solicitud_por_aprobar')
+                    ->select('id_solicitud', 'fecha_registro', 'estado as estGeneral', 'niveles', 'nivel_actual')
+                    ->where('tipo_visitante', $noti->id_tipov)
+                    ->where('sede_id', $noti->id_sede)
+                    ->where('id_solicitud', $noti->id_solicitante)
+                    ->get();
+                    foreach($infoSolicitud as $info){
+
+                        $arrayInfoNoti[] = array('id_solicitud'=>$info->id_solicitud, 'fecha_registro'=>$info->fecha_registro, 'estGeneral'=>$info->estGeneral,'niveles'=>$info->niveles,'nivel_actual'=>$info->nivel_actual,'nivel_aprobador'=>$noti->nivel_aprobador, 'url' => $noti->url, 'visto'=>$noti->visto);
+                    }
+                }
+               // echo "<pre>";
+                //print_r($arrayInfoNoti);
+                $cantNotificaciones = 0;
+                $cantTotalSoli = 0;
+                foreach($arrayInfoNoti as $inf){
+                    if ($inf['nivel_actual'] == $inf['nivel_aprobador'] && $inf['estGeneral'] == 'Pendiente'){
+                        $cantNotificaciones++;
+                    }
+             
+                    $cantTotalSoli++;
+                }
+
+            }else{
+                $cantTotalSoli = 0;
+                $cantNotificaciones = 0;
+            }
+        
+        }else{
+            $aprobador = false;
+        }
+
+        return view('Permisos::validacionSolicitud' , compact('opcion', 'total', 'totalApr', 'totalPen', 'totalRe', 'aprobador', 'cantNotificaciones', 'arrayInfoNoti', 'cantTotalSoli'));
 
     }
 
@@ -1692,6 +1786,17 @@ class RegistroVisitanteController extends Controller
         );
         echo json_encode($results);
         
+    }
+
+    public function asignarVisto(Request $request)
+    {
+        $id = $request->input('id');
+        DB::table('ohxqc_notificacion_solicitud')
+        ->where('id_aprobador', auth()->user()->id)
+        ->where('id_solicitante', $id)
+        ->update([
+            'visto' => 'S'
+        ]);
     }
 
    

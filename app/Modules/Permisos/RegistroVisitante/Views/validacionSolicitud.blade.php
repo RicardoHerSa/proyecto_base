@@ -3,6 +3,11 @@
         @if (isset($opcion) && $opcion == 'lista')
             <div class="row mt-3">
                 <div class="col-xs-12 col-md-12 col-lg-12">
+                    @if ($aprobador)
+                        <div class="float-right">
+                            <a data-toggle="modal" data-target="#modalNotificacion" href="#"><i class="fa fa-bell" aria-hidden="true"></i><span> ({{$cantNotificaciones}}) </span> Por validar</a>
+                        </div>
+                    @endif
                     <h4 class="text-center">Mis Solicitudes</h4>
                     <hr>
                     <div class="contenedor-estadistica">
@@ -48,6 +53,99 @@
 
                 </div>
             </div>
+
+              <!--Modal notificacion-->
+              <div class="modal fade " id="modalNotificacion" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Solicitudes Por Validar</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="list-group">
+                            <div class="row">
+                                <div class="col-xs-12 col-md-8 col-lg-8"></div>
+                                <div class="col-xs-12 col-md-4 col-lg-4">
+                                    <h6>Total Solicitudes En Mi Flujo: <b>{{$cantTotalSoli}}</b></h6>
+                                    
+                                </div>
+                                
+                            </div>
+                            <table  id="tblistado" class="table table-light">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>#Solicitud</th>
+                                        <th>Fecha Registro</th>
+                                        <th>Estado General</th>
+                                        <th>¿Validada en mi nivel?</th>
+                                        <th>Visualizar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                  
+                                    @foreach ($arrayInfoNoti as $noti)
+                                    @php
+                                        if ($noti['nivel_actual'] == $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Pendiente'){
+                                            $respuesta = "NO";
+                                        }elseif ($noti['nivel_actual'] == $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Aprobado'){
+                                            $respuesta = "SI";
+                                        } elseif ($noti['nivel_actual'] != $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Aprobado' || $noti['nivel_actual'] != $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Pendiente'){
+                                            $respuesta = "SI";
+                                        }elseif ($noti['nivel_actual'] == $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Rechazado'){
+                                            $respuesta = "SI";
+                                        }elseif($noti['nivel_actual'] != $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Rechazado' && $noti['nivel_actual'] < $noti['nivel_aprobador']){
+                                            $respuesta = "NO";
+                                        }elseif($noti['nivel_actual'] != $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Rechazado' && $noti['nivel_actual'] > $noti['nivel_aprobador']){
+                                            $respuesta = "SI";
+                                        }
+                                        if($respuesta == "NO" && $noti['visto'] == "N"){
+                                            $color = "rgba(0,0,0,.075)";
+                                        }else if($respuesta == "NO" && $noti['visto'] == "S" && $noti['estGeneral'] == "Pendiente"){
+                                            $color = "rgb(255 247 2 / 28%)";
+                                        }else{
+                                            $color = "";
+                                        }
+                                    @endphp
+                                        <tr style="background: {{$color}}">
+                                            <td>{{$noti['id_solicitud']}}</td>
+                                            <td>{{$noti['fecha_registro']}}</td>
+                                            @switch($noti['estGeneral'])
+                                                @case('Aprobado')
+                                                    <td><span class="badge badge-success">{{$noti['estGeneral']}}</span></td>
+                                                    @break
+                                                @case('Pendiente')
+                                                    <td><span class="badge badge-warning">{{$noti['estGeneral']}}</span></td>
+                                                    @break
+                                                @case('Rechazado')
+                                                    <td><span class="badge badge-danger">{{$noti['estGeneral']}}</span></td>
+                                                    @break
+                                                    
+                                            @endswitch
+                                          
+                                                <td>{{$respuesta}}</td>
+                                         
+                                            <td><a onclick="visto({{$noti['id_solicitud']}})" href="{{$noti['url']}}" class="btn btn-primary"><i class="fa fa-eye"></i></a></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            @if ($cantTotalSoli == 0)
+                            <p>Actualmente no hay solicitudes por validar en el flujo al que perteneces</p>
+                             @endif
+                           
+                           
+                          </div>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+
 
         @elseif(isset($opcion) && $opcion == 'vista')
             <div class="row mt-2">
@@ -117,6 +215,8 @@
                         </div>
                         </div>
                     </div>
+
+                  
                 <div class="col-xs-12 col-md-12 col-lg-12">
                     <div class="card">
                         <div class="card-header">
@@ -725,6 +825,24 @@
                 }
             }
         
+         }
+
+         function visto(idsolicitud)
+         {
+            var token = '{{csrf_token()}}';
+            $.ajax({
+                    type:  'POST',
+                    async: true,
+                    url: "{{route('asignar.visto')}}", 
+                    data: {'id':idsolicitud,_token:token},
+                    cache: false,
+                    success: function(response){
+                        //toastr.success('Visto');
+                        },
+                    error:function(xhr, ajaxOptions, thrownError) {
+                        alert(thrownError);
+                        }
+                    });
          }
      </script>
 
