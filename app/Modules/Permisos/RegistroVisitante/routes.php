@@ -26,6 +26,7 @@ Route::group(['middleware' => 'web'], function () {
         Route::get('detallesdesolicitud/{idSolicitud}/{tipoIngreso}/{sedeId}/{estado}', 'RegistroVisitanteController@verSolicitud');
         Route::get('consultrmissolicitudes', 'RegistroVisitanteController@consultarMisSolicitudes')->name('consultar.missolicitudes');
         Route::post('asignarvisto', 'RegistroVisitanteController@asignarVisto')->name('asignar.visto');
+        Route::post('filtrarestado', 'RegistroVisitanteController@filtrarEstado')->name('filtrar.estado');
 
     });
      

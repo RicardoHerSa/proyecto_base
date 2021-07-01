@@ -13,24 +13,24 @@
                     <div class="contenedor-estadistica">
                         <div class="row mt-3 mb-3">
                             <div class="col-xs-12 col-md-3 col-lg-3">
-                                <div class="alert alert-primary" role="alert">
+                                <div class="alert alert-primary" role="alert" style="cursor: pointer" {{$totalRe>0?'onclick=filtrar(1)':''}} title="Filtrar Todas">
                                     <h5>Total: <span>{{$total}}</span></h5>
                                 </div>
                                 
                             </div>
                             <div class="col-xs-12 col-md-3 col-lg-3">
-                                <div class="alert alert-success" role="alert">
+                                <div class="alert alert-success" role="alert" style="cursor: pointer" {{$totalRe>0?'onclick=filtrar(2)':''}} title="Filtrar Aprobadas">
                                     <h5>Aprobadas: <span">{{$totalApr}}</span></h5>
                                 </div>
                                 
                             </div>
                             <div class="col-xs-12 col-md-3 col-lg-3">
-                                <div class="alert alert-warning" role="alert">
+                                <div class="alert alert-warning" role="alert" style="cursor: pointer" {{$totalRe>0?'onclick=filtrar(3)':''}} title="Filtrar Pendientes">
                                     <h5>Pendientes: <span>{{$totalPen}}</span></h5>
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-3 col-lg-3">
-                                <div class="alert alert-danger" role="alert">
+                                <div class="alert alert-danger" role="alert" style="cursor: pointer" {{$totalRe>0?'onclick=filtrar(4)':''}} title="Filtrar Rechazadas">
                                     <h5>Rechazadas: <span>{{$totalRe}}</span></h5>
                                 </div>
                             </div>
@@ -40,6 +40,7 @@
                         <thead class="thead-light">
                             <tr>
                                 <th>#Solicitud</th>
+                                <th>Fecha Registro</th>
                                 <th>Tipo de Ingreso</th>
                                 <th>Labor a Realizar</th>
                                 <th>Sede a Visitar</th>
@@ -805,7 +806,7 @@
                "bDestroy": true,
                "iDisplayLength": 10,//paginacion
                //"ordering": false  //evitar el orden por parte de DataTable y dejar el de PGSQL
-               "order": [[4, "desc"]] //ordenar (columna , orden) 
+               "order": [[5, "desc"]] //ordenar (columna , orden) 
         }).dataTable();
     }
 
@@ -843,6 +844,69 @@
                         alert(thrownError);
                         }
                     });
+         }
+
+         function filtrar(estado)
+         {
+             switch (estado) {
+                case 1:
+                    estado = "todas";    
+                break;
+                case 2:
+                    estado = "Aprobado";
+                break;
+                     
+                case 3:
+                     estado = "Pendiente";
+                break;
+                     
+                case 4:
+                    estado = "Rechazado";
+                break;
+             }
+            $('#tblistado').dataTable(
+                {
+                    language: {  
+                        processing: "Procesando...", 
+                        search: "Buscar&nbsp;:", 
+                        lengthMenu: "Registros _MENU_ ", 
+                        info: "Registros del _START_ al _END_ ", 
+                        loadingRecords: "Cargando...", 
+                        infoFiltered: "", 
+                        zeroRecords: "No se encontraron registros.", 
+                        emptyTable: "No hay información", 
+                        infoEmpty: "",
+                        paginate: { 
+                            first: "Primero", 
+                            previous: "Anterior", 
+                            next: "Siguiente", 
+                            last: "Ultimo" 
+                        } 
+                    }, 
+                    "aProcessing":true,//Activa el procesamiento del datatable
+                    "aServerSide":true,//Paginacion y filtado realizados por servidor 
+                    dom: 'Bfrtip',//Definimos los elemtos del contro de tabla 
+                    buttons:[
+                                'copyHtml5',
+                                'excelHtml5',
+                                'csvHtml5',
+                                'pdf'
+                    ],
+                    "ajax":
+                            {
+                                url: "{{route('filtrar.estado')}}",
+                                type: "post",
+                                dataType: "json",
+                                data: {estado:estado,_token:'{{csrf_token()}}'},
+                                error: function(e){
+                                    console.log(e.responseText);
+                                }
+                            },
+                    "bDestroy": true,
+                    "iDisplayLength": 10,//paginacion
+                    //"ordering": false  //evitar el orden por parte de DataTable y dejar el de PGSQL
+                    "order": [[5, "desc"]] //ordenar (columna , orden) 
+                }).dataTable();
          }
      </script>
 

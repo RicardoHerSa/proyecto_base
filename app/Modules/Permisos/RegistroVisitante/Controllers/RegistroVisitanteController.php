@@ -1774,11 +1774,12 @@ class RegistroVisitanteController extends Controller
 
              $data[]= array(
                 "0"=>$detalles->id_solicitud,
-                "1"=>$detalles->tipo_ingreso,
-                "2"=>$detalles->labor_realizar,
-                "3"=>$detalles->descripcion,
-                "4"=>$badge,
-                "5"=>"<td><a href='detallesdesolicitud/$detalles->id_solicitud/$detalles->tipo_visitante/$detalles->sede_id/".substr($detalles->estado, 0,1)."' class='btn btn-primary'><span class='fa fa-eye'></span></a></td>" ,
+                "1"=>$detalles->fecha_registro,
+                "2"=>$detalles->tipo_ingreso,
+                "3"=>$detalles->labor_realizar,
+                "4"=>$detalles->descripcion,
+                "5"=>$badge,
+                "6"=>"<td><a href='detallesdesolicitud/$detalles->id_solicitud/$detalles->tipo_visitante/$detalles->sede_id/".substr($detalles->estado, 0,1)."' class='btn btn-primary'><span class='fa fa-eye'></span></a></td>" ,
             );
         } 
         $results = array(
@@ -1800,6 +1801,59 @@ class RegistroVisitanteController extends Controller
         ->update([
             'visto' => 'S'
         ]);
+    }
+
+    public function filtrarEstado(Request $request)
+    {
+        $estado = $request->input('estado');
+        if($estado == "todas"){
+            $consulta = DB::table('ohxqc_solicitud_ingreso as sol')
+            ->join('ohxqc_solicitud_por_aprobar as ap', 'ap.id_solicitud', 'sol.id_solicitud')
+            ->join('ohxqc_ubicaciones as ubi', 'ubi.id_ubicacion', 'ap.sede_id')
+            ->where('sol.id_solicitante', auth()->user()->id)
+            ->orderBy('sol.id_solicitud')
+            ->get();
+        }else{
+            $consulta = DB::table('ohxqc_solicitud_ingreso as sol')
+        
+            ->join('ohxqc_solicitud_por_aprobar as ap', 'ap.id_solicitud', 'sol.id_solicitud')
+            ->join('ohxqc_ubicaciones as ubi', 'ubi.id_ubicacion', 'ap.sede_id')
+            ->where('sol.id_solicitante', auth()->user()->id)
+            ->where('ap.estado', $estado)
+            ->orderBy('sol.id_solicitud')
+            ->get();
+        }
+      
+
+        $data = Array();
+        foreach ($consulta as $detalles) {
+            if($detalles->estado == "Aprobado"){
+                $badge =  '<td><span class="badge badge-success">'.$detalles->estado.'</span></td>';
+            }else if($detalles->estado == "Pendiente"){
+                $badge =  '<td><span class="badge badge-warning">'.$detalles->estado.'</span></td>';
+            }else{
+                $badge =  '<td><span class="badge badge-danger">'.$detalles->estado.'</span></td>';
+            }
+
+             $data[]= array(
+                "0"=>$detalles->id_solicitud,
+                "1"=>$detalles->fecha_registro,
+                "2"=>$detalles->tipo_ingreso,
+                "3"=>$detalles->labor_realizar,
+                "4"=>$detalles->descripcion,
+                "5"=>$badge,
+                "6"=>"<td><a href='detallesdesolicitud/$detalles->id_solicitud/$detalles->tipo_visitante/$detalles->sede_id/".substr($detalles->estado, 0,1)."' class='btn btn-primary'><span class='fa fa-eye'></span></a></td>" ,
+            );
+        } 
+        $results = array(
+            "eEcho"=>1, //Informarcion para el datatable
+            "iTotalRecors"=>count($data),//enviamos el total de registros  al datatable
+            "iTotalDisplayRescors"=>count($data),//enviamos el total de registros a vizualizar
+            "aaData"=>$data
+        );
+        echo json_encode($results);
+
+       
     }
 
    
