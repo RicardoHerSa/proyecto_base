@@ -440,7 +440,7 @@ class RegistroVisitanteTemporalController extends Controller
         //INSERTA TABLA VISITANTE
       
         $consulta = DB::table('ohxqc_visitantes')
-        ->select('id_visitante')
+        ->select('id_visitante', 'fecha_fin')
         ->where('identificacion', '=', $cedula)
         ->get();
         $fecha_ini= date('Y-m-d');
@@ -449,6 +449,7 @@ class RegistroVisitanteTemporalController extends Controller
             $id_v = "";
             foreach($consulta as $c){
                 $id_v = $c->id_visitante;
+                $fechaFinalIngreso = $c->fecha_fin;
             }
 
            // echo "IDE VISITANTE: ".$id_v."-----><BR>";
@@ -457,6 +458,23 @@ class RegistroVisitanteTemporalController extends Controller
 
          //  if(trim($puerta)=='ENTRADA'){
                 //ACTUALIZA VISITANTE
+
+                $actual_date = date('Y-m-d');
+                if($actual_date > $fechaFinalIngreso ){
+                      //***ELIMINA REGISTROS ANTERIORES
+                    $eliminaPermisos = DB::table('ohxqc_permisos')
+                    ->whereIn('id_permiso', function($query) use($cedula){
+                        $query->select('p.id_permiso')
+                        ->from('ohxqc_permisos as p')
+                       // ->join('ohxqc_empresas_visitante as ev', 'ev.id_empresa_visitante', '=', 'p.id_empresa_visitante')
+                        ->join('ohxqc_visitantes as v', 'v.id_visitante', '=', 'p.id_empresa_visitante')
+                        ->where('v.identificacion', '=',$cedula);
+                    })->delete();
+                   // var_dump($eliminaPermisos);
+                   // die();
+                }else{
+                    //echo "no ".$actual_date." -> ".$fechaFinalIngreso ." ".$cedula;
+                }
                 $actualizaVisitante = DB::table('ohxqc_visitantes')
                 ->where('identificacion', '=', $cedula)
                 ->where('id_visitante', '=', $id_v)
@@ -562,13 +580,13 @@ class RegistroVisitanteTemporalController extends Controller
         ->select('fecha_ingreso', 'fecha_fin', 'tipo_visitante')
         ->where('identificacion','=',$cedula)
         ->get();
+        //var_dump($consultaFecha);
         foreach($consultaFecha as $conf){
             $fecha_ingreso= $conf->fecha_ingreso;
             $fecha_fin= $conf->fecha_fin;
             $tipo_visitante = $conf->tipo_visitante;
         }
       
-            $actual_date = date('Y-m-d');
         /*
         
         if(trim($puerta)=='ENTRADA' && $id_c ==''){
@@ -645,23 +663,6 @@ class RegistroVisitanteTemporalController extends Controller
                   }
         }	 */
             
-       
-        
-        //echo $sql;
-        //AGREGA LOS PERMISOS PARA CALI
-        if((($fecha_ingreso <= $actual_date) == false) && (($actual_date <= $fecha_fin) == false)){
-            if($tipo_visitante != 1){
-                //***ELIMINA REGISTROS ANTERIORES
-                $eliminaPermisos = DB::table('ohxqc_permisos')
-                ->whereIn('id_permiso', function($query){
-                    $query->select('p.id_permiso')
-                    ->from('ohxqc_permisos as p')
-                    ->join('ohxqc_empresas_visitante as ev', 'ev.id_empresa_visitante', '=', 'p.id_empresa_visitante')
-                    ->join('ohxqc_visitantes as v', 'v.id_visitante', '=', 'ev.id_visitante')
-                    ->where('v.identificacion', '=',$this->cedula);
-                })->delete();
-            }	
-        }
   
           //26-nov-2020. Validamos si en la ciudad de Cali el ingreso es para una de las empresas de Carvajal
           $consultaIngreso = DB::table('ohxqc_empresas')

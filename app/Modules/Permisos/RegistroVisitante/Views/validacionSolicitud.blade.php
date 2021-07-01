@@ -501,7 +501,7 @@
                                             <th>Fecha Ingreso</th>
                                             <th>Fecha Fin</th>
                                             <th>Estado</th>
-                                            @if (!$tipoR == "RM")
+                                            @if ($tipoR != "RM")
                                                 <th>Anexo</th>
                                             @endif
                                         </tr>
@@ -516,7 +516,7 @@
                                                     <td>{{$docu->fecha_inicio}}</td>
                                                     <td>{{$docu->fecha_fin}}</td>
                                                     <td>{{$docu->estado}}</td>
-                                                    @if (!$tipoR == "RM")
+                                                    @if ($tipoR != "RM")
                                                         @if (strlen($docu->url_documento) > 0)
                                                             <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
                                                         @else
@@ -804,8 +804,8 @@
                     },
                "bDestroy": true,
                "iDisplayLength": 10,//paginacion
-               "ordering": false  //evitar el orden por parte de DataTable y dejar el de PGSQL
-               //"order": [[5, "desc"]] //ordenar (columna , orden) 
+               //"ordering": false  //evitar el orden por parte de DataTable y dejar el de PGSQL
+               "order": [[4, "desc"]] //ordenar (columna , orden) 
         }).dataTable();
     }
 

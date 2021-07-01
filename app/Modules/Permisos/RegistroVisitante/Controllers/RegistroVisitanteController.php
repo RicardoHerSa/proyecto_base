@@ -1618,6 +1618,9 @@ class RegistroVisitanteController extends Controller
         
         }else{
             $aprobador = false;
+            $cantTotalSoli = 0;
+            $cantNotificaciones = 0;
+            $arrayInfoNoti = array();
         }
 
         return view('Permisos::validacionSolicitud' , compact('opcion', 'total', 'totalApr', 'totalPen', 'totalRe', 'aprobador', 'cantNotificaciones', 'arrayInfoNoti', 'cantTotalSoli'));
