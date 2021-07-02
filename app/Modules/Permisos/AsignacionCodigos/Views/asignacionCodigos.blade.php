@@ -13,7 +13,12 @@
     
     <div class="row justify-content-center">
         <!--Formulario de consulta-->
-        <div class="col-xs-12 col-md-{{isset($tabla)?'3':'12'}} col-lg-{{isset($tabla)?'3':'12'}} ">
+        @if (!isset($tabla))
+            <div class="col-xs-12 col-md-2 col-lg-2"></div>
+            
+        @endif
+
+        <div class="col-xs-12 col-md-{{isset($tabla)?'3':'8'}} col-lg-{{isset($tabla)?'3':'8'}} ">
                 <!-- Formulario de consulta-->
                 @if (isset($tabla))
                  <a href="{{url('asigna-codigos')}}" class="btn btn-primary mb-3">Volver</a>
@@ -44,7 +49,7 @@
 
         <!--Resultado encabezado info personal-->
         
-        <div class="col-xs-12 col-md-{{isset($tabla)?'9':''}} col-lg-{{isset($tabla)?'9':''}}" style="margin-top: 2%">
+        <div class="col-xs-12 col-md-{{isset($tabla)?'9':'2'}} col-lg-{{isset($tabla)?'9':'2'}}" style="margin-top: 2%">
             @if (isset($tabla) && $tabla != '0')
             <div class="row" style="background-color: #00FF1A;
             border-radius: 10px; 

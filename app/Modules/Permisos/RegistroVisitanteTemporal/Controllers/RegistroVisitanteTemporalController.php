@@ -509,8 +509,9 @@ class RegistroVisitanteTemporalController extends Controller
                     $id_empresa_v =  $consid->id_empresa_visitante;
                 }
         }else{
+            $idmaxi =  DB::select("select nextval('ohxqc_visitantes_seq'::regclass)");
             $inserta = DB::table('ohxqc_visitantes')->insert([
-                 'id_visitante' => DB::table("ohxqc_visitantes")->max('id_visitante')+1,
+                 'id_visitante' => $idmaxi[0]->nextval,
                  'identificacion_jefe' => null,
                  'tipo_identificacion' => 'CEDULA',
                  'identificacion' => $cedula,
@@ -540,7 +541,7 @@ class RegistroVisitanteTemporalController extends Controller
             //->where('identificacion', '=', $cedula)
             //->get();
             //foreach($consultaId as $con){
-                $id_v =  DB::table("ohxqc_visitantes")->max('id_visitante');//$con->id_visitante;
+                $id_v =  $idmaxi[0]->nextval;// DB::table("ohxqc_visitantes")->max('id_visitante');//$con->id_visitante;
             //}
             //echo "IDE VISITANTE: ".$id_v."-----><BR>";
             //**INSERTA EN EMPRESA
@@ -555,8 +556,8 @@ class RegistroVisitanteTemporalController extends Controller
                 'fecha_actualizacion' => now()
             ]);
 
-            $obtenerIdEmpresa = DB::table('ohxqc_empresas_visitante')->max('id_empresa_visitante');
-            $id_empresa_v =  $obtenerIdEmpresa ;
+            //$obtenerIdEmpresa = DB::table('ohxqc_empresas_visitante')->max('id_empresa_visitante');
+            $id_empresa_v = $id_v;// $obtenerIdEmpresa ;
         }
       
 

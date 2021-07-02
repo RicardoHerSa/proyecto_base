@@ -1143,7 +1143,7 @@ class RegistroVisitanteController extends Controller
         $I_VISTANTE = array();
         $I_EMPRESA_VISITANTE = array();
         $I_PERMISO = array();
-        $ID =  DB::table('ohxqc_visitantes')->max('id_visitante');
+        
 
         foreach($listadoVisitantes as $v){
             //consulto si el visitante ya estaba registrado para simplemente actualizarlo
@@ -1179,7 +1179,7 @@ class RegistroVisitanteController extends Controller
                  //insertamos los permisos para cada visitante en la sede actual
                  
                  for($j = 0; $j < count($arrayPermisos); $j++){
-                     $idmaxi =  DB::select("select nextval('ohxqc_visitantes_id_visitante_seq'::regclass)");
+                     $idmaxi =  DB::select("select nextval('ohxqc_permisos_seq'::regclass)");
                      DB::table('ohxqc_permisos')->insert([
 
                         'id_permiso' => $idmaxi[0]->nextval,
@@ -1199,9 +1199,10 @@ class RegistroVisitanteController extends Controller
                 
                
             }else{
-                $ID++ ;
+                $idmaxiv =  DB::select("select nextval('ohxqc_visitantes_seq'::regclass)");
+
                 array_push($I_VISTANTE, array(
-                        'id_visitante' =>$ID,
+                        'id_visitante' => $idmaxiv[0]->nextval,
                         'identificacion_jefe' => null,
                         'tipo_identificacion' =>  $v->tipo_identificacion,
                         'identificacion' => $v->identificacion,
@@ -1230,8 +1231,8 @@ class RegistroVisitanteController extends Controller
 
                 array_push($I_EMPRESA_VISITANTE ,array(
 
-                    'id_empresa_visitante' => $ID,
-                    'id_visitante' => $ID ,
+                    'id_empresa_visitante' =>  $idmaxiv[0]->nextval,
+                    'id_visitante' =>  $idmaxiv[0]->nextval,
                     'id_empresa' => $idempresa,
                     'activo' => 'S',
                     'usuario_creacion' =>  $usuarioCreador,
@@ -1244,10 +1245,11 @@ class RegistroVisitanteController extends Controller
                 //Registro nuevo
                         //insertamos los permisos para cada visitante en la sede actual
                 for($j = 0; $j < count($arrayPermisos); $j++){
-    
+                            
+                    $idmaxi =  DB::select("select nextval('ohxqc_permisos_seq'::regclass)");
                     array_push($I_PERMISO , array (
-                        'id_permiso' => DB::table('ohxqc_permisos')->max('id_permiso')+1,
-                        'id_empresa_visitante' => $ID,
+                        'id_permiso' =>  $idmaxi[0]->nextval,
+                        'id_empresa_visitante' =>  $idmaxiv[0]->nextval,
                         'id_ubicacion' =>  $arrayPermisos[$j],
                         'id_horario' => 8, //DIA HORARIO ESPECIAL
                         'identificacion_responsable' =>  $v->identificacion,

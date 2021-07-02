@@ -204,22 +204,6 @@ class PermisosUnitariosController extends Controller
                 }
          
             if($permisos[0]!="" && $activo=='S'){
-                    //Elimina primero los permisos
-                    //echo "<br><br>THIS CEDULA:".$this->cedula;
-                    // $delete = db::table('ohxqc_permisos')->where('identificacion_responsable',$this->cedula)
-                    // ->wherein('id_empresa_visitante', function($query){
-                    //     $query->select('id_empresa_visitante')
-                    //     ->from('ohxqc_empresas_visitante') 
-                    //     ->wherein('id_visitante', function($querydos){
-                    //         $querydos->select('id_visitante')
-                    //         ->from('ohxqc_visitantes')
-                    //         ->where('identificacion', '=', $this->cedula);
-                    //     })->limit(1);
-                        
-                    // })
-                   
-                    // ->delete();
-                  
 
                     $delete = DB::table('ohxqc_permisos')//->where('id_empresa_visitante',$this->cedula)
                     ->whereIn('id_empresa_visitante', function($query){
@@ -234,16 +218,18 @@ class PermisosUnitariosController extends Controller
                 //Agrega los nuevos permisos
                  //consulta id empresa visitante
                 
-                    $idEmpresaVisitante = DB::table('ohxqc_empresas_visitante')->select('id_empresa_visitante')->whereIn('id_visitante', function($cons){
+                    $idEmpresaVisitante = DB::table('ohxqc_empresas_visitante')
+                    ->select('id_empresa_visitante')
+                    ->whereIn('id_visitante', function($cons){
                         $cons->select('id_visitante')
                         ->from('ohxqc_visitantes')
                         ->where('identificacion', '=', $this->cedula);
                     })->limit(1)
                     ->get();
 
-                    foreach($idEmpresaVisitante as $idem){
-                        $idEmpresaVisitante = $idem->id_empresa_visitante;
-                    }
+                    
+                    $idEmpresaVisitante = $idEmpresaVisitante[0]->id_empresa_visitante;
+                    
 
                     $informacion = DB::table('ohxqc_visitantes')
                     ->select('identificacion', 'fecha_ingreso', 'fecha_fin')
@@ -265,7 +251,9 @@ class PermisosUnitariosController extends Controller
                  
                  
                     for($i=0;$i<(count($permisos)-1);$i++){
+                        $idmaxi =  DB::select("select nextval('ohxqc_permisos_seq'::regclass)");
                         $inserta = DB::table('ohxqc_permisos')->insert([
+                            'id_permiso' =>  $idmaxi[0]->nextval,
                             'id_empresa_visitante' => $idEmpresaVisitante,
                             'id_ubicacion' =>  $permisos[$i],
                             'id_horario' => $id_horario,
@@ -310,69 +298,5 @@ class PermisosUnitariosController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\visitante  $visitante
-     * @return \Illuminate\Http\Response
-     */
-    public function show(visitante $visitante)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\visitante  $visitante
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(visitante $visitante)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\visitante  $visitante
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, visitante $visitante)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\visitante  $visitante
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(visitante $visitante)
-    {
-        //
-    }
+  
 }
