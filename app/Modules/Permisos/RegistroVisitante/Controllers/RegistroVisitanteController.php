@@ -177,9 +177,9 @@ class RegistroVisitanteController extends Controller
         if(!$errorFechas){
 
             $correoSolicitante = DB::table('jess_users')->select('email')->where('id', auth()->user()->id)->get();
-            foreach($correoSolicitante as $corr){
-                $correoSolicitante = $corr->email;
-            }
+            
+            $correoSolicitante = $correoSolicitante[0]->email;
+            
             $guardaSolicitud = DB::table('ohxqc_solicitud_ingreso')->insert([
                 'id_solicitud' => $idSolicitud,
                 'empresa_id' =>  $empVisi,
@@ -203,9 +203,9 @@ class RegistroVisitanteController extends Controller
                         }else{
                             $urlDocumento = "";
                         }
-    
+                        $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_seq'::regclass)");
                         $guardaDocumento = DB::table('ohxqc_documentos_solicitud')->insert([
-                            'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
+                            'id_registro' =>  $idmaxi[0]->nextval,
                             'identificacion' =>  $request->input('cedula'),
                             'nombre' => $request->input('nombre'),
                             'url_documento' =>  $urlDocumento,
@@ -218,7 +218,8 @@ class RegistroVisitanteController extends Controller
                             'tipo_identificacion' =>  $request->input('tipoId'),
                             'solicitud_id' => $idSolicitud
                             ]);
-    
+                        
+                            $guardaDocumento = array();
                         for($i=1; $i <= $cantidadAnexos; $i++){
                             //Mientras sea diferente de null los registros, los guardo en tabla ohxqc_documentos_solicitud
                             if($request->input('cedula'.$i) != null){
@@ -229,9 +230,10 @@ class RegistroVisitanteController extends Controller
                                 }else{
                                     $urlDocumento = "";
                                 }
-    
-                                $guardaDocumento = DB::table('ohxqc_documentos_solicitud')->insert([
-                                    'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
+                                
+                                $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_seq'::regclass)");
+                                array_push($guardaDocumento, array(
+                                    'id_registro' => $idmaxi[0]->nextval,
                                     'identificacion' =>  $request->input('cedula'.$i),
                                     'nombre' => $request->input('nombre'.$i),
                                     'url_documento' =>  $urlDocumento,
@@ -242,18 +244,19 @@ class RegistroVisitanteController extends Controller
                                     'estado' => 'A',
                                     'tipo_identificacion' =>  $request->input('tipoId'.$i),
                                     'solicitud_id' => $idSolicitud
-                                ]);
+                                ));
                             }
                         }
+                        DB::table('ohxqc_documentos_solicitud')->insert($guardaDocumento);
                 }else{
                     if($request->hasFile('anexo')){
                         $urlDocumento = $request->file('anexo')->store('documentosSolicitud', 'public');
                     }else{
                         $urlDocumento = "";
                     }
-    
+                    $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_seq'::regclass)");
                     $guardaDocumento = DB::table('ohxqc_documentos_solicitud')->insert([
-                        'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
+                        'id_registro' =>  $idmaxi[0]->nextval,
                         'identificacion' =>  $request->input('cedula'),
                         'nombre' => $request->input('nombre'),
                         'url_documento' =>  $urlDocumento,
@@ -274,21 +277,28 @@ class RegistroVisitanteController extends Controller
                     $cantidadSedes = $request->input('cantRSelects');
                         if($cantidadSedes > 0){
                         //Se recibe la primer sede que es obligatoria y se guarda en la tabla ohxqc_sedes_solicitud
+                        $idmaxi = DB::select("select nextval('ohxqc_sedes_solicitud_seq'::regclass)");
                             $guardaSedes = DB::table('ohxqc_sedes_solicitud')->insert([
-                                'id' => DB::table('ohxqc_sedes_solicitud')->max('id')+1,
+                                'id' => $idmaxi[0]->nextval,
                                 'id_sede' => $request->input('sede'),
                                 'id_solicitud' => $idSolicitud
                             ]);
+                           
+                            $guardaSedes = array();
                             for($i=1; $i <= $cantidadSedes; $i++){
-                                $guardaSedes = DB::table('ohxqc_sedes_solicitud')->insert([
-                                    'id' => DB::table('ohxqc_sedes_solicitud')->max('id')+1,
+                                $idmaxi = DB::select("select nextval('ohxqc_sedes_solicitud_seq'::regclass)");
+                                array_push($guardaSedes, array(
+                                    'id' => $idmaxi[0]->nextval,
                                     'id_sede' => $request->input('sede'.$i),
                                     'id_solicitud' => $idSolicitud
-                                ]);
+                                 )
+                                );
                             }
+                            DB::table('ohxqc_sedes_solicitud')->insert($guardaSedes);
                         }else{
+                            $idmaxi = DB::select("select nextval('ohxqc_sedes_solicitud_seq'::regclass)");
                             $guardaSedes = DB::table('ohxqc_sedes_solicitud')->insert([
-                                'id' => DB::table('ohxqc_sedes_solicitud')->max('id')+1,
+                                'id' => $idmaxi[0]->nextval,
                                 'id_sede' => $request->input('sede'),
                                 'id_solicitud' => $idSolicitud
                             ]);
@@ -304,7 +314,12 @@ class RegistroVisitanteController extends Controller
                             if($cantidadSedes > 0){
                                 $j = ""; //la primer sede tiene como name="sede", la segunda name="sede1"
                                 $entraSede = 0;
+
+                                $guardarSolicitudPorAprobar = array();
+                                $guardarHistorico = array();
                                 for($i = 0; $i <= $cantidadSedes; $i++){
+
+
                                     $infoNivel = DB::table('ohxqc_config_solicitud_empresas')
                                     ->where('empresa_id', '=', $empVisi)
                                     ->where('tipo_visitante', '=', $tipoIngreso)
@@ -320,20 +335,21 @@ class RegistroVisitanteController extends Controller
                                          $this->tipoIngres = $tipoIngreso;
                                          $this->sedeId = $request->input('sede'.$j);
                                          $token = RegistroVisitanteController::getLinkSubscribe();
-            
-                                        $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
-                                            'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
+
+                                        $idmaxi = DB::select("select nextval('ohxqc_solicitud_por_aprobar_seq'::regclass)");
+                                        array_push($guardarSolicitudPorAprobar, array(
+                                            'id_apr' =>  $idmaxi[0]->nextval,
                                             'id_solicitud' => $idSolicitud,
                                             'fecha_registro' => now(),
                                             'niveles' => $niveles,
                                             'nivel_actual' => 1,
                                             'estado' => 'Pendiente',
+                                            'comentario' => null,
                                             'token' => $token,
                                             'tipo_visitante'=> $tipoIngreso,
                                             'sede_id'=> $request->input('sede'.$j),
                                             'tipo_registro' => $tipoRegistroV
-            
-                                        ]);
+                                        ));
                                             //Enviar el correo con esta solicitud, y la url
                                              $enviar = RegistroVisitanteController::enviarCorreo($token, $empVisi,$tipoIngreso, $request->input('sede'.$j),$idSolicitud, $solicitante, $labor, $i);
                                            
@@ -345,9 +361,10 @@ class RegistroVisitanteController extends Controller
                                             $this->tipoIngres = $tipoIngreso;
                                             $this->sedeId = $request->input('sede'.$j);
                                             $token = RegistroVisitanteController::getLinkSubscribe();
-    
-                                            $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
-                                                'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
+
+                                            $idmaxi = DB::select("select nextval('ohxqc_solicitud_por_aprobar_seq'::regclass)");
+                                            array_push($guardarSolicitudPorAprobar, array(
+                                                'id_apr' =>  $idmaxi[0]->nextval,
                                                 'id_solicitud' => $idSolicitud,
                                                 'fecha_registro' => now(),
                                                 'niveles' => 1,
@@ -358,12 +375,23 @@ class RegistroVisitanteController extends Controller
                                                 'tipo_visitante'=> $tipoIngreso,
                                                 'sede_id'=> $request->input('sede'.$j),
                                                 'tipo_registro' => $tipoRegistroV
+                                            ));
     
-                                            ]);
-                               
                            
                                             //se actualiza de una vez la aprobacion
-                                            DB::table('ohxqc_historico_solicitud')->insert([
+                                            $idmaxi = DB::select("select nextval('ohxqc_historico_solicitud_seq'::regclass)");
+
+                                            array_push($guardarHistorico, array(
+                                                'id_his' =>  $idmaxi[0]->nextval,
+                                                'id_solicitud' => $idSolicitud,
+                                                'nivel_aprobador' => 1,
+                                                'usuario_aprobador' => auth()->user()->id,
+                                                'fecha_diligenciado' => now(),
+                                                'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                                'estado' => 'A',
+                                                'sede_id' => $request->input('sede'.$j)
+                                            ));
+                                           /* DB::table('ohxqc_historico_solicitud')->insert([
                                                 'id_his' =>  DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
                                                 'id_solicitud' => $idSolicitud,
                                                 'nivel_aprobador' => 1,
@@ -372,7 +400,7 @@ class RegistroVisitanteController extends Controller
                                                 'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
                                                 'estado' => 'A',
                                                 'sede_id' => $request->input('sede'.$j)
-                                            ]);
+                                            ]);*/
                                             //se agregan a la tabla visitantes y se asigna permisos
     
                                             RegistroVisitanteController::agregarVisitantes($idSolicitud,$empVisi,$request->input('sede'.$j));
@@ -382,8 +410,13 @@ class RegistroVisitanteController extends Controller
                                         $correo = User::where('id',auth()->user()->id)->get();
                                         Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede'.$j) ));
                                     }
+
+                                    
                                     if($i == 0 ){$j = 1;}else{$j = $i+1;}
                                 }
+                                    //var_dump($guardarSolicitudPorAprobar);
+                                    DB::table('ohxqc_solicitud_por_aprobar')->insert($guardarSolicitudPorAprobar);
+                                    DB::table('ohxqc_historico_solicitud')->insert($guardarHistorico);
     
                                     //se valida si todas las sedes fueron aprobadas inmediatamente porque no tenian config en la maestra, y de ser asi, retornamos avisando
                                      if($entraSede == $cantidadSedes+1){
@@ -410,9 +443,11 @@ class RegistroVisitanteController extends Controller
                                      $this->tipoIngres = $tipoIngreso;
                                      $this->sedeId = $request->input('sede');
                                      $token = RegistroVisitanteController::getLinkSubscribe();
-        
+
+                                     $idmaxi = DB::select("select nextval('ohxqc_solicitud_por_aprobar_seq'::regclass)");
+
                                     $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
-                                        'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
+                                        'id_apr' =>   $idmaxi[0]->nextval,
                                         'id_solicitud' => $idSolicitud,
                                         'fecha_registro' => now(),
                                         'niveles' => $niveles,
@@ -447,9 +482,10 @@ class RegistroVisitanteController extends Controller
                                     $this->tipoIngres = $tipoIngreso;
                                     $this->sedeId = $request->input('sede');
                                     $token = RegistroVisitanteController::getLinkSubscribe();
-        
+
+                                    $idmaxi = DB::select("select nextval('ohxqc_solicitud_por_aprobar_seq'::regclass)");
                                    $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
-                                       'id_apr' =>  DB::table('ohxqc_solicitud_por_aprobar')->max('id_apr')+1,
+                                       'id_apr' =>  $idmaxi[0]->nextval,
                                        'id_solicitud' => $idSolicitud,
                                        'fecha_registro' => now(),
                                        'niveles' => 1,
@@ -465,8 +501,10 @@ class RegistroVisitanteController extends Controller
                                    
                                    if($guardarSolicitudPorAprobar){
                                        //se actualiza de una vez la aprobacion
+                                       $idmaxi = DB::select("select nextval('ohxqc_historico_solicitud_seq'::regclass)");
+
                                        DB::table('ohxqc_historico_solicitud')->insert([
-                                        'id_his' =>  DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
+                                        'id_his' =>  $idmaxi[0]->nextval,
                                         'id_solicitud' => $idSolicitud,
                                         'nivel_aprobador' => 1,
                                         'usuario_aprobador' => auth()->user()->id,
@@ -1063,7 +1101,7 @@ class RegistroVisitanteController extends Controller
             
         }
     }
-                                        // 4        // 128       //96
+    // 4        // 128       //96
     public function agregarVisitantes($idSolicitud,$idempresa,$sedeID)
     {
         $usuarioCreador =  substr(auth()->user()->name , 0,25);
@@ -1076,48 +1114,58 @@ class RegistroVisitanteController extends Controller
             $arrayPermisos[$i] = $per->id_ubicacion;
             $i++;
         }
-        array_push($arrayPermisos, 2); //ppne carvajal centro empresarial
+        
         //consultamos los datos relevantes de la tabla: ohxqc_solicitud_ingreso, para insertar en visitantes
         $solicitudIngreso = DB::table('ohxqc_solicitud_ingreso')
         ->select('tipo_ingreso')
         ->where('id_solicitud', $idSolicitud)
         ->get();
-        foreach($solicitudIngreso as $soli){
-            $tipoIngr = $soli->tipo_ingreso;
+
+        $tipoIngr = $solicitudIngreso[0]->tipo_ingreso;
+        if($tipoIngr != "EMPRESA EXTERNA"){
+            array_push($arrayPermisos, 2); //ppne carvajal centro empresarial
         }
+        
         if($tipoIngr == "EMPRESA EXTERNA"){
             $tipoIngr = "USUARIOS EMPRESA EXTERNA";
         }
 
         $idTipoIngreso = DB::table('ohxqc_tipos_visitante')->select('id_tipo_visitante')->where('nombre',  $tipoIngr)->get();
-        foreach($idTipoIngreso as $tip){
-            $idTipoVisi = $tip->id_tipo_visitante;
-        }
+        
+        $idTipoVisi =  $idTipoIngreso[0]->id_tipo_visitante;
+
         //consultamos los visitantes que fueron guardados en la tabla: ohxqc_documentos_solicitud
         $listadoVisitantes = DB::table('ohxqc_documentos_solicitud')
         ->select('identificacion', 'nombre', 'fecha_inicio', 'fecha_fin', 'tipo_identificacion')
         ->where('solicitud_id', $idSolicitud)
         ->get();
+        
+        $I_VISTANTE = array();
+        $I_EMPRESA_VISITANTE = array();
+        $I_PERMISO = array();
+        $ID =  DB::table('ohxqc_visitantes')->max('id_visitante');
+
         foreach($listadoVisitantes as $v){
             //consulto si el visitante ya estaba registrado para simplemente actualizarlo
             $consultVisitante = DB::table('ohxqc_visitantes')->select('id_visitante')->where('identificacion',$v->identificacion)->get();
+           
+            
             if(count($consultVisitante) > 0){
-                foreach($consultVisitante as $id){
-                    $idNuevoVisitante = $id->id_visitante;
-                }
+
+                $idNuevoVisitante = $consultVisitante[0]->id_visitante;
                 //actualiza
-                DB::table('ohxqc_visitantes')->where('id_visitante', $idNuevoVisitante)->update([
+                     DB::table('ohxqc_visitantes')->where('id_visitante', $idNuevoVisitante)->update([
                     'fecha_ingreso' =>  $v->fecha_inicio,
                     'fecha_fin' => $v->fecha_fin,
                     'tipo_visitante' =>  $idTipoVisi,
                     'cargo' =>  $tipoIngr,
                     'usuario_creacion' =>  $usuarioCreador,
-                    'fecha_creacion' => now(),
                     'usuario_actualizacion' =>  $usuarioCreador,
                     'fecha_actualizacion' => now(),
                     'responsable' => $usuarioCreador,
+                    'fecha' => now()
                 ]);
-                  //Actualiza la empresa visitante
+                    //Actualiza la empresa visitante
                 DB::table('ohxqc_empresas_visitante')->where('id_visitante', $idNuevoVisitante)->update([
                     'id_empresa' => $idempresa,
                     'activo' => 'S',
@@ -1129,88 +1177,98 @@ class RegistroVisitanteController extends Controller
 
                 //actualiza permisos
                  //insertamos los permisos para cada visitante en la sede actual
+                 
                  for($j = 0; $j < count($arrayPermisos); $j++){
-                    DB::table('ohxqc_permisos')->insert([
-                    'id_permiso' => DB::table('ohxqc_permisos')->max('id_permiso')+1,
-                    'id_empresa_visitante' => $idNuevoVisitante,
-                    'id_ubicacion' =>  $arrayPermisos[$j],
-                    'id_horario' => 8, //DIA HORARIO ESPECIAL
-                    'identificacion_responsable' =>  $v->identificacion,
-                    'fecha_inicio' => is_null($v->fecha_inicio)?now():$v->fecha_inicio,
-                    'fecha_fin' =>  is_null($v->fecha_fin)?now():$v->fecha_fin,
-                    'activo' => 'S',
-                    'usuario_creacion' => 'admin',
-                    'fecha_creacion' => now(),
-                    'usuario_actualizacion' => 'admin',
-                    'fecha_actualizacion' => now()
-                ]);
-               
-            }
-                
-              
+                     $idmaxi =  DB::select("select nextval('ohxqc_visitantes_id_visitante_seq'::regclass)");
+                     DB::table('ohxqc_permisos')->insert([
 
-            }else{
-                //Registro nuevo
-                $idNuevoVisitante = DB::table('ohxqc_visitantes')->max('id_visitante')+1;
-                DB::table('ohxqc_visitantes')->insert([
-                    'id_visitante' => $idNuevoVisitante,
-                    'identificacion_jefe' => null,
-                    'tipo_identificacion' =>  $v->tipo_identificacion,
-                    'identificacion' => $v->identificacion,
-                    'nombre' =>  $v->nombre,
-                    'apellido' => null,
-                    'fecha_ingreso' =>  $v->fecha_inicio,
-                    'fecha_fin' => $v->fecha_fin,
-                    'tipo_contrato' => null,
-                    'foto' => 'N',
-                    'email' => null,
-                    'telefono1' => null,
-                    'telefono2' => null,
-                    'telefono3' => null,
-                    'tipo_visitante' =>  $idTipoVisi,
-                    'cargo' =>  $tipoIngr,
-                    'ciudad' => 0,
-                    'activo' => 'S',
-                    'usuario_creacion' =>  $usuarioCreador,
-                    'fecha_creacion' => now(),
-                    'usuario_actualizacion' =>  $usuarioCreador,
-                    'fecha_actualizacion' => now(),
-                    'parqueadero' => 0,
-                    'responsable' => $usuarioCreador,
-                    'usr_dominio' => null
-                ]);
-                     //Insertamos en la empresa visitante: ohxqc_empresas_visitante
-                    DB::table('ohxqc_empresas_visitante')->insert([
+                        'id_permiso' => $idmaxi[0]->nextval,
                         'id_empresa_visitante' => $idNuevoVisitante,
-                        'id_visitante' => $idNuevoVisitante,
-                        'id_empresa' => $idempresa,
+                        'id_ubicacion' =>  $arrayPermisos[$j],
+                        'id_horario' => 8, //DIA HORARIO ESPECIAL
+                        'identificacion_responsable' =>  $v->identificacion,
+                        'fecha_inicio' => is_null($v->fecha_inicio)?now():$v->fecha_inicio,
+                        'fecha_fin' =>  is_null($v->fecha_fin)?now():$v->fecha_fin,
+                        'activo' => 'S',
+                        'usuario_creacion' => 'admin',
+                        'fecha_creacion' => now(),
+                        'usuario_actualizacion' => 'admin',
+                        'fecha_actualizacion' => now()
+                    ]);
+                 }
+                
+               
+            }else{
+                $ID++ ;
+                array_push($I_VISTANTE, array(
+                        'id_visitante' =>$ID,
+                        'identificacion_jefe' => null,
+                        'tipo_identificacion' =>  $v->tipo_identificacion,
+                        'identificacion' => $v->identificacion,
+                        'nombre' =>  $v->nombre,
+                        'apellido' => null,
+                        'fecha_ingreso' =>  $v->fecha_inicio,
+                        'fecha_fin' => $v->fecha_fin,
+                        'tipo_contrato' => null,
+                        'foto' => 'N',
+                        'email' => null,
+                        'telefono1' => null,
+                        'telefono2' => null,
+                        'telefono3' => null,
+                        'tipo_visitante' =>  $idTipoVisi,
+                        'cargo' =>  $tipoIngr,
+                        'ciudad' => 0,
                         'activo' => 'S',
                         'usuario_creacion' =>  $usuarioCreador,
                         'fecha_creacion' => now(),
                         'usuario_actualizacion' =>  $usuarioCreador,
+                        'fecha_actualizacion' => now(),
+                        'parqueadero' => 0,
+                        'responsable' => $usuarioCreador,
+                        'usr_dominio' => null
+                )); 
+
+                array_push($I_EMPRESA_VISITANTE ,array(
+
+                    'id_empresa_visitante' => $ID,
+                    'id_visitante' => $ID ,
+                    'id_empresa' => $idempresa,
+                    'activo' => 'S',
+                    'usuario_creacion' =>  $usuarioCreador,
+                    'fecha_creacion' => now(),
+                    'usuario_actualizacion' =>  $usuarioCreador,
+                    'fecha_actualizacion' => now()
+
+                )) ;
+
+                //Registro nuevo
+                        //insertamos los permisos para cada visitante en la sede actual
+                for($j = 0; $j < count($arrayPermisos); $j++){
+    
+                    array_push($I_PERMISO , array (
+                        'id_permiso' => DB::table('ohxqc_permisos')->max('id_permiso')+1,
+                        'id_empresa_visitante' => $ID,
+                        'id_ubicacion' =>  $arrayPermisos[$j],
+                        'id_horario' => 8, //DIA HORARIO ESPECIAL
+                        'identificacion_responsable' =>  $v->identificacion,
+                        'fecha_inicio' => is_null($v->fecha_inicio)?now():$v->fecha_inicio,
+                        'fecha_fin' =>  is_null($v->fecha_fin)?now():$v->fecha_fin,
+                        'activo' => 'S',
+                        'usuario_creacion' => 'admin',
+                        'fecha_creacion' => now(),
+                        'usuario_actualizacion' => 'admin',
                         'fecha_actualizacion' => now()
-                    ]);
-                    //insertamos los permisos para cada visitante en la sede actual
-                    for($j = 0; $j < count($arrayPermisos); $j++){
-                            DB::table('ohxqc_permisos')->insert([
-                            'id_permiso' => DB::table('ohxqc_permisos')->max('id_permiso')+1,
-                            'id_empresa_visitante' => $idNuevoVisitante,
-                            'id_ubicacion' =>  $arrayPermisos[$j],
-                            'id_horario' => 8, //DIA HORARIO ESPECIAL
-                            'identificacion_responsable' =>  $v->identificacion,
-                            'fecha_inicio' => is_null($v->fecha_inicio)?now():$v->fecha_inicio,
-                            'fecha_fin' =>  is_null($v->fecha_fin)?now():$v->fecha_fin,
-                            'activo' => 'S',
-                            'usuario_creacion' => 'admin',
-                            'fecha_creacion' => now(),
-                            'usuario_actualizacion' => 'admin',
-                            'fecha_actualizacion' => now()
-                        ]);
-                       
-                    }
+                    ) );
+                }
             }
 
+             
+
         }
+        /**Ejecucion de Los Insert */
+        DB::table('ohxqc_visitantes')->insert($I_VISTANTE);
+        DB::table('ohxqc_empresas_visitante')->insert($I_EMPRESA_VISITANTE);
+        DB::table('ohxqc_permisos')->insert($I_PERMISO);
     }
 
     public function validarExcel($urlDocumento, $idSolicitud)
@@ -1422,11 +1480,11 @@ class RegistroVisitanteController extends Controller
                                 return "error, la fecha de ingreso no debe ser mayor a la fecha final, en las celdas D".$i." y E".$i;            
                             }
                         }
-                    
+                        $arrayDocumentos = array();
                         for ($i=2; $i < count($arrayIdentidades)+2 ; $i++) { 
-                    
-                        $inserta = DB::table('ohxqc_documentos_solicitud')->insert([
-                                'id_registro' => DB::table('ohxqc_documentos_solicitud')->max('id_registro')+1,
+                            $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_seq'::regclass)");
+                            array_push($arrayDocumentos, array(
+                                'id_registro' => $idmaxi[0]->nextval,
                                 'tipo_identificacion' => $arrayTiposDocu[$i],
                                 'identificacion' => $arrayIdentidades[$i],
                                 'nombre' => $arrayNombres[$i],
@@ -1437,9 +1495,9 @@ class RegistroVisitanteController extends Controller
                                 'usuario_creacion' => auth()->user()->name,
                                 'fecha_creacion' => now(),
                                 'estado' => isset($arrayEstados[$i])?$arrayEstados[$i]:'A'
-                            ]);
-                            if($inserta){ $guardado = true;}else{ $guardado = false; }
+                            ));
                         }
+                        $guardado = DB::table('ohxqc_documentos_solicitud')->insert($arrayDocumentos);
                         if($guardado){
                             return "ok, los visitantes han sido guardados.";
                         }else{
