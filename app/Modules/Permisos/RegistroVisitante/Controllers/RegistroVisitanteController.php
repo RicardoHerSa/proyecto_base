@@ -355,6 +355,8 @@ class RegistroVisitanteController extends Controller
                                            
                                         
                                     }else{
+                                        $arrayNotifica = array();
+                                        $arraySedesNotifica = array();
                                         $entraSede++;
                                         //si no hay info de esta sede, se debe aprobar  inmediatamente
                                             $this->solicitudID = $idSolicitud;
@@ -391,6 +393,7 @@ class RegistroVisitanteController extends Controller
                                                 'estado' => 'A',
                                                 'sede_id' => $request->input('sede'.$j)
                                             ));
+
                                            /* DB::table('ohxqc_historico_solicitud')->insert([
                                                 'id_his' =>  DB::table('ohxqc_historico_solicitud')->max('id_his')+1,
                                                 'id_solicitud' => $idSolicitud,
@@ -406,9 +409,10 @@ class RegistroVisitanteController extends Controller
                                             RegistroVisitanteController::agregarVisitantes($idSolicitud,$empVisi,$request->input('sede'.$j));
     
                                             //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
-    
-                                        $correo = User::where('id',auth()->user()->id)->get();
-                                        Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede'.$j),$tipoIngreso ));
+                                            $correo = User::where('id',auth()->user()->id)->get();
+                                            array_push($arrayNotifica, $correo);
+                                            array_push($arraySedesNotifica, $request->input('sede'.$j));
+                                       
                                     }
 
                                     
@@ -417,6 +421,9 @@ class RegistroVisitanteController extends Controller
                                     //var_dump($guardarSolicitudPorAprobar);
                                     DB::table('ohxqc_solicitud_por_aprobar')->insert($guardarSolicitudPorAprobar);
                                     DB::table('ohxqc_historico_solicitud')->insert($guardarHistorico);
+                                    for ($i=0; $i < sizeof($arrayNotifica) ; $i++) { 
+                                        Notification::send($arrayNotifica[$i], new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "",$arraySedesNotifica[$i],$tipoIngreso ));
+                                    }
     
                                     //se valida si todas las sedes fueron aprobadas inmediatamente porque no tenian config en la maestra, y de ser asi, retornamos avisando
                                      if($entraSede == $cantidadSedes+1){

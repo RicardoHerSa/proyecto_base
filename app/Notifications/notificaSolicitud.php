@@ -78,8 +78,8 @@ class notificaSolicitud extends Notification implements ShouldQueue
 
             return (new MailMessage)
             ->subject('Solicitud #'.$this->idSolicitud.' Aprobada - Sede: '.$nombreSede.'.')
-            ->greeting('Hola')
-            ->line('Le informamos que la solicitud de ingreso #'.$this->idSolicitud.' para la sede '.$nombreSede.' ha sido aprobada.')
+            ->greeting('Apreciado Solicitante')
+            ->line('El Sistema Integral Control de Acceso (SICA) le informa que la solicitud #'.$this->idSolicitud.' para la sede '.$nombreSede.' ha sido aprobada por el área de seguridad en el trabajo / área de Seguridad Corporativa.')
             ->line('Detalles de la solicitud: ')
             ->line('Solicitante: '.$this->solicitante)
             ->line('Labor a realizar: '.$this->labor)
@@ -89,8 +89,8 @@ class notificaSolicitud extends Notification implements ShouldQueue
          }else{
             return (new MailMessage)
             ->subject('Solicitud #'.$this->idSolicitud.' Rechazada - Sede: '.$nombreSede.'.')
-            ->greeting('Hola')
-            ->line('Le informamos que la solicitud de ingreso #'.$this->idSolicitud.' para la sede '.$nombreSede.' ha sido rechazada.')
+            ->greeting('Apreciado Solicitante')
+            ->line('El Sistema Integral Control de Acceso (SICA) le informa que la solicitud #'.$this->idSolicitud.' para la sede '.$nombreSede.' ha sido rechazada por el área de seguridad en el trabajo / área de Seguridad Corporativa.')
             ->line('Detalles de la solicitud: ')
             ->line('Solicitante: '.$this->solicitante)
             ->line('Labor a realizar: '.$this->labor)

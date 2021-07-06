@@ -89,15 +89,12 @@
                     <h5>Formulario Solicitud de Ingreso  </h5>
                 </div>
                 <div class="card-body">
-                    <p style="color:red" class="card-text">SEÑOR SOLICITANTE:  Recuerde que los trabajos en alturas debe tener:</p>
-                   <ul>
-                       <li>Certificado medico de aptitud (Este no debe exceder un año).</li>
-                       <li>Certificado de entrenamiento en alturas (Este no debe exceder un año).</li>
-                       <li>Certificado del coordinador de trabajo en alturas.</li>
-                       <li>Formato del permiso de trabajo en alturas.</li>
-                       <li>Paso a paso de la actividad que van a realizar.</li>
-                       <li>Para trabajos con: Redes Electricas, Espacios Confinados, Trabajo en Caliente y de mas de alto riesgo, comunicarse con el área de SST de su empresa.</li>
-                   </ul>
+                    <p style="color:red" class="card-text">Señor solicitante tener en cuenta:</p>
+                    <h6>SOLICITUD INGRESO CONTRATISTA</h6>
+                    <p>Comunicarse con el área de seguridad y salud en el trabajo de su empresa para validar la documentación necesaria para el proceso.</p>
+                    <p>Recuerde que las solicitudes se deben gestionar <b style="font-weight: 600;
+                        color: black;">72 Horas antes del ingreso</b>.</p>
+                  
                 </div>
             </div>
 
@@ -138,7 +135,7 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <strong style="color:red">NOTA: </strong><span style="color:red"> En el campo de identificación por favor ingresar el número sin puntos, comas o separación decimal.</span>
+                        <strong style="color:red">NOTA: </strong><span style="color:red"> En el campo de identificación por favor ingresar el número sin separación decimal (. ,).</span>
                     </div>
                 </div>
             </div>
@@ -254,7 +251,7 @@
                                    </div>
                                    <div class="col-xs-12 col-md-2 col-lg-2">
                                        <div class="form-group">
-                                           <label for="cedula1">Indetificación: </label>
+                                           <label for="cedula1">Identificación: </label>
                                            <input id="cedula1" class="form-control" type="text" name="cedula1">
                                        </div>
                                    </div>

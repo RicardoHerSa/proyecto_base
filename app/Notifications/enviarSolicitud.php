@@ -73,6 +73,9 @@ class enviarSolicitud extends Notification implements ShouldQueue
          }
          $listado = implode(',', $arrayColabora);
 
+         $nombreVisitante = DB::table('ohxqc_tipos_visitante')->select('nombre')->where('id_tipo_visitante', $this->tipoVi)->get();
+
+         $nombreVisitante = $nombreVisitante[0]->nombre;
        
         if($this->tipo == 1){
             if(strlen($this->validador) > 0){
@@ -97,8 +100,8 @@ class enviarSolicitud extends Notification implements ShouldQueue
        
                 return (new MailMessage)
                 ->subject('Solicitud #'. $this->idSolicitud.' para aprobar nuevo visitante')
-                ->greeting('Hola')
-                ->line('Según el flujo al que perteneces, has recibido este correo para poder validar la solicitud número: '.$this->idSolicitud)
+                ->greeting('Apreciado Aprobador SG-SST / Seguridad Corporativa')
+                ->line('El Sistema Integral Control de Acceso (SICA) le informa que la solicitud #'.$this->idSolicitud.' se encuentra en estado PENDIENTE para aprobación')
                 ->line('Solicitante: '.$this->solicitante)
                 ->line('Labor a realizar: '.$this->labor)
                 ->line('Integrantes: '.$listado."...")
@@ -110,8 +113,8 @@ class enviarSolicitud extends Notification implements ShouldQueue
             }else{
                 return (new MailMessage)
                 ->subject('Solicitud #'. $this->idSolicitud.' para aprobar nuevo visitante')
-                ->greeting('Hola')
-                ->line('Según el flujo al que perteneces, has recibido este correo para poder validar la solicitud número: '.$this->idSolicitud)
+                ->greeting('Apreciado Aprobador SG-SST / Seguridad Corporativa')
+                ->line('El Sistema Integral Control de Acceso (SICA) le informa que la solicitud #'.$this->idSolicitud.' se encuentra en estado PENDIENTE para aprobación')
                 ->line('Solicitante: '.$this->solicitante)
                 ->line('Labor a realizar: '.$this->labor)
                 ->line('Integrantes: '.$listado."...")
@@ -122,10 +125,12 @@ class enviarSolicitud extends Notification implements ShouldQueue
         }else if($this->tipo == 2){
             return (new MailMessage)
             ->subject('Solicitud #'. $this->idSolicitud.' Enviada a Aprobación')
-            ->greeting('Hola')
-            ->line('Su solicitud de número: '.$this->idSolicitud.', ha sido enviada para la respectiva validación; le estaremos notificando por este mismo medio el estado de la misma.')
+            ->greeting('Apreciado Solicitante')
+            ->line('El Sistema Integral Control de Acceso (SICA) le informa que se ha abierto la solicitud #'.$this->idSolicitud.', y se envió para su aprobación.')
+            ->line('Tipo de Ingreso: '.$nombreVisitante)
             ->line('Solicitante: '.$this->solicitante)
             ->line('Labor a realizar: '.$this->labor)
+            ->action('Ver detalle ', url('http://127.0.0.1:8000/detallesdesolicitud/'.$this->idSolicitud.'/'.$this->tipoVi.'/'.$this->sede.'/P'))
             ->salutation('Cordialmente:');
         }else{
             $nivelValidador = DB::table('ohxqc_config_solicitud_empresas')
@@ -154,9 +159,10 @@ class enviarSolicitud extends Notification implements ShouldQueue
    
             return (new MailMessage)
             ->subject('Notificación Solicitud #'. $this->idSolicitud.' - '.$nombreSede)
-            ->greeting('Hola')
-            ->line('Su solicitud de número: '.$this->idSolicitud.', ha sido validada en el flujo #'.$flujoDe.' por '.auth()->user()->name.' y enviada al flujo #'.$siguiente.'.')
+            ->greeting('Apreciado Solicitante')
+            ->line('El Sistema Integral Control de Acceso (SICA) le informa que su solicitud de número: '.$this->idSolicitud.', ha sido validada en el flujo #'.$flujoDe.' por '.auth()->user()->name.' y enviada al flujo #'.$siguiente.'.')
             ->line('Flujo actual: '.$flujoDe.'/'.$flujoHasta)
+            ->action('Ver detalle', url('http://127.0.0.1:8000/detallesdesolicitud/'.$this->idSolicitud.'/'.$this->tipoVi.'/'.$this->sede.'/P'))
             ->salutation('Cordialmente:');
         }
       
