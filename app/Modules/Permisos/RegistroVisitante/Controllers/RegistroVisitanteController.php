@@ -408,7 +408,7 @@ class RegistroVisitanteController extends Controller
                                             //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
     
                                         $correo = User::where('id',auth()->user()->id)->get();
-                                        Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede'.$j) ));
+                                        Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede'.$j),$tipoIngreso ));
                                     }
 
                                     
@@ -519,7 +519,7 @@ class RegistroVisitanteController extends Controller
                                         //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
         
                                        $correo = User::where('id',auth()->user()->id)->get();
-                                       Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede')));
+                                       Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede'), $tipoIngreso));
                                            return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
         
                                    }else{
@@ -824,11 +824,11 @@ class RegistroVisitanteController extends Controller
         $correos = User::whereIn('email', $users)->limit(1)->get();
         
         //envía correo a los del primer flujo
-        Notification::send($correos, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor, 1));
+        Notification::send($correos, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor, 1,'', $sedeId, $empVisi, $tipoIngreso));
         //envía correo al solicitante avisando el registro de la solicitud
         if($envioMultiple == 0){
             $correo = User::where('id', auth()->user()->id)->limit(1)->get();
-            Notification::send($correo, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor, 2));   
+            Notification::send($correo, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor, 2,'', $sedeId, $empVisi, $tipoIngreso));   
         }
         echo true;
     }
@@ -844,16 +844,14 @@ class RegistroVisitanteController extends Controller
             
         //consultar nivel de este usuario
         $consultNivel = DB::table('ohxqc_config_solicitud_empresas')
-                                    ->select('nivel')
-                                    ->where('usuario_aprobador_id', '=', auth()->user()->id)
-                                    ->where('empresa_id', '=', $empresaId)
-                                    ->where('tipo_visitante', '=', $tipoVisi)
-                                    ->where('sede_id', '=', $sedeID)
-                                    ->get();
+        ->select('nivel')
+        ->where('usuario_aprobador_id', '=', auth()->user()->id)
+        ->where('empresa_id', '=', $empresaId)
+        ->where('tipo_visitante', '=', $tipoVisi)
+        ->where('sede_id', '=', $sedeID)
+        ->get();
                                     
-        foreach($consultNivel as $consul){
-            $nivel = $consul->nivel;
-        }
+         $nivel = $consultNivel[0]->nivel;
 
         //Si fue aprobada
         if($request->input('aprobar') != null){
@@ -878,9 +876,8 @@ class RegistroVisitanteController extends Controller
                 ->where('id_solicitud', '=', $idSolicitud)
                 ->where('sede_id', '=', $sedeID)
                 ->get();
-                foreach($nivelFinal as $f){
-                    $ultimoNivel = $f->niveles;
-                }
+                
+                $ultimoNivel = $nivelFinal[0]->niveles;
 
                 //comparar si el siguiente nivel es mayor al ultimo nivel, para saber si ya termina el flujo
                 if($siguienteNivel > $ultimoNivel){
@@ -924,16 +921,15 @@ class RegistroVisitanteController extends Controller
                             $labor = $info->labor_realizar;
                         }
                         
-                        Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID));
+                        Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID, $tipoVisi));
 
                          //Envia correo tambien al solicitante
                           $correo = DB::table('ohxqc_solicitud_ingreso')->select('id_solicitante')->where('id_solicitud',$idSolicitud)->get();
-                          foreach($correo as $corr){
-                              $correo = $corr->id_solicitante;
-                          }
+                        
+                          $correo = $correo[0]->id_solicitante;
 
                           $user = User::where('id',$correo)->get();
-                          Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID));
+                          Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID, $tipoVisi));
 
                         //Enviar correo a las porterias de la sede: ohxqc_correos_porterias
                         $consultaCorreosPorterias = DB::table('ohxqc_correos_porterias')->select('correo')->where('sede_id', $sedeID)->get();
@@ -995,7 +991,10 @@ class RegistroVisitanteController extends Controller
                         $labor = $info->labor_realizar;
                     }
                    
-                    Notification::send($correos, new enviarSolicitud($token,$idSolicitud, $solicitante, $labor, 1));
+                    Notification::send($correos, new enviarSolicitud($token,$idSolicitud, $solicitante, $labor, 1, auth()->user()->name, $sedeID, $empresaId, $tipoVisi));
+
+                    //Ir informando al solicitante en que flujo va:
+                    Notification::send($correos, new enviarSolicitud($token,$idSolicitud, $solicitante, $labor, 3, auth()->user()->name, $sedeID, $empresaId, $tipoVisi));
 
                     if($infoEmpresa){
                         return redirect()->back()->with('corrEnv', 'Solicitud aprobada y enviada al siguiente aprobador');
@@ -1087,7 +1086,7 @@ class RegistroVisitanteController extends Controller
                 $labor = $info->labor_realizar;
             }
             
-            Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", $comentario, $sedeID));
+            Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", $comentario, $sedeID, $tipoVisi));
 
             //Envia correo tambien al solicitante
             $correo = DB::table('ohxqc_solicitud_ingreso')->select('correo_solicitante')->where('id_solicitud',$idSolicitud)->get();
@@ -1095,7 +1094,7 @@ class RegistroVisitanteController extends Controller
                 $correo = $corr->correo_solicitante;
             }
             $user = User::where('email',$correo)->get();
-            Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", "", $sedeID));
+            Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", "", $sedeID, $tipoVisi));
 
             return redirect()->back()->with('soliRech', 'La solicitud #'.$idSolicitud.', ha sido rechazada.');
             
@@ -1839,7 +1838,8 @@ class RegistroVisitanteController extends Controller
                 "3"=>$detalles->labor_realizar,
                 "4"=>$detalles->descripcion,
                 "5"=>$badge,
-                "6"=>"<td><a href='detallesdesolicitud/$detalles->id_solicitud/$detalles->tipo_visitante/$detalles->sede_id/".substr($detalles->estado, 0,1)."' class='btn btn-primary'><span class='fa fa-eye'></span></a></td>" ,
+                "6"=>$detalles->nivel_actual.'/'.$detalles->niveles,
+                "7"=>"<td><a href='detallesdesolicitud/$detalles->id_solicitud/$detalles->tipo_visitante/$detalles->sede_id/".substr($detalles->estado, 0,1)."' class='btn btn-primary'><span class='fa fa-eye'></span></a></td>" ,
             );
         } 
         $results = array(

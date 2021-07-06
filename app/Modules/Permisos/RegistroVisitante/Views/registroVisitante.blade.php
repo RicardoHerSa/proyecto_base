@@ -148,19 +148,23 @@
         <div class="row mt-2">
             <div class="col-xs-12 col-md-12 col-lg-12">
                     <div class="card">
-                       <div class="float-left ml-3 mt-2">
-                           <button type="button" id="btnAñadirRegistro" onclick="nuevo();" class="btn btn-primary">Añadir</button>
-                           <div class="form-check form-check-inline">
-                               <input type="hidden" value="1" id="tipReg">
-                               <input onchange="tipoRegistroV(this.value)" class="form-check-input" checked type="radio" name="tipoRegistroVisi" id="inlineRadio1" value="RI">
-                               <label class="form-check-label"  for="inlineRadio1">Registro individual</label>
-                           </div>
-                           <div class="form-check form-check-inline">
-                               <input onchange="tipoRegistroV(this.value)" class="form-check-input" type="radio" name="tipoRegistroVisi" id="inlineRadio2" value="RM">
-                               <label class="form-check-label" for="inlineRadio2">Registro masivo</label>
-                           </div>
-                           <input type="hidden" id="primerEliminado" value="n">
-                       </div>
+                        <div class="row mt-2 ml-3">
+                            <div class="col-xs-12 col-md-10 col-lg-10">
+                                <div class="form-check form-check-inline">
+                                    <input type="hidden" value="1" id="tipReg">
+                                    <input onchange="tipoRegistroV(this.value)" class="form-check-input" checked type="radio" name="tipoRegistroVisi" id="inlineRadio1" value="RI">
+                                    <label class="form-check-label"  for="inlineRadio1">Registro individual</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input onchange="tipoRegistroV(this.value)" class="form-check-input" type="radio" name="tipoRegistroVisi" id="inlineRadio2" value="RM">
+                                    <label class="form-check-label" for="inlineRadio2">Registro masivo</label>
+                                </div>
+                                <input type="hidden" id="primerEliminado" value="n">
+                            </div>
+                            <div class="col-xs-12 col-md-2 col-lg-2">
+                                <button type="button" id="btnAñadirRegistro" onclick="nuevo();" class="btn btn-primary ml-5">Añadir</button>
+                            </div>
+                        </div>
                        <div class="card-body" id="anexos">
                            @csrf
                            <input type="hidden" id="cantRegis" value="0" name="cantR">
@@ -316,7 +320,7 @@
                            </div>
                    </div>
            </div>
-   </div>
+        </div>
 
         <!--Sedes a Visitar-->
         <div class="row mt-2">
@@ -325,7 +329,7 @@
                     
                 <div class="card" id="anexarSedes">
                     <div class="card-body">
-                        <h5 class="card-title">Sedes a Visitar: </h5>
+                        {{--<h5 class="card-title">Sedes a Visitar: </h5>--}}
                         <div class="row">
                             <div class="col-xs-12 col-md-4 col-lg-4"></div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
@@ -349,24 +353,28 @@
                            
                             <div class="col-xs-12 col-md-4 col-lg-4">
                                 <div class="float-left  ml-3 mt-2">
-                                    <button style="display: none" id="btnAddSede" type="button" onclick="nuevaSede();" class="btn btn-primary">Añadir</button>
+                                   
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-4 col-lg-4">
                             
-                            <div class="form-group">
-                                <label for="sede" id="lblSede">Seleccione Sede:</label>
-                                <div class="spinner-border text-primary float-right mb-1" style="display: none" role="status" id="bolaCarga">
-                                    <span class="sr-only">Cargando Sedes...</span>
+                                <div class="form-group">
+                                    <label for="sede" id="lblSede">Seleccione Sede:</label>
+                                    <div class="spinner-border text-primary float-right mb-1" style="display: none" role="status" id="bolaCarga">
+                                        <span class="sr-only">Cargando Sedes...</span>
+                                    </div>
+                                    <select name="sede" id="sede" class="form-control">
+                                        <option value="0">Sin registros</option>
+                                    </select>
+                                        <input type="hidden" id="primerEliminadoSelect" value="n">
+                                        <input type="hidden" id="cantRegisSelect" value="0" name="cantRSelects">
                                 </div>
-                                <select name="sede" id="sede" class="form-control">
-                                    <option value="0">Sin registros</option>
-                                </select>
-                                    <input type="hidden" id="primerEliminadoSelect" value="n">
-                                    <input type="hidden" id="cantRegisSelect" value="0" name="cantRSelects">
-                            </div>
+                              
                             
-                        </div>
+                          </div>
+                          <div class="col-xs-12 col-md-2 col-lg-2 mt-4">
+                            <button style="display: none" id="btnAddSede" type="button" onclick="nuevaSede();" class="btn btn-primary">Añadir</button>
+                         </div>
                     </div>
 
                         <div id="selects" style="display: none">

@@ -19,13 +19,14 @@ class notificaSolicitud extends Notification implements ShouldQueue
     protected $tipoValidacion;
     protected $causa;
     protected $sede;
+    protected $tipoVi;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($idSolicitud,$solicitante,$labor,$tipoValidacion, $causa, $sede)
+    public function __construct($idSolicitud,$solicitante,$labor,$tipoValidacion, $causa, $sede, $tipoVi)
     {
         $this->idSolicitud = $idSolicitud;
         $this->solicitante = $solicitante;
@@ -33,6 +34,7 @@ class notificaSolicitud extends Notification implements ShouldQueue
         $this->tipoValidacion = $tipoValidacion;
         $this->causa = $causa;
         $this->sede = $sede;
+        $this->tipoVi = $tipoVi;
     }
 
     /**
@@ -60,12 +62,20 @@ class notificaSolicitud extends Notification implements ShouldQueue
         ->where('ubi.id_ubicacion', $this->sede)
         ->get();
 
-        
-        foreach($consultanombreSede as $sed){
-            $nombreSede = $sed->descripcion;
-        }
+        $nombreSede = $consultanombreSede[0]->descripcion;
+
+
+        $nivelSolicitud = DB::table('ohxqc_solicitud_por_aprobar')
+        ->select('niveles')
+        ->where('id_solicitud', $this->idSolicitud)
+        ->where('tipo_visitante', $this->tipoVi)
+        ->where('sede_id', $this->sede)
+        ->get();
+
+        $flujoHasta = $nivelSolicitud[0]->niveles;
 
          if($this->tipoValidacion == "A"){
+
             return (new MailMessage)
             ->subject('Solicitud #'.$this->idSolicitud.' Aprobada - Sede: '.$nombreSede.'.')
             ->greeting('Hola')
@@ -73,6 +83,8 @@ class notificaSolicitud extends Notification implements ShouldQueue
             ->line('Detalles de la solicitud: ')
             ->line('Solicitante: '.$this->solicitante)
             ->line('Labor a realizar: '.$this->labor)
+            ->line('Flujo validado: '.$flujoHasta.'/'.$flujoHasta)
+            ->line('Validada por: '.auth()->user()->name.' en el flujo #'.$flujoHasta)
             ->salutation('Cordialmente:');
          }else{
             return (new MailMessage)
@@ -82,6 +94,8 @@ class notificaSolicitud extends Notification implements ShouldQueue
             ->line('Detalles de la solicitud: ')
             ->line('Solicitante: '.$this->solicitante)
             ->line('Labor a realizar: '.$this->labor)
+            ->line('Flujo validado: '.$flujoHasta.'/'.$flujoHasta)
+            ->line('Validada por: '.auth()->user()->name.' en el flujo #'.$flujoHasta)
             ->line('')
             ->line('Causa: '.$this->causa)
             ->salutation('Cordialmente:');

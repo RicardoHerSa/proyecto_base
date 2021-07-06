@@ -45,6 +45,7 @@
                                 <th>Labor a Realizar</th>
                                 <th>Sede a Visitar</th>
                                 <th>Estado</th>
+                                <th>Flujo Actual</th>
                                 <th>Visualizar</th>
                             </tr>
                         </thead>
@@ -81,6 +82,7 @@
                                         <th>#Solicitud</th>
                                         <th>Fecha Registro</th>
                                         <th>Estado General</th>
+                                        <th>Flujo Actual</th>
                                         <th>¿Validada en mi nivel?</th>
                                         <th>Visualizar</th>
                                     </tr>
@@ -125,7 +127,7 @@
                                                     @break
                                                     
                                             @endswitch
-                                          
+                                                <td>{{$noti['nivel_actual'].'/'.$noti['niveles']}}</td>
                                                 <td>{{$respuesta}}</td>
                                          
                                             <td><a onclick="visto({{$noti['id_solicitud']}})" href="{{$noti['url']}}" class="btn btn-primary"><i class="fa fa-eye"></i></a></td>
@@ -541,7 +543,7 @@
                     <div class="col-xs-12 col-md-12 col-lg-12">
                         <div class="card" id="anexarSedes">
                             <div class="card-body">
-                                <h4 class="card-title text-center">Sedes a Visitar </h4>
+                               {{-- <h4 class="card-title text-center">Sedes a Visitar </h4>--}} 
                                 <hr>
                                 <br>
                                 <div class="row mb-3">

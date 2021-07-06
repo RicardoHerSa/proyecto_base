@@ -18,19 +18,27 @@ class enviarSolicitud extends Notification implements ShouldQueue
     protected $solicitante;
     protected $labor;
     protected $tipo;
+    protected $validador;
+    protected $sede;
+    protected $empresa;
+    protected $tipoVi;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($token,$idSolicitud,$solicitante,$labor,$tipo)
+    public function __construct($token,$idSolicitud,$solicitante,$labor,$tipo,$validador,$sede,$empresa,$tipoVi)
     {
         $this->token = $token;
         $this->idSolicitud = $idSolicitud;
         $this->solicitante = $solicitante;
         $this->labor = $labor;
         $this->tipo = $tipo;                    //indicará si el correo es para los del flujo o el solicitante
+        $this->validador = $validador;          //indicará quien ha validado la solicitud
+        $this->sede = $sede;                    //Para obtener el nivel del validador
+        $this->empresa = $empresa;              //Para obtener el nivel del validador
+        $this->tipoVi = $tipoVi;                //Para obtener el nivel del validador
     }
 
     /**
@@ -65,24 +73,90 @@ class enviarSolicitud extends Notification implements ShouldQueue
          }
          $listado = implode(',', $arrayColabora);
 
+       
         if($this->tipo == 1){
-            return (new MailMessage)
-            ->subject('Solicitud #'. $this->idSolicitud.' para aprobar nuevo visitante')
-            ->greeting('Hola')
-            ->line('Según el flujo al que perteneces, has recibido este correo para poder validar la solicitud número: '.$this->idSolicitud)
-            ->line('Solicitante: '.$this->solicitante)
-            ->line('Labor a realizar: '.$this->labor)
-            ->line('Integrantes: '.$listado."...")
-            ->line('Para ver mas detalles, pulsa a continuación:')
-            ->action('Validar solicitud ', url($url))
-            ->salutation('Cordialmente:');
-        }else{
+            if(strlen($this->validador) > 0){
+                $nivelValidador = DB::table('ohxqc_config_solicitud_empresas')
+                ->select('nivel')
+                ->where('usuario_aprobador_id', auth()->user()->id)
+                ->where('tipo_visitante', $this->tipoVi)
+                ->where('sede_id', $this->sede)
+                ->where('empresa_id', $this->empresa)
+                ->get();
+       
+                $flujoDe = $nivelValidador[0]->nivel;
+       
+                $nivelSolicitud = DB::table('ohxqc_solicitud_por_aprobar')
+                ->select('niveles')
+                ->where('id_solicitud', $this->idSolicitud)
+                ->where('tipo_visitante', $this->tipoVi)
+                ->where('sede_id', $this->sede)
+                ->get();
+       
+                $flujoHasta = $nivelSolicitud[0]->niveles;
+       
+                return (new MailMessage)
+                ->subject('Solicitud #'. $this->idSolicitud.' para aprobar nuevo visitante')
+                ->greeting('Hola')
+                ->line('Según el flujo al que perteneces, has recibido este correo para poder validar la solicitud número: '.$this->idSolicitud)
+                ->line('Solicitante: '.$this->solicitante)
+                ->line('Labor a realizar: '.$this->labor)
+                ->line('Integrantes: '.$listado."...")
+                ->line('Flujo validado: '.$flujoDe.'/'.$flujoHasta)
+                ->line('Validada por: '.auth()->user()->name.' en el flujo #'.$flujoDe)
+                ->line('Para ver mas detalles, pulsa a continuación:')
+                ->action('Validar solicitud ', url($url))
+                ->salutation('Cordialmente:');
+            }else{
+                return (new MailMessage)
+                ->subject('Solicitud #'. $this->idSolicitud.' para aprobar nuevo visitante')
+                ->greeting('Hola')
+                ->line('Según el flujo al que perteneces, has recibido este correo para poder validar la solicitud número: '.$this->idSolicitud)
+                ->line('Solicitante: '.$this->solicitante)
+                ->line('Labor a realizar: '.$this->labor)
+                ->line('Integrantes: '.$listado."...")
+                ->line('Para ver mas detalles, pulsa a continuación:')
+                ->action('Validar solicitud ', url($url))
+                ->salutation('Cordialmente:');
+            }
+        }else if($this->tipo == 2){
             return (new MailMessage)
             ->subject('Solicitud #'. $this->idSolicitud.' Enviada a Aprobación')
             ->greeting('Hola')
             ->line('Su solicitud de número: '.$this->idSolicitud.', ha sido enviada para la respectiva validación; le estaremos notificando por este mismo medio el estado de la misma.')
             ->line('Solicitante: '.$this->solicitante)
             ->line('Labor a realizar: '.$this->labor)
+            ->salutation('Cordialmente:');
+        }else{
+            $nivelValidador = DB::table('ohxqc_config_solicitud_empresas')
+            ->select('nivel')
+            ->where('usuario_aprobador_id', auth()->user()->id)
+            ->where('tipo_visitante', $this->tipoVi)
+            ->where('sede_id', $this->sede)
+            ->where('empresa_id', $this->empresa)
+            ->get();
+   
+            $flujoDe = $nivelValidador[0]->nivel;
+            $siguiente = $flujoDe + 1;
+   
+            $nivelSolicitud = DB::table('ohxqc_solicitud_por_aprobar')
+            ->select('niveles')
+            ->where('id_solicitud', $this->idSolicitud)
+            ->where('tipo_visitante', $this->tipoVi)
+            ->where('sede_id', $this->sede)
+            ->get();
+   
+            $flujoHasta = $nivelSolicitud[0]->niveles;
+
+            $nombreSede = DB::table('ohxqc_ubicaciones')->select('descripcion')->where('id_ubicacion', $this->sede)->get();
+
+            $nombreSede = $nombreSede[0]->descripcion;
+   
+            return (new MailMessage)
+            ->subject('Notificación Solicitud #'. $this->idSolicitud.' - '.$nombreSede)
+            ->greeting('Hola')
+            ->line('Su solicitud de número: '.$this->idSolicitud.', ha sido validada en el flujo #'.$flujoDe.' por '.auth()->user()->name.' y enviada al flujo #'.$siguiente.'.')
+            ->line('Flujo actual: '.$flujoDe.'/'.$flujoHasta)
             ->salutation('Cordialmente:');
         }
       
