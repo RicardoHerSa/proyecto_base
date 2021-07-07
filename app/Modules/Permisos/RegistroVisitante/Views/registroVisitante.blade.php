@@ -995,7 +995,7 @@
             if(solicitante.length == 0 ||  tipoIngreso == 0 || tipoIngreso == 2 && empresaC.length == 0 ){
                 alert('Campos Incompletos - Información Solicitante');
                 return false;
-            }else if(tipReg == 1 && cedula.length == 0 || tipReg == 1 && nombre.length == 0 || tipReg == 1 && fechaIngreso == '' || tipReg == 1 && fechaFinal == '' || tipReg == 1 && anexo == ''){
+            }else if(tipReg == 1 && cedula.length == 0 || tipReg == 1 && nombre.length == 0 || tipReg == 1 && fechaIngreso == '' || tipReg == 1 && fechaFinal == ''){
                 alert('Campos Incompletos - Ingreso Colaboradores');
                 return false;
             }else if(tipReg == 2 && cedula.length == 0 || tipReg == 2 && nombre.length == 0 || tipReg == 2 && anexo == '' || tipReg == 2 && comprimidoCola == ''){
