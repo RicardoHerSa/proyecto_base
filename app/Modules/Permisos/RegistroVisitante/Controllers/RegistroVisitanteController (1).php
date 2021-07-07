@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Modules\Permisos\RegistroVisitante\Controllers;
-//require '/app/Portal_Sica/vendor/autoload.php';
-require '../vendor\autoload.php';
+require '/app/Portal_Sica/vendor/autoload.php';
+//require '../vendor\autoload.php';
 
 use DB;
 use App\Http\Controllers\Controller;
@@ -310,7 +310,7 @@ class RegistroVisitanteController extends Controller
                             /**Se consulta en la tabla de configuración ohxqc_config_solicitud_empresas, el max nivel
                             para conocer el flujo maximo por el cual viajará la solicitud. Si hay mas de una sede, se insertará en la tabla ohxqc_solicitud_por_aprobar, la cantidad de solicitudes  para c/u de las sedes
                             **/
-                           
+                      
                             if($cantidadSedes > 0){
                                 $j = ""; //la primer sede tiene como name="sede", la segunda name="sede1"
                                 $entraSede = 0;
@@ -326,8 +326,8 @@ class RegistroVisitanteController extends Controller
                                     ->where('sede_id', '=', $request->input('sede'.$j))
                                     ->max('nivel');
                                    // echo $infoNivel." ---> ".$request->input('sede'.$j)."->fin<br> ";
-                                   $arrayNotifica = array();
-                                   $arraySedesNotifica = array();
+                                    $arrayNotifica = array();
+                                    $arraySedesNotifica = array();
                                     if($infoNivel > 0){
                                         $niveles = $infoNivel;
                                         //al obtener resultados se debe insertar en la tabla ohxqc_solicitud_por_aprobar
@@ -338,7 +338,7 @@ class RegistroVisitanteController extends Controller
                                          $this->sedeId = $request->input('sede'.$j);
                                          $token = RegistroVisitanteController::getLinkSubscribe();
 
-                                         $idmaxi = DB::select("select nextval('ohxqc_solicitud_por_aprobar_id_apr_seq'::regclass)");
+                                        $idmaxi = DB::select("select nextval('ohxqc_solicitud_por_aprobar_id_apr_seq'::regclass)");
                                         array_push($guardarSolicitudPorAprobar, array(
                                             'id_apr' =>  $idmaxi[0]->nextval,
                                             'id_solicitud' => $idSolicitud,
@@ -357,6 +357,8 @@ class RegistroVisitanteController extends Controller
                                            
                                         
                                     }else{
+                                        
+                                       
                                         $entraSede++;
                                         //si no hay info de esta sede, se debe aprobar  inmediatamente
                                             $this->solicitudID = $idSolicitud;
@@ -418,11 +420,13 @@ class RegistroVisitanteController extends Controller
                                     
                                     if($i == 0 ){$j = 1;}else{$j = $i+1;}
                                 }
-                                    //var_dump($guardarSolicitudPorAprobar);
+                                    
+                                
+                                //var_dump($guardarSolicitudPorAprobar);
                                     DB::table('ohxqc_solicitud_por_aprobar')->insert($guardarSolicitudPorAprobar);
                                     DB::table('ohxqc_historico_solicitud')->insert($guardarHistorico);
                                     for ($i=0; $i < sizeof($arrayNotifica) ; $i++) { 
-                                        Notification::send($arrayNotifica[$i], new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "",$arraySedesNotifica[$i],$tipoIngreso, 2 ));
+                                        Notification::send($arrayNotifica[$i], new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "",$arraySedesNotifica[$i],$tipoIngreso ));
                                     }
     
                                     //se valida si todas las sedes fueron aprobadas inmediatamente porque no tenian config en la maestra, y de ser asi, retornamos avisando
@@ -450,6 +454,7 @@ class RegistroVisitanteController extends Controller
                                      $this->tipoIngres = $tipoIngreso;
                                      $this->sedeId = $request->input('sede');
                                      $token = RegistroVisitanteController::getLinkSubscribe();
+
                                      $idmaxi = DB::select("select nextval('ohxqc_solicitud_por_aprobar_id_apr_seq'::regclass)");
 
                                     $guardarSolicitudPorAprobar = DB::table('ohxqc_solicitud_por_aprobar')->insert([
@@ -525,7 +530,7 @@ class RegistroVisitanteController extends Controller
                                         //Enviar el correo avisando unicamente al solicitante, porque no hay flujo
         
                                        $correo = User::where('id',auth()->user()->id)->get();
-                                       Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede'), $tipoIngreso, 2));
+                                       Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede'), $tipoIngreso));
                                            return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
         
                                    }else{
@@ -864,7 +869,7 @@ class RegistroVisitanteController extends Controller
             //Insertamos la información en el histórico
             $idmaxi = DB::select("select nextval('ohxqc_historico_solicitud_id_his_seq'::regclass)");
             $guardaHistorico = DB::table('ohxqc_historico_solicitud')->insert([
-                'id_his' => $idmaxi[0]->nextval,
+                'id_his' =>  $idmaxi[0]->nextval,
                 'id_solicitud' => $idSolicitud,
                 'nivel_aprobador' => $nivel,
                 'usuario_aprobador' =>  auth()->user()->id,
@@ -923,12 +928,12 @@ class RegistroVisitanteController extends Controller
                         $correos = User::whereIn('id',$users)->get();
                         //consulto la info de esta solicitud 
                         $infSolicitud = DB::table('ohxqc_solicitud_ingreso')->select('solicitante','labor_realizar')->where('id_solicitud',$idSolicitud)->get();
+                        foreach($infSolicitud as $info){
+                            $solicitante = $info->solicitante;
+                            $labor = $info->labor_realizar;
+                        }
                         
-                            $solicitante = $infSolicitud[0]->solicitante;
-                            $labor = $infSolicitud[0]->labor_realizar;
-                        
-                        
-                        Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID, $tipoVisi, 1));
+                        Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID, $tipoVisi));
 
                          //Envia correo tambien al solicitante
                           $correo = DB::table('ohxqc_solicitud_ingreso')->select('id_solicitante')->where('id_solicitud',$idSolicitud)->get();
@@ -936,12 +941,14 @@ class RegistroVisitanteController extends Controller
                           $correo = $correo[0]->id_solicitante;
 
                           $user = User::where('id',$correo)->get();
-                          Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID, $tipoVisi, 2));
+                          Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $sedeID, $tipoVisi));
 
                         //Enviar correo a las porterias de la sede: ohxqc_correos_porterias
                         $consultaCorreosPorterias = DB::table('ohxqc_correos_porterias')->select('correo')->where('sede_id', $sedeID)->get();
+                      
                         foreach($consultaCorreosPorterias as $porteros){
-                            $correos_porteria = explode(',', $porteros->correo);
+
+                            $correos_porteria =  explode( ',' , $porteros->correo );
                             Notification::route('mail', $correos_porteria)
                             ->notify(new porterias($idSolicitud,$solicitante,$sedeID, $labor));
                         }
@@ -958,42 +965,40 @@ class RegistroVisitanteController extends Controller
                             'nivel_actual' => $siguienteNivel
                     ]);
 
-                  
+                    //despues enviaría el nuevo correo a las personas del siguiente nivel
+                    $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
+                    ->select('correo_usuario', 'usuario_aprobador_id')
+                    ->where('empresa_id', '=', $empresaId)
+                    ->where('nivel', '=', $siguienteNivel)
+                    ->where('tipo_visitante', '=', $tipoVisi)
+                    ->where('sede_id', '=', $sedeID)
+                    ->get();
+                   
+                    $users = Array();
+                    $i = 0;
                      //Obtengo nuevamente el token de esta solicitud
                      $infoToken = DB::table('ohxqc_solicitud_por_aprobar')->select('token')->where('id_solicitud',$idSolicitud)->where('sede_id', '=', $sedeID)->get();
-                     
-                     $token = $infoToken[0]->token;
+                     foreach($infoToken as $tok){
+                         $token = $tok->token;
+                     }
+                   foreach($infoEmpresa as $inf){
+                        $users[$i] = $inf->correo_usuario;
+                        $i++;
+                         //guardar la notificacion de esta solicitud ohxqc_notificacion_solicitud
+                        DB::table('ohxqc_notificacion_solicitud')->insert([
+                            'id_reg' => DB::table('ohxqc_notificacion_solicitud')->max('id_reg')+1,
+                            'id_aprobador' => $inf->usuario_aprobador_id,
+                            'id_solicitante' => $idSolicitud,
+                            'id_sede' => $sedeID,
+                            'id_empresa' => $empresaId,
+                            'id_tipov' => $tipoVisi,
+                            'url' => $token,
+                            'nivel_aprobador' => $siguienteNivel,
+                            'visto' => 'N'
+                        ]);
+                    }
 
-                      //despues enviaría el nuevo correo a las personas del siguiente nivel
-                      $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
-                      ->select(DB::raw('distinct usuario_aprobador_id'))
-                      ->where('empresa_id', '=', $empresaId)
-                      ->where('tipo_visitante', '=', $tipoVisi)
-                      ->where('sede_id', '=', $sedeID)
-                      ->where('nivel' , $siguienteNivel)
-                      ->get();
-                  
-                      $users = Array();
-                      $i = 0;
-                    foreach($infoEmpresa as $inf){
-                            $users[$i] = $inf->usuario_aprobador_id;
-                            $i++;
-                                //guardar la notificacion de esta solicitud ohxqc_notificacion_solicitud
-                                DB::table('ohxqc_notificacion_solicitud')->insert([
-                                'id_reg' => DB::table('ohxqc_notificacion_solicitud')->max('id_reg')+1,
-                                'id_aprobador' => $inf->usuario_aprobador_id,
-                                'id_solicitante' => $idSolicitud,
-                                'id_sede' => $sedeID,
-                                'id_empresa' => $empresaId,
-                                'id_tipov' => $tipoVisi,
-                                'url' => $token,
-                                'nivel_aprobador' => $siguienteNivel,
-                                'visto' => 'N'
-                                ]);
-                        }
-                    
-                    $correos = User::whereIn('id',$users)->get();
-                     
+                    $correos = User::whereIn('email',$users)->get();
                     //consulto la info de esta solicitud para enviar por correo al nuevo nivel.
                     $infSolicitud = DB::table('ohxqc_solicitud_ingreso')->select('solicitante','labor_realizar')->where('id_solicitud',$idSolicitud)->get();
                     foreach($infSolicitud as $info){
@@ -1004,12 +1009,7 @@ class RegistroVisitanteController extends Controller
                     Notification::send($correos, new enviarSolicitud($token,$idSolicitud, $solicitante, $labor, 1, auth()->user()->name, $sedeID, $empresaId, $tipoVisi));
 
                     //Ir informando al solicitante en que flujo va:
-                    $infoSolicitante = DB::table('ohxqc_solicitud_ingreso')
-                    ->select('id_solicitante')
-                    ->where('id_solicitud', '=', $idSolicitud)
-                    ->get();
-                    $infoSolicitan = User::where('id',$infoSolicitante[0]->id_solicitante)->get();
-                    Notification::send($infoSolicitan, new enviarSolicitud($token,$idSolicitud, $solicitante, $labor, 3, auth()->user()->name, $sedeID, $empresaId, $tipoVisi));
+                    Notification::send($correos, new enviarSolicitud($token,$idSolicitud, $solicitante, $labor, 3, auth()->user()->name, $sedeID, $empresaId, $tipoVisi));
 
                     if($infoEmpresa){
                         return redirect()->back()->with('corrEnv', 'Solicitud aprobada y enviada al siguiente aprobador');
@@ -1027,14 +1027,14 @@ class RegistroVisitanteController extends Controller
             //si no fue aprobada
               //Obtengo nuevamente el token de esta solicitud
               $infoToken = DB::table('ohxqc_solicitud_por_aprobar')->select('token')->where('id_solicitud',$idSolicitud)->where('sede_id', '=', $sedeID)->get();
-              
-              $token = $infoToken[0]->token;
-              
+              foreach($infoToken as $tok){
+                  $token = $tok->token;
+              }
               
              //Insertamos la información en el histórico
              $idmaxi = DB::select("select nextval('ohxqc_historico_solicitud_id_his_seq'::regclass)");
              $guardaHistorico = DB::table('ohxqc_historico_solicitud')->insert([
-                'id_his' => $idmaxi[0]->nextval,
+                'id_his' =>  $idmaxi[0]->nextval,
                 'id_solicitud' => $idSolicitud,
                 'nivel_aprobador' => $nivel,
                 'usuario_aprobador' =>  auth()->user()->id,
@@ -1102,7 +1102,7 @@ class RegistroVisitanteController extends Controller
                 $labor = $info->labor_realizar;
             }
             
-            Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", $comentario, $sedeID, $tipoVisi, 1));
+            Notification::send($correos, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", $comentario, $sedeID, $tipoVisi));
 
             //Envia correo tambien al solicitante
             $correo = DB::table('ohxqc_solicitud_ingreso')->select('correo_solicitante')->where('id_solicitud',$idSolicitud)->get();
@@ -1110,7 +1110,7 @@ class RegistroVisitanteController extends Controller
                 $correo = $corr->correo_solicitante;
             }
             $user = User::where('email',$correo)->get();
-            Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", "", $sedeID, $tipoVisi, 2));
+            Notification::send($user, new notificaSolicitud($idSolicitud, $solicitante, $labor, "R", "", $sedeID, $tipoVisi));
 
             return redirect()->back()->with('soliRech', 'La solicitud #'.$idSolicitud.', ha sido rechazada.');
             
@@ -1291,8 +1291,8 @@ class RegistroVisitanteController extends Controller
     public function validarExcel($urlDocumento, $idSolicitud)
     {
         
-        $ruta = storage_path('app\public/'.$urlDocumento);
-       // $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
+        //$ruta = storage_path('app\public/'.$urlDocumento);
+        $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
         $reader->setReadDataOnly(TRUE);
         
@@ -1918,8 +1918,7 @@ class RegistroVisitanteController extends Controller
                 "3"=>$detalles->labor_realizar,
                 "4"=>$detalles->descripcion,
                 "5"=>$badge,
-                "6" =>$detalles->nivel_actual.'/'.$detalles->niveles,
-                "7"=>"<td><a href='detallesdesolicitud/$detalles->id_solicitud/$detalles->tipo_visitante/$detalles->sede_id/".substr($detalles->estado, 0,1)."' class='btn btn-primary'><span class='fa fa-eye'></span></a></td>" ,
+                "6"=>"<td><a href='detallesdesolicitud/$detalles->id_solicitud/$detalles->tipo_visitante/$detalles->sede_id/".substr($detalles->estado, 0,1)."' class='btn btn-primary'><span class='fa fa-eye'></span></a></td>" ,
             );
         } 
         $results = array(

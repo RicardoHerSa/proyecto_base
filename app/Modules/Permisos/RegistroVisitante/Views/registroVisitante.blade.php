@@ -90,9 +90,10 @@
                 </div>
                 <div class="card-body">
                     <p style="color:red" class="card-text">Señor solicitante tener en cuenta:</p>
-                    <h6>SOLICITUD INGRESO CONTRATISTA</h6>
-                    <p>Comunicarse con el área de seguridad y salud en el trabajo de su empresa para validar la documentación necesaria para el proceso.</p>
-                    <p>Recuerde que las solicitudes se deben gestionar <b style="font-weight: 600;
+                    <p>Para el <b style="font-weight: 600;
+                        color: black;">INGRESO DE CONTRATISTAS</b> debe comunicarse con el área de seguridad y salud en el trabajo de su empresa para <b style="font-weight: 600;
+                        color: black;">validar la documentación necesaria para el proceso</b>.
+                    Recuerde que las solicitudes se deben gestionar <b style="font-weight: 600;
                         color: black;">72 Horas antes del ingreso</b>.</p>
                   
                 </div>

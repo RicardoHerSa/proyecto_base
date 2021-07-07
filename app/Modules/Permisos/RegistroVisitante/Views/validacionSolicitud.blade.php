@@ -336,7 +336,7 @@
                         <div class="col-xs-12 col-md-12 col-lg-12">
                             <div class="card" id="anexarSedes">
                                 <div class="card-body">
-                                    <h4 class="card-title text-center">Sedes a Visitar </h4>
+                                    <h4 class="card-title text-center">Sede a Visitar </h4>
                                     <hr>
                                     <br>
                                     <div class="row mb-3">
@@ -354,12 +354,12 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($sedesVisitar as $sede)
+                                           {{-- @foreach ($sedesVisitar as $sede) --}} 
                                                     <tr>
-                                                        <td>{{$sede->descripcion}}</td>
+                                                        <td>{{$nombreSedeTitulo}}</td>
                                                     
                                                     </tr>
-                                            @endforeach
+                                            {{-- @endforeach --}}
                                         </tbody>
                                     </table>
                                     
@@ -561,12 +561,13 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($sedesVisitar as $sede)
+                                        {{--@foreach ($sedesVisitar as $sede)--}}
                                                 <tr>
-                                                    <td>{{$sede->descripcion}}</td>
+                                                    <td>{{$nombreSedeTitulo}}</td>
+                                                    {{--<td>{{$sede->descripcion}}</td>--}}
                                                 
                                                 </tr>
-                                        @endforeach
+                                        {{--@endforeach--}}
                                     </tbody>
                                 </table>
                                 

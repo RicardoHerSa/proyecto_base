@@ -20,13 +20,14 @@ class notificaSolicitud extends Notification implements ShouldQueue
     protected $causa;
     protected $sede;
     protected $tipoVi;
+    protected $destinatario;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($idSolicitud,$solicitante,$labor,$tipoValidacion, $causa, $sede, $tipoVi)
+    public function __construct($idSolicitud,$solicitante,$labor,$tipoValidacion, $causa, $sede, $tipoVi, $destinatario)
     {
         $this->idSolicitud = $idSolicitud;
         $this->solicitante = $solicitante;
@@ -35,6 +36,7 @@ class notificaSolicitud extends Notification implements ShouldQueue
         $this->causa = $causa;
         $this->sede = $sede;
         $this->tipoVi = $tipoVi;
+        $this->destinatario = $destinatario;;
     }
 
     /**
@@ -74,11 +76,16 @@ class notificaSolicitud extends Notification implements ShouldQueue
 
         $flujoHasta = $nivelSolicitud[0]->niveles;
 
-         if($this->tipoValidacion == "A"){
+        if($this->destinatario == 1){
+            $destino = "Apreciado Aprobador SG-SST / Seguridad Corporativa";
+        }else{
+            $destino = "Apreciado Solicitante";
+        }
 
+         if($this->tipoValidacion == "A"){
             return (new MailMessage)
             ->subject('Solicitud #'.$this->idSolicitud.' Aprobada - Sede: '.$nombreSede.'.')
-            ->greeting('Apreciado Solicitante')
+            ->greeting($destino)
             ->line('El Sistema Integral Control de Acceso (SICA) le informa que la solicitud #'.$this->idSolicitud.' para la sede '.$nombreSede.' ha sido aprobada por el área de seguridad en el trabajo / área de Seguridad Corporativa.')
             ->line('Detalles de la solicitud: ')
             ->line('Solicitante: '.$this->solicitante)
@@ -89,7 +96,7 @@ class notificaSolicitud extends Notification implements ShouldQueue
          }else{
             return (new MailMessage)
             ->subject('Solicitud #'.$this->idSolicitud.' Rechazada - Sede: '.$nombreSede.'.')
-            ->greeting('Apreciado Solicitante')
+            ->greeting($destino)
             ->line('El Sistema Integral Control de Acceso (SICA) le informa que la solicitud #'.$this->idSolicitud.' para la sede '.$nombreSede.' ha sido rechazada por el área de seguridad en el trabajo / área de Seguridad Corporativa.')
             ->line('Detalles de la solicitud: ')
             ->line('Solicitante: '.$this->solicitante)
