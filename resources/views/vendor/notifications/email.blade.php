@@ -42,7 +42,8 @@
 {{-- Salutation --}}
 @if (! empty($salutation))
 <samp>{{ $salutation }}</samp><br>
-@lang('Carvajal')
+{{--@lang('Carvajal')--}}
+<img src="{{ asset('/resources/sica.png') }}" width="140px" alt ='SICA' >
 @else
 @lang('Regards')<br>
 {{ config('app.name') }}

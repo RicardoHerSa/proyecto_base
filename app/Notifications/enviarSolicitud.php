@@ -130,7 +130,7 @@ class enviarSolicitud extends Notification implements ShouldQueue
             ->line('Tipo de Ingreso: '.$nombreVisitante)
             ->line('Solicitante: '.$this->solicitante)
             ->line('Labor a realizar: '.$this->labor)
-            ->action('Ver detalle ', url('http://127.0.0.1:8000/detallesdesolicitud/'.$this->idSolicitud.'/'.$this->tipoVi.'/'.$this->sede.'/P'))
+            ->action('Ver detalle ', url('detallesdesolicitud/'.$this->idSolicitud.'/'.$this->tipoVi.'/'.$this->sede.'/P'))
             ->salutation('Cordialmente:');
         }else{
             $nivelValidador = DB::table('ohxqc_config_solicitud_empresas')
@@ -162,7 +162,7 @@ class enviarSolicitud extends Notification implements ShouldQueue
             ->greeting('Apreciado Solicitante')
             ->line('El Sistema Integral Control de Acceso (SICA) le informa que su solicitud de número: '.$this->idSolicitud.', ha sido validada en el flujo #'.$flujoDe.' por '.auth()->user()->name.' y enviada al flujo #'.$siguiente.'.')
             ->line('Flujo actual: '.$flujoDe.'/'.$flujoHasta)
-            ->action('Ver detalle', url('http://127.0.0.1:8000/detallesdesolicitud/'.$this->idSolicitud.'/'.$this->tipoVi.'/'.$this->sede.'/P'))
+            ->action('Ver detalle', url('detallesdesolicitud/'.$this->idSolicitud.'/'.$this->tipoVi.'/'.$this->sede.'/P'))
             ->salutation('Cordialmente:');
         }
       
