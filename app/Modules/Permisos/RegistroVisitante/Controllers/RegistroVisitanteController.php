@@ -798,36 +798,36 @@ class RegistroVisitanteController extends Controller
     public function enviarCorreo($url, $empVisi, $tipoIngreso,$sedeId,$idSolicitud, $solicitante, $labor, $envioMultiple)
     {
         //var_dump($this->infoDeEmpresa);
-        
-        $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
-        ->select('nivel','correo_usuario', 'usuario_aprobador_id')
-        ->where('empresa_id', '=', $empVisi)
-        ->where('tipo_visitante', '=', $tipoIngreso)
-        ->where('sede_id', '=', $sedeId)
-        ->get();
 
-        $users = Array();
-        
-        $i = 0;
-         foreach($infoEmpresa as $inf){
-            if($inf->nivel == 1){
-                $users[$i] = $inf->correo_usuario;
-                $i++;
-                //guardar la notificacion de esta solicitud ohxqc_notificacion_solicitud
-                DB::table('ohxqc_notificacion_solicitud')->insert([
-                    'id_reg' => DB::table('ohxqc_notificacion_solicitud')->max('id_reg')+1,
-                    'id_aprobador' => $inf->usuario_aprobador_id,
-                    'id_solicitante' => $idSolicitud,
-                    'id_sede' => $sedeId,
-                    'id_empresa' => $empVisi,
-                    'id_tipov' => $tipoIngreso,
-                    'url' => $url,
-                    'nivel_aprobador' => 1,
-                    'visto' => 'N'
-                ]);
-            }
-        }
-        $correos = User::whereIn('email', $users)->limit(1)->get();
+         //despues enviaría el nuevo correo a las personas del siguiente nivel
+         $infoEmpresa = DB::table('ohxqc_config_solicitud_empresas')
+         ->select(DB::raw('distinct usuario_aprobador_id'), 'nivel')
+         ->where('empresa_id', '=', $empVisi)
+         ->where('tipo_visitante', '=', $tipoIngreso)
+         ->where('sede_id', '=', $sedeId)
+         ->get();
+     
+         $users = Array();
+         $i = 0;
+       foreach($infoEmpresa as $inf){
+               $users[$i] = $inf->usuario_aprobador_id;
+               $i++;
+                   //guardar la notificacion de esta solicitud ohxqc_notificacion_solicitud
+                   DB::table('ohxqc_notificacion_solicitud')->insert([
+                   'id_reg' => DB::table('ohxqc_notificacion_solicitud')->max('id_reg')+1,
+                   'id_aprobador' => $inf->usuario_aprobador_id,
+                   'id_solicitante' => $idSolicitud,
+                   'id_sede' => $sedeId,
+                   'id_empresa' => $empVisi,
+                   'id_tipov' => $tipoIngreso,
+                   'url' => $url,
+                   'nivel_aprobador' => 1,
+                   'visto' => 'N'
+                   ]);
+           }
+       
+       $correos = User::whereIn('id',$users)->get();
+
         
         //envía correo a los del primer flujo
         Notification::send($correos, new enviarSolicitud($url,$idSolicitud, $solicitante, $labor, 1,'', $sedeId, $empVisi, $tipoIngreso));
