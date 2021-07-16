@@ -19,14 +19,14 @@ Route::group(['middleware' => 'web'], function () {
         Route::post('consultasedesemp', 'RegistroVisitanteController@consultaSedes')->name('consulta.sedesd')->middleware('authorization');
         Route::post('empresavisitar', 'RegistroVisitanteController@empresaVisitar')->name('empresavisitar')->middleware('authorization');
 
-        Route::get('actualizarSedes/{sedes}', 'RegistroVisitanteController@actualizarSedes')->name('actualizarSedes');
+        Route::get('actualizarSedes/{sedes}', 'RegistroVisitanteController@actualizarSedes')->name('actualizarSedes')->middleware('authorization');;
 
         //Pantalla para ver solicitudes creadas por el usuario
-        Route::get('missolicitudes', 'RegistroVisitanteController@misSolicitudes');
-        Route::get('detallesdesolicitud/{idSolicitud}/{tipoIngreso}/{sedeId}/{estado}', 'RegistroVisitanteController@verSolicitud');
-        Route::get('consultrmissolicitudes', 'RegistroVisitanteController@consultarMisSolicitudes')->name('consultar.missolicitudes');
-        Route::post('asignarvisto', 'RegistroVisitanteController@asignarVisto')->name('asignar.visto');
-        Route::post('filtrarestado', 'RegistroVisitanteController@filtrarEstado')->name('filtrar.estado');
+        Route::get('missolicitudes', 'RegistroVisitanteController@misSolicitudes')->middleware('authorization');;
+        Route::get('detallesdesolicitud/{idSolicitud}/{tipoIngreso}/{sedeId}/{estado}', 'RegistroVisitanteController@verSolicitud')->middleware('authorization');;
+        Route::get('consultrmissolicitudes', 'RegistroVisitanteController@consultarMisSolicitudes')->name('consultar.missolicitudes')->middleware('authorization');;
+        Route::post('asignarvisto', 'RegistroVisitanteController@asignarVisto')->name('asignar.visto')->middleware('authorization');;
+        Route::post('filtrarestado', 'RegistroVisitanteController@filtrarEstado')->name('filtrar.estado')->middleware('authorization');;
 
     });
      

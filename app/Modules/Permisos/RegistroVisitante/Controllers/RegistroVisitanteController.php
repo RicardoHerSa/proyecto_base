@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Modules\Permisos\RegistroVisitante\Controllers;
-//require '/app/Portal_Sica/vendor/autoload.php';
-require '../vendor\autoload.php';
+require '/app/Portal_Sica/vendor/autoload.php';
+//require '../vendor\autoload.php';
 
 use DB;
 use App\Http\Controllers\Controller;
@@ -54,8 +54,8 @@ class RegistroVisitanteController extends Controller
        //Los tipos de visitante se condicionan de acuerdo a los permisos del usuario basado en si es gestor externo y en el id de la orgnizción a la que pertenece
        /** Condiciones:
         * 1.SI EL ID DE ORGANIZACION ES UNA EMPRESA DEL GRUPO CARVAJAL Y ES GESTOR EXTERNO, puede ver todos los tipos de ingreso.
-        2.SI EL ID DE ORGANIZACION ES UNA EMPRESA DEL GRUPO CARVAJAL Y  NO  ES GESTOR EXTERNO , se habilitan solo los tipos de ingreso:  Visitante, Contratista.
-        3.SI EL ID DE ORGANIZACION NO ES UNA EMPRESA DEL GRUPO CARVAJAL Y  ES GESTOR EXTERNO, se habilitn solo los tipos de ingreso: USUARIO EMPRESA EXTERNA  
+        * 2.SI EL ID DE ORGANIZACION ES UNA EMPRESA DEL GRUPO CARVAJAL Y  NO  ES GESTOR EXTERNO , se habilitan solo los tipos de ingreso:  Visitante, Contratista.
+      *  3.SI EL ID DE ORGANIZACION NO ES UNA EMPRESA DEL GRUPO CARVAJAL Y  ES GESTOR EXTERNO, se habilitn solo los tipos de ingreso: USUARIO EMPRESA EXTERNA  
         ***/
        $consultaGrupo = DB::table('ohxqc_empresas')
        ->select('tipo_empresa')
@@ -117,6 +117,7 @@ class RegistroVisitanteController extends Controller
             $nombreIngreso = "EMPRESA EXTERNA";
         }
         $tipoId = $request->input('tipoId');
+        
         if($request->input('empresaContratista') != null){
          $empresaContratista = $request->input('empresaContratista');
         }else{
@@ -328,6 +329,7 @@ class RegistroVisitanteController extends Controller
                                    // echo $infoNivel." ---> ".$request->input('sede'.$j)."->fin<br> ";
                                    $arrayNotifica = array();
                                    $arraySedesNotifica = array();
+                                   array_push($arraySedesNotifica, $request->input('sede'));
                                     if($infoNivel > 0){
                                         $niveles = $infoNivel;
                                         //al obtener resultados se debe insertar en la tabla ohxqc_solicitud_por_aprobar
@@ -336,8 +338,11 @@ class RegistroVisitanteController extends Controller
                                          $this->solicitudID = $idSolicitud;
                                          $this->tipoIngres = $tipoIngreso;
                                          $this->sedeId = $request->input('sede'.$j);
-                                         $token = RegistroVisitanteController::getLinkSubscribe();
 
+                                         
+                                       
+                                         $token = RegistroVisitanteController::getLinkSubscribe();
+ 
                                          $idmaxi = DB::select("select nextval('ohxqc_solicitud_por_aprobar_id_apr_seq'::regclass)");
                                         array_push($guardarSolicitudPorAprobar, array(
                                             'id_apr' =>  $idmaxi[0]->nextval,
@@ -412,6 +417,20 @@ class RegistroVisitanteController extends Controller
                                             $correo = User::where('id',auth()->user()->id)->get();
                                             array_push($arrayNotifica, $correo);
                                             array_push($arraySedesNotifica, $request->input('sede'.$j));
+
+
+                                        $consultaCorreosPorterias = DB::table('ohxqc_correos_porterias')->select('correo')->where('sede_id', $request->input('sede'.$j))->get();
+                                       
+                                        foreach($consultaCorreosPorterias as $porteros){
+                                            $correos_porteria = explode(',', $porteros->correo);
+                                            Notification::route('mail', $correos_porteria)
+                                            ->notify(new porterias($idSolicitud,$solicitante,$request->input('sede'.$j), $labor));
+                                        }
+
+
+
+
+
                                        
                                     }
 
@@ -421,13 +440,19 @@ class RegistroVisitanteController extends Controller
                                     //var_dump($guardarSolicitudPorAprobar);
                                     DB::table('ohxqc_solicitud_por_aprobar')->insert($guardarSolicitudPorAprobar);
                                     DB::table('ohxqc_historico_solicitud')->insert($guardarHistorico);
-                                    for ($i=0; $i < sizeof($arrayNotifica) ; $i++) { 
-                                        Notification::send($arrayNotifica[$i], new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "",$arraySedesNotifica[$i],$tipoIngreso, 2 ));
+                                    
+
+                                    
+                                    for ($i=0; $i < sizeof($arraySedesNotifica) ; $i++) { 
+                                        Notification::send($arrayNotifica, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "",$arraySedesNotifica[$i],$tipoIngreso, 2 ));
                                     }
+
+                                    
     
                                     //se valida si todas las sedes fueron aprobadas inmediatamente porque no tenian config en la maestra, y de ser asi, retornamos avisando
                                      if($entraSede == $cantidadSedes+1){
                                         // echo "<br> AMBAS ENTRARON SIN CONFIG";
+
                                         return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
                                      }else{
                                         return redirect('registro-visitante')->with('msj', 'Solicitud registrada correctamente. Número del caso: '.$idSolicitud);
@@ -526,8 +551,23 @@ class RegistroVisitanteController extends Controller
         
                                        $correo = User::where('id',auth()->user()->id)->get();
                                        Notification::send($correo, new notificaSolicitud($idSolicitud, $solicitante, $labor, "A", "", $request->input('sede'), $tipoIngreso, 2));
-                                           return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
+                                    
+                                       $consultaCorreosPorterias = DB::table('ohxqc_correos_porterias')->select('correo')->where('sede_id', $request->input('sede'))->get();
+                                       
+                                       dd($consultaCorreosPorterias);
+                                       
+                                       foreach($consultaCorreosPorterias as $porteros){
+                                           $correos_porteria = explode(',', $porteros->correo);
+                                           Notification::route('mail', $correos_porteria)
+                                           ->notify(new porterias($idSolicitud,$solicitante,$request->input('sede'), $labor));
+                                       }
+
+                                    
+                                    
+                                     return redirect('registro-visitante')->with('msj', 'Solicitud registrada y aprobada correctamente. Número del caso: '.$idSolicitud);
         
+                                    
+                                           
                                    }else{
                                        //si no se guarda la solicitud, redireccionamos el error
                                        return redirect('registro-visitante')->with('errSoliApro', 'No se pudo guardar la solicitud para aprobar');
@@ -1291,8 +1331,8 @@ class RegistroVisitanteController extends Controller
     public function validarExcel($urlDocumento, $idSolicitud)
     {
         
-        $ruta = storage_path('app\public/'.$urlDocumento);
-       // $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
+      //  $ruta = storage_path('app\public/'.$urlDocumento);
+        $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
         $reader->setReadDataOnly(TRUE);
         
