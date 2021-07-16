@@ -6,6 +6,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Notifiable;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 
@@ -57,20 +59,45 @@ class porterias extends Notification
         $nombreSede = $sedeN[0]->descripcion;
 
         //tabla de detalles
-        $tabla = DB::table('ohxqc_documentos_solicitud')->select('identificacion','nombre')->where('solicitud_id',$this->idSolicitud)->get();
+        $tabla = DB::table('ohxqc_documentos_solicitud')->select('identificacion','nombre' ,'fecha_inicio' , 'fecha_fin')->where('solicitud_id',$this->idSolicitud)->get();
         $registros = '';
-        $registros.=  '<table class="table">
+        $registros.=  '<style>
+#customers {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+#customers td, #customers th {
+  border: 1px solid #ddd;
+  padding: 4px;
+  font-size: 12px;
+}
+#customers tr:nth-child(even) {background: #E7E7E7; }
+#customers th {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  text-align: left;
+  background-color: #005387;
+  color: white;
+  font-size: 12px;
+}
+</style>
+<table id="customers" >
         <thead>
             <tr>
                 <th scope="col">Identificación</th>
                 <th scope="col">Nombre</th>
+                <th scope="col">Fecha Inicio</th>
+                <th scope="col">Fecha Fin</th>
             </tr>
         </thead>';
         $registros.= '<tbody>';
             foreach($tabla as $tb){
                 $registros.='<tr> 
-                                    <th>'.$tb->identificacion.'</th>
-                                    <th>'.$tb->nombre.'</th>
+                                    <td>'.$tb->identificacion.'</td>
+                                    <td>'.$tb->nombre.'</td>
+                                    <td>'.$tb->fecha_inicio.'</td>
+                                    <td>'.$tb->fecha_fin.'</td>
                             </tr>';
             }
         $registros.= '</tbody>
@@ -83,9 +110,9 @@ class porterias extends Notification
                     ->line('Detalles de la solicitud: ')
                     ->line('Solicitante: '.$this->solicitante)
                     ->line('Labor a realizar: '.$this->labor)
-                    ->line(new HtmlString(
-                        $registros
-                    ))
+                    ->line(new HtmlString($registros ))
+                    ->line(new HtmlString('<br>' ))
+                    ->line(new HtmlString('<br>' ))
                     ->salutation('Cordialmente:');
     }
 
