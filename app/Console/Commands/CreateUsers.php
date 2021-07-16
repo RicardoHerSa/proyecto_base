@@ -3,10 +3,10 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\ManagerUser;
+use App\Services\CreateUsersSica;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
-use App\Notifications\createUsersProgram;
+use App\Notifications\ReporteSoporte;
 use App\Models\User\User;
 class CreateUsers extends Command
 {
@@ -22,7 +22,7 @@ class CreateUsers extends Command
      *
      * @var string
      */
-    protected $description = 'Crea los usuarios nuevos en Mi portal del colaborador ';
+    protected $description = 'Crea los usuarios nuevos en SICA ';
 
     /**
      * Create a new command instance.
@@ -43,15 +43,19 @@ class CreateUsers extends Command
     {
         
         
-        $user =  new ManagerUser();
-        $user->CeateUser();
-        $user->UpdateJefeSinEstructura();
-        $user->updatelda();
-        $user->disableusers();
+        $user =  new CreateUsersSica();
+        $Total = $user->getUserTotal();
         
-        $user = User::where('id', DB::raw('44891'))->first();
-        Notification::send($user, new createUsersProgram(''));
-        //echo 'Finalizo el Proceso';
+      
+      if ($Total == 0) {
+
+        Notification::route('mail',['david.guanga@carvajal.com'])->notify(new ReporteSoporte( $Total ,'OK'));
+
+       }else{
+
+        Notification::route('mail',['david.guanga@carvajal.com'])->notify(new ReporteSoporte( $Total ,'ERROR'));
+      }
+        
            
         
 
