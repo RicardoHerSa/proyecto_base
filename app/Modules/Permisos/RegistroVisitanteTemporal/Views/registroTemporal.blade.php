@@ -77,17 +77,11 @@
                 border-left:0px; font-size:20px;padding:10px">
                     <div class="col-xs-12 col-md-6 col-lg-6">
                        
-                       {{-- @if ($row[4]=='S')
-                              <img style="width: 80%" class="img-thumbnail" src="{{asset('../storage/app/public/fotos/').'/'.$cedula.'.jpg'}}" alt="">
-                       @else
-                             <img  class="img-thumbnail" src='{{asset('../storage/app/public/fotos/person.png')}}'  style="width: 60%" class="img-thumbnail" > 
-                       @endif --}}
-                   
-                       @if (!file_exists(asset('../storage/app/public/fotos/').'/'.$cedula.'.jpg'))
-                             <img class="img-thumbnail" src="{{asset('../storage/app/public/fotos/').'/'.$cedula.'.jpg'}}" alt="">
-                         @else
-                            <img class="img-thumbnail" src='{{asset('../storage/app/public/fotos/person.png')}}'  style="width: 60%" class="img-thumbnail" >  
-                      @endif
+                    
+                   					  
+					  <img  
+							onerror="this.src='{{'/fotos/fotos/person.png'}}'"
+							title="{{$nombre}}" class='img-thumbnail' src='{{ asset('/fotos/fotos/'.$cedula.'.jpg') }}' width='50%' />
 
                       
                     </div>
@@ -109,7 +103,7 @@
                     border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                     <tr>	 
                         <td width='200' height='200'> 
-                        <img src='{{asset('../storage/app/public/fotos/person.png')}}'  width='190'> 
+                        <img src='{{asset('fotos/fotos/person.png')}}'  width='190'> 
                         </td> 
                         <td width='500' height='100'>
                         <table>

@@ -1,11 +1,11 @@
-@include('layouts.app', ['modulo' => 'unitario'])
-<div class="container">
+@include('layouts.app', ['modo' => 'a'])
+<div clasass="container">
         @if (isset($opcion) && $opcion == 'lista')
             <div class="row mt-3">
                 <div class="col-xs-12 col-md-12 col-lg-12">
                     @if ($aprobador)
                         <div class="float-right">
-                            <a data-toggle="modal" data-target="#modalNotificacion" href="#"><i class="fa fa-bell" aria-hidden="true"></i><span> ({{$cantNotificaciones}}) </span> Por validar</a>
+                            <a data-toggle="modal" data-target="#modalNotificacion" data-id="1" href="#"><i class="fa fa-bell" aria-hidden="true"></i><span> ({{$cantNotificaciones}}) </span> Por validar</a>
                         </div>
                     @endif
                     <h4 class="text-center">Mis Solicitudes</h4>
@@ -36,7 +36,7 @@
                             </div>
                         </div>
                     </div>
-                    <table  id="tblistado" class="table table-light table-hover">
+                    <table  id="tbDatos" class="table table-light table-hover">
                         <thead class="thead-light">
                             <tr>
                                 <th>#Solicitud</th>
@@ -76,7 +76,7 @@
                                 </div>
                                 
                             </div>
-                            <table  id="tblistado" class="table table-light">
+                            <table  id="tbDatos" class="table table-light">
                                 <thead class="thead-dark">
                                     <tr>
                                         <th>#Solicitud</th>
@@ -315,7 +315,7 @@
                                                         <td>{{$docu->estado}}</td>
                                                         @if (!$tipoR == "RM")
                                                             @if (strlen($docu->url_documento) > 0)
-                                                                <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
+                                                                <td><a class="btn btn-primary" href="{{'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
                                                             @else
                                                                 <td><span class="badge badge-secondary"></span></td>
                                                             @endif
@@ -486,8 +486,8 @@
                                             <tr>
                                                 <td>{{$arrayDatosEmpresa[0]}}</td>
                                                 <td>{{$arrayDatosEmpresa[1]}}</td>
-                                                <td><a style="width: 40px" class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[2]}}" target="_blank" download><i class="fa fa-download"></i></a></td>
-                                                <td><a style="width: 40px" class="btn btn-primary" href="{{asset('storage').'/'.$arrayDatosEmpresa[3]}}" target="_blank" download><i class="fa fa-download"></i></a></td>
+                                                <td><a style="width: 40px" class="btn btn-primary" href="{{'/'.$arrayDatosEmpresa[2]}}" target="_blank" download><i class="fa fa-download"></i></a></td>
+                                                <td><a style="width: 40px" class="btn btn-primary" href="{{'/'.$arrayDatosEmpresa[3]}}" target="_blank" download><i class="fa fa-download"></i></a></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -521,7 +521,7 @@
                                                     <td>{{$docu->estado}}</td>
                                                     @if ($tipoR != "RM")
                                                         @if (strlen($docu->url_documento) > 0)
-                                                            <td><a class="btn btn-primary" href="{{asset('storage').'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
+                                                            <td><a class="btn btn-primary" href="{{'/'.$docu->url_documento}}" target="_blank" download>Descargar Documento</a></td>
                                                         @else
                                                             <td><span class="badge badge-secondary"></span></td>
                                                         @endif
@@ -768,7 +768,7 @@
     });
     function listar()
     {
-        tabla= $('#tblistado').dataTable(
+        tabla= $('#tbDatos').dataTable(
         {
             language: {  
                 processing: "Procesando...", 
@@ -867,7 +867,7 @@
                     estado = "Rechazado";
                 break;
              }
-            $('#tblistado').dataTable(
+            $('#tbDatos').dataTable(
                 {
                     language: {  
                         processing: "Procesando...", 

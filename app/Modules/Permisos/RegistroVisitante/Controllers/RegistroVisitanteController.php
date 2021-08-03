@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Modules\Permisos\RegistroVisitante\Controllers;
-require '/app/Portal_Sica/vendor/autoload.php';
+require '/APP/Portal_Sica/vendor/autoload.php';
 //require '../vendor\autoload.php';
 
 use DB;
@@ -79,11 +79,13 @@ class RegistroVisitanteController extends Controller
             ->get();
         //Usuario empresa externa
        }else{
+		   
              $tiposVisitante = DB::table('ohxqc_tipos_visitante')
             ->select('id_tipo_visitante', 'nombre')
             ->where('estado', '=', 1)
-            ->where('id_tipo_visitante', '=', 4)
+            ->whereIn('id_tipo_visitante', [4, 5])
             ->get();
+			
        }
      
 
@@ -121,7 +123,7 @@ class RegistroVisitanteController extends Controller
         if($request->input('empresaContratista') != null){
          $empresaContratista = $request->input('empresaContratista');
         }else{
-            $empresaContratista = 0;
+            $empresaContratista = '-';
         }
 
         $horario = 8; //ID Horario especial
@@ -204,7 +206,7 @@ class RegistroVisitanteController extends Controller
                         }else{
                             $urlDocumento = "";
                         }
-                        $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_seq'::regclass)");
+                        $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_id_registro_seq'::regclass)");
                         $guardaDocumento = DB::table('ohxqc_documentos_solicitud')->insert([
                             'id_registro' =>  $idmaxi[0]->nextval,
                             'identificacion' =>  $request->input('cedula'),
@@ -232,7 +234,7 @@ class RegistroVisitanteController extends Controller
                                     $urlDocumento = "";
                                 }
                                 
-                                $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_seq'::regclass)");
+                                $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_id_registro_seq'::regclass)");
                                 array_push($guardaDocumento, array(
                                     'id_registro' => $idmaxi[0]->nextval,
                                     'identificacion' =>  $request->input('cedula'.$i),
@@ -255,7 +257,7 @@ class RegistroVisitanteController extends Controller
                     }else{
                         $urlDocumento = "";
                     }
-                    $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_seq'::regclass)");
+                    $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_id_registro_seq'::regclass)");
                     $guardaDocumento = DB::table('ohxqc_documentos_solicitud')->insert([
                         'id_registro' =>  $idmaxi[0]->nextval,
                         'identificacion' =>  $request->input('cedula'),
@@ -278,7 +280,7 @@ class RegistroVisitanteController extends Controller
                     $cantidadSedes = $request->input('cantRSelects');
                         if($cantidadSedes > 0){
                         //Se recibe la primer sede que es obligatoria y se guarda en la tabla ohxqc_sedes_solicitud
-                        $idmaxi = DB::select("select nextval('ohxqc_sedes_solicitud_seq'::regclass)");
+                        $idmaxi = DB::select("select nextval('ohxqc_sedes_solicitud_id_seq'::regclass)");
                             $guardaSedes = DB::table('ohxqc_sedes_solicitud')->insert([
                                 'id' => $idmaxi[0]->nextval,
                                 'id_sede' => $request->input('sede'),
@@ -287,7 +289,7 @@ class RegistroVisitanteController extends Controller
                            
                             $guardaSedes = array();
                             for($i=1; $i <= $cantidadSedes; $i++){
-                                $idmaxi = DB::select("select nextval('ohxqc_sedes_solicitud_seq'::regclass)");
+                                $idmaxi = DB::select("select nextval('ohxqc_sedes_solicitud_id_seq'::regclass)");
                                 array_push($guardaSedes, array(
                                     'id' => $idmaxi[0]->nextval,
                                     'id_sede' => $request->input('sede'.$i),
@@ -297,7 +299,7 @@ class RegistroVisitanteController extends Controller
                             }
                             DB::table('ohxqc_sedes_solicitud')->insert($guardaSedes);
                         }else{
-                            $idmaxi = DB::select("select nextval('ohxqc_sedes_solicitud_seq'::regclass)");
+                            $idmaxi = DB::select("select nextval('ohxqc_sedes_solicitud_id_seq'::regclass)");
                             $guardaSedes = DB::table('ohxqc_sedes_solicitud')->insert([
                                 'id' => $idmaxi[0]->nextval,
                                 'id_sede' => $request->input('sede'),
@@ -377,7 +379,7 @@ class RegistroVisitanteController extends Controller
                                                 'niveles' => 1,
                                                 'nivel_actual' => 1,
                                                 'estado' => 'Aprobado',
-                                                'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                                'comentario' => 'Aprobado sin flujo ',
                                                 'token' => $token,
                                                 'tipo_visitante'=> $tipoIngreso,
                                                 'sede_id'=> $request->input('sede'.$j),
@@ -394,7 +396,7 @@ class RegistroVisitanteController extends Controller
                                                 'nivel_aprobador' => 1,
                                                 'usuario_aprobador' => auth()->user()->id,
                                                 'fecha_diligenciado' => now(),
-                                                'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                                'comentario' => 'Aprobado sin flujo ',
                                                 'estado' => 'A',
                                                 'sede_id' => $request->input('sede'.$j)
                                             ));
@@ -405,7 +407,7 @@ class RegistroVisitanteController extends Controller
                                                 'nivel_aprobador' => 1,
                                                 'usuario_aprobador' => auth()->user()->id,
                                                 'fecha_diligenciado' => now(),
-                                                'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                                'comentario' => 'Aprobado sin flujo ',
                                                 'estado' => 'A',
                                                 'sede_id' => $request->input('sede'.$j)
                                             ]);*/
@@ -522,7 +524,7 @@ class RegistroVisitanteController extends Controller
                                        'niveles' => 1,
                                        'nivel_actual' => 1,
                                        'estado' => 'Aprobado',
-                                       'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                       'comentario' => 'Aprobado sin flujo ',
                                        'token' => $token,
                                        'tipo_visitante'=> $tipoIngreso,
                                        'sede_id' => $request->input('sede'),
@@ -540,7 +542,7 @@ class RegistroVisitanteController extends Controller
                                         'nivel_aprobador' => 1,
                                         'usuario_aprobador' => auth()->user()->id,
                                         'fecha_diligenciado' => now(),
-                                        'comentario' => 'Aprobado inmediatamente porque no hay configuración de flujos posteriores.',
+                                        'comentario' => 'Aprobado sin flujo ',
                                         'estado' => 'A',
                                         'sede_id' => $request->input('sede')
                                     ]);
@@ -554,7 +556,7 @@ class RegistroVisitanteController extends Controller
                                     
                                        $consultaCorreosPorterias = DB::table('ohxqc_correos_porterias')->select('correo')->where('sede_id', $request->input('sede'))->get();
                                        
-                                       dd($consultaCorreosPorterias);
+                                     //  dd($consultaCorreosPorterias);
                                        
                                        foreach($consultaCorreosPorterias as $porteros){
                                            $correos_porteria = explode(',', $porteros->correo);
@@ -1195,6 +1197,29 @@ class RegistroVisitanteController extends Controller
         ->where('solicitud_id', $idSolicitud)
         ->get();
         
+		/*SEDES DE LA SOLICITUD*/
+		$sedes_solicitud = DB::table('ohxqc_sedes_solicitud')
+        ->select('id_sede')
+        ->where('id_solicitud', $idSolicitud)
+        ->get();
+		
+		$sede_sol = array();
+		foreach($sedes_solicitud as $sedes){ 
+				array_push ($sede_sol, $sedes->id_sede );  
+        }
+		
+		/* Ubicaciones a Elmininar */
+		$ubicaciones_del = DB::table('ohxqc_ubicaciones')
+		->whereNotIn('id_padre', $sede_sol)->get();
+		
+		
+		$Puertas_del = array();
+		foreach($ubicaciones_del as $puerta){ 
+				array_push ($Puertas_del, $puerta->id_ubicacion );  
+        }
+		
+		
+		
         $I_VISTANTE = array();
         $I_EMPRESA_VISITANTE = array();
         $I_PERMISO = array();
@@ -1206,8 +1231,18 @@ class RegistroVisitanteController extends Controller
            
             
             if(count($consultVisitante) > 0){
+				
+				
 
                 $idNuevoVisitante = $consultVisitante[0]->id_visitante;
+				
+				//Elimina  los permisos Actuales que no hacen parte de la nueva solicitud	
+				$delete = DB::table('ohxqc_permisos')
+				->where('id_empresa_visitante', $idNuevoVisitante)
+				->whereIn('id_ubicacion', $Puertas_del)
+                ->delete();
+				
+				
                 //actualiza
                      DB::table('ohxqc_visitantes')->where('id_visitante', $idNuevoVisitante)->update([
                     'fecha_ingreso' =>  $v->fecha_inicio,
@@ -1229,13 +1264,22 @@ class RegistroVisitanteController extends Controller
                     'usuario_actualizacion' =>  $usuarioCreador,
                     'fecha_actualizacion' => now()
                 ]);
+				
+				
 
                 //actualiza permisos
                  //insertamos los permisos para cada visitante en la sede actual
                  
                  for($j = 0; $j < count($arrayPermisos); $j++){
-                     $idmaxi =  DB::select("select nextval('ohxqc_permisos_seq'::regclass)");
-                     DB::table('ohxqc_permisos')->insert([
+                     $idmaxi =  DB::select("select nextval('ohxqc_permisos_id_permiso_seq'::regclass)");
+                     
+					 /** Si ya tiene el permiso lo elimina y lo crea de nuevo  */
+					 $delete = DB::table('ohxqc_permisos')
+					->where('id_empresa_visitante', $idNuevoVisitante)
+					->where('id_ubicacion', $arrayPermisos[$j])
+					->delete();
+					 
+					 DB::table('ohxqc_permisos')->insert([
 
                         'id_permiso' => $idmaxi[0]->nextval,
                         'id_empresa_visitante' => $idNuevoVisitante,
@@ -1254,7 +1298,7 @@ class RegistroVisitanteController extends Controller
                 
                
             }else{
-                $idmaxiv =  DB::select("select nextval('ohxqc_visitantes_seq'::regclass)");
+                $idmaxiv =  DB::select("select nextval('ohxqc_visitantes_id_visitante_seq'::regclass)");
 
                 array_push($I_VISTANTE, array(
                         'id_visitante' => $idmaxiv[0]->nextval,
@@ -1301,7 +1345,7 @@ class RegistroVisitanteController extends Controller
                         //insertamos los permisos para cada visitante en la sede actual
                 for($j = 0; $j < count($arrayPermisos); $j++){
                             
-                    $idmaxi =  DB::select("select nextval('ohxqc_permisos_seq'::regclass)");
+                    $idmaxi =  DB::select("select nextval('ohxqc_permisos_id_permiso_seq'::regclass)");
                     array_push($I_PERMISO , array (
                         'id_permiso' =>  $idmaxi[0]->nextval,
                         'id_empresa_visitante' =>  $idmaxiv[0]->nextval,
@@ -1331,17 +1375,23 @@ class RegistroVisitanteController extends Controller
     public function validarExcel($urlDocumento, $idSolicitud)
     {
         
-      //  $ruta = storage_path('app\public/'.$urlDocumento);
-        $ruta ='/app/Portal_Sica/storage/app/public/'.$urlDocumento;
+        //$ruta = storage_path('app\public/'.$urlDocumento);
+		
+        //$ruta = asset('dxtemp/' ).'/'.$urlDocumento;
+		 
+		$ruta = Storage::disk('public')->path($urlDocumento) ;
+		
+		
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
         $reader->setReadDataOnly(TRUE);
         
         $spreadsheet = $reader->load($ruta);
+		
         $worksheet = $spreadsheet->getActiveSheet();
 
         $cantFilas = $worksheet->getHighestRow();
 
-
+	    
         $arrayColumnas = ['G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
         $arrayColumnasPermitidas = ['A', 'B', 'C', 'D', 'E', 'F'];
 
@@ -1539,7 +1589,7 @@ class RegistroVisitanteController extends Controller
                         }
                         $arrayDocumentos = array();
                         for ($i=2; $i < count($arrayIdentidades)+2 ; $i++) { 
-                            $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_seq'::regclass)");
+                            $idmaxi =  DB::select("select nextval('ohxqc_documentos_solicitud_id_registro_seq'::regclass)");
                             array_push($arrayDocumentos, array(
                                 'id_registro' => $idmaxi[0]->nextval,
                                 'tipo_identificacion' => $arrayTiposDocu[$i],
@@ -1597,7 +1647,7 @@ class RegistroVisitanteController extends Controller
         ->select('ubi.id_ubicacion', 'ubi.descripcion')
         ->join('ohxqc_empresas as emp', 'emp.sede_especifica_id', 'ubi.id_ubicacion')
         ->where('emp.codigo_empresa', $idempresa)
-        ->whereNotIn('emp.sede_especifica_id',[2])  // poner la sede centro empresa
+       // ->whereNotIn('emp.sede_especifica_id',[2])  // poner la sede centro empresa
         ->orderBy('ubi.descripcion')
         ->get();
 
@@ -1628,7 +1678,7 @@ class RegistroVisitanteController extends Controller
             ->get();
 
         //Siendo colaborador y escoge empresa externa, debe ver todas las empresas externas
-        }else if($tipo == 4 && $grupo == 'CARVAJAL'){
+        }else if( ($tipo == 4 || $tipo == 5 )&& $grupo == 'CARVAJAL'){
             $consulta = DB::table('ohxqc_empresas')
             ->select('codigo_empresa', 'descripcion')
             ->distinct('descripcion')
@@ -1638,7 +1688,7 @@ class RegistroVisitanteController extends Controller
             ->get();
 
         //Si no es colaborador, solo debe ver la empresa de él mismo
-        }else if($tipo == 4 && $grupo == 'EXTERNA'){
+        }else if(($tipo == 4 || $tipo == 5 )&& $grupo == 'EXTERNA'){
             
             $consulta = DB::table('ohxqc_empresas')
             ->select('codigo_empresa', 'descripcion')

@@ -251,7 +251,7 @@ class PermisosUnitariosController extends Controller
                  
                  
                     for($i=0;$i<(count($permisos)-1);$i++){
-                        $idmaxi =  DB::select("select nextval('ohxqc_permisos_id_permiso_seq'::regclass)");
+                        $idmaxi =  DB::select("select nextval('ohxqc_permisos_seq'::regclass)");
                         $inserta = DB::table('ohxqc_permisos')->insert([
                             'id_permiso' =>  $idmaxi[0]->nextval,
                             'id_empresa_visitante' => $idEmpresaVisitante,

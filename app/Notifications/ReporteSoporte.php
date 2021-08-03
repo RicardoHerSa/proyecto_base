@@ -24,9 +24,10 @@ class ReporteSoporte extends Notification
     public $i_detalleidSolicitud ;
     public $i_tipo ;
 
-    public function __construct($detalle,$tipo)
+    public function __construct($T_nuevo,$T_inactivo,$tipo)
     {
-        $this->i_detalleidSolicitud = $detalle;
+        $this->i_T_nuevo = $T_nuevo;
+        $this->i_T_inactivo = $T_inactivo;
         $this->i_tipo = $tipo;
         
     }
@@ -56,7 +57,9 @@ class ReporteSoporte extends Notification
                     ->subject('Creación de Usuarios Sica')
                     ->greeting('Buen Día')
                     ->line('El Sistema Integral Control de Acceso (SICA) le informa ' )
-                    ->line('CORREO DE PRUEBA Total :' . $this->i_detalleidSolicitud )
+                    ->line('Total de  Nuevos Usuarios :' . $this->i_T_nuevo )
+                    ->line('Total de Usuarios Inactivados :' . $this->i_T_inactivo )
+                    ->line( 'Fecha: ' .now() )
                     ->line(new HtmlString('<br>' ))
                     ->line(new HtmlString('<br>' ))
                     ->salutation('Cordialmente:');
@@ -72,7 +75,6 @@ class ReporteSoporte extends Notification
                 ->action('EJECUTAR SERVICIO', url($url))
                 ->line(new HtmlString('<br>' ))
                 ->salutation('Cordialmente:');
-
        }
 
 

@@ -7,7 +7,10 @@ use App\Services\CreateUsersSica;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\ReporteSoporte;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User\User;
+use Illuminate\Support\Facades\Log;
+
 class CreateUsers extends Command
 {
     /**
@@ -41,24 +44,8 @@ class CreateUsers extends Command
      */
     public function handle()
     {
-        
-        
-        $user =  new CreateUsersSica();
-        $Total = $user->getUserTotal();
-        
-      
-      if ($Total == 0) {
-
-        Notification::route('mail',['david.guanga@carvajal.com'])->notify(new ReporteSoporte( $Total ,'OK'));
-
-       }else{
-
-        Notification::route('mail',['david.guanga@carvajal.com'])->notify(new ReporteSoporte( $Total ,'ERROR'));
-      }
-        
-           
-        
-
+      $user =  new CreateUsersSica();
+      $user->run();
 
     }
 }

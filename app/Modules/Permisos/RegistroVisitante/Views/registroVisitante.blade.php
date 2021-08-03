@@ -86,7 +86,7 @@
         <div class="col-xs-12 col-md-12 col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h5>Formulario Solicitud de Ingreso  </h5>
+                    <h5>Formulario de Solicitud para el Ingreso Contratista , Visitante y Usuarios Empresas Externas  </h5>
                 </div>
                 <div class="card-body">
                     <p style="color:red" class="card-text">Señor solicitante tener en cuenta:</p>
@@ -463,9 +463,10 @@
     function ocultaInput()
     {
         var texto = $('select[name="tipoIngreso"] option:selected').text();
+		var tipo = $('select[name="tipoIngreso"] option:selected').val();
         var txt = texto.substr(0,3);
-        console.log(txt);
-        if(txt != "CON" && txt != "Se"){
+       
+        if(tipo != 2){
                 $("#contenedorContratista").hide();
                 $("#empresaContratista").val('')
                 $("#anexo").removeAttr('required');
@@ -1004,6 +1005,7 @@
             }else if(labor.length == 0){
                 alert('Campo Incompleto - Labor a Realizar.');
                 return false;
+				
             }else{
                 $("#btnEnviar").hide();
                 $("#loading").show();

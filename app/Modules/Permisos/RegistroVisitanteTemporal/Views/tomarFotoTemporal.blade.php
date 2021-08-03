@@ -15,13 +15,13 @@
             <div class="col-xs-12 col-md-3 col-lg-3">
                 <p>Foto Actual</p>
               
-                @if (!file_exists(asset('../storage/app/public/fotos/').'/'.$cedula.'.jpg'))
-                     <img class="img-thumbnail" src="{{asset('../storage/app/public/fotos/').'/'.$cedula.'.jpg'}}" alt="">
-                @else
-                     <img class="img-thumbnail" src='{{asset('../storage/app/public/fotos/person.png')}}'  width='190'>  
-                @endif
                 
+				
+				<img  
+							onerror="this.src='{{asset('/fotos/fotos/person.png')}}'"
+							 class='img-thumbnail' src='{{ asset('/fotos/fotos/'.$cedula.'.jpg') }}' width='60%' />
                 
+                 
             </div>
             <div class="col-xs-12 col-md-6 col-lg-6">
                 @if (Session::has('msj') && Session::has('msj') == 'ok')

@@ -96,7 +96,7 @@ class Guard implements GuardInterface
         $this->fireBindingEvent($username, $password);
         $this->fireBoundEvent($username, $password);
 
-       /* try {
+        try {
             if (@$this->connection->bind($username, $password) === true) {
                 $this->fireBoundEvent($username, $password);
             } else {
@@ -107,7 +107,7 @@ class Guard implements GuardInterface
 
             throw (new BindException($e->getMessage(), $e->getCode(), $e))
                 ->setDetailedError($this->connection->getDetailedError());
-        }*/
+        }
     }
 
     /**

@@ -224,7 +224,7 @@ class PorterosController extends Controller
 
     public function asociarPorterias()
     {
-        $porteros = DB::table('ohxqc_porteros')->select('id', 'usuario')->where('activo', 'S')->where('id_sede', '>', 0)->get(); 
+        $porteros = DB::table('ohxqc_porteros')->select('id', 'usuario')->where('activo', 'S')->get(); 
 
         return view('Ubicaciones::asociarPorterias', compact('porteros'));
     }

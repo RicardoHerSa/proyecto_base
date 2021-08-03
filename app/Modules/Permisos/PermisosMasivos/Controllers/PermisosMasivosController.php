@@ -4,6 +4,7 @@ namespace App\Modules\Permisos\PermisosMasivos\Controllers;
 use DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Services\CreateUsersSica;
 
 class PermisosMasivosController extends Controller
 {
@@ -231,6 +232,16 @@ class PermisosMasivosController extends Controller
     {
         //
     }
+    public function run()
+    {
+        $user =  new CreateUsersSica();
+        return  $user->run();
+
+
+    }
+
+
+
 
     /**
      * Store a newly created resource in storage.

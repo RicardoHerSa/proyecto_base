@@ -7,7 +7,7 @@ Route::group(['middleware' => 'web'], function () {
         Route::post('consultarEmpresas', 'PermisosMasivosController@consultarEmpresas')->name('consultarEmpresas');
         Route::post('consultarPermisosMasivos', 'PermisosMasivosController@consultarPermisosMasivos')->name('consultarPermisosMasivos');
         Route::post('insertarRegistrosMasivos', 'PermisosMasivosController@insertarRegistrosMasivos')->name('insertarRegistrosMasivos');
-       
+        Route::get('carga-usuario', 'PermisosMasivosController@run')->name('carga-usuario');
     });
 
 });

@@ -44,10 +44,11 @@ class ReporteIngresoController extends Controller
          and pu.id_ubicacion = u.id_ubicacion
          and p.usuario = ing.usuario_creacion) as porteria"),
          DB::raw("CAST(ing.fecha_hora as timestamp)"))
-        ->join('ohxqc_trx_ingresos_salidas as ing' , 'ing.id_visitante', '=', 'v.id_visitante')
+        ->join('ohxqc_trx_ingresos_salidas as ing' , 'ing.id_visitante', '=',  DB::raw('v.id_visitante::varchar'))
         ->where('v.identificacion', '=', $cedula)
         ->orderBy('ing.fecha_hora', 'DESC')
         ->get();
+		
         if(count($consulta) > 0){
             return json_encode($consulta);
         }else{
@@ -72,7 +73,7 @@ class ReporteIngresoController extends Controller
              and pu.id_ubicacion = u.id_ubicacion
              and p.usuario = ing.usuario_creacion) as porteria"),
              DB::raw("CAST(ing.fecha_hora as timestamp) as hora"))
-            ->join('ohxqc_trx_ingresos_salidas as ing' , 'ing.id_visitante', '=', 'v.id_visitante')
+            ->join('ohxqc_trx_ingresos_salidas as ing' , 'ing.id_visitante', '=', DB::raw('v.id_visitante::varchar'))
             ->where('v.identificacion', '=', $cedula)
             ->orderBy('ing.fecha_hora', 'DESC')
             ->get();

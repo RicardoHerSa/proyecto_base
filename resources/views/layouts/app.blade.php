@@ -157,8 +157,61 @@
                         </ul>
 
                         <ul class="navbar-nav ml-auto">
+                            @php
+                            //Validar si el usuario es aprobador de algun flujo, para saber si mostrar las notificaciones
+                            $aprobador = DB::table('ohxqc_config_solicitud_empresas')
+                            ->where('usuario_aprobador_id', auth()->user()->id)->get();
+                            if(count($aprobador) > 0){
+                                $notificaciones = DB::table('ohxqc_notificacion_solicitud')
+                                ->where('id_aprobador', auth()->user()->id)
+                                ->orderBy('id_solicitante', 'DESC')
+                                ->get();
+                                
+                                $arrayInfoNoti = array();
+                                if(count($notificaciones) > 0){
+                                foreach($notificaciones as $noti){
+                                        $infoSolicitud = DB::table('ohxqc_solicitud_por_aprobar')
+                                        ->select('id_solicitud', 'fecha_registro', 'estado as estGeneral', 'niveles', 'nivel_actual')
+                                        ->where('tipo_visitante', $noti->id_tipov)
+                                        ->where('sede_id', $noti->id_sede)
+                                        ->where('id_solicitud', $noti->id_solicitante)
+                                        ->get();
+                                        foreach($infoSolicitud as $info){
+
+                                            $arrayInfoNoti[] = array('id_solicitud'=>$info->id_solicitud, 'fecha_registro'=>$info->fecha_registro, 'estGeneral'=>$info->estGeneral,'niveles'=>$info->niveles,'nivel_actual'=>$info->nivel_actual,'nivel_aprobador'=>$noti->nivel_aprobador, 'url' => $noti->url, 'visto'=>$noti->visto);
+                                        }
+                                    }
+                                // echo "<pre>";
+                                    //print_r($arrayInfoNoti);
+                                    $cantNotificaciones = 0;
+                                    $cantTotalSoli = 0;
+                                    foreach($arrayInfoNoti as $inf){
+                                        if ($inf['nivel_actual'] == $inf['nivel_aprobador'] && $inf['estGeneral'] == 'Pendiente'){
+                                            $cantNotificaciones++;
+                                        }
+                                
+                                        $cantTotalSoli++;
+                                    }
+
+                                }else{
+                                    $cantTotalSoli = 0;
+                                    $cantNotificaciones = 0;
+                                }
+                            
+                            }else{
+                                $aprobador = false;
+                                $cantTotalSoli = 0;
+                                $cantNotificaciones = 0;
+                                $arrayInfoNoti = array();
+                            }
+                            @endphp 
+                                @if ($aprobador)
+                                    <li class="nav-item">
+                                        <a data-toggle="modal" data-target="#modalNotificacion2" href="#"><i class="fa fa-bell" aria-hidden="true"></i><span> ({{$cantNotificaciones}}) </span> </a>
+                                    </li>
+                                @endif
                             <li class="nav-item">
-                                <a> {{ Auth::user()->name }}   &nbsp;</a>
+                                <a>  {{ ' '. Auth::user()->name }}   &nbsp;</a>
                             </li>
                             <li>
                                 <a  href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" title="Salir">
@@ -218,6 +271,100 @@
         <main class="py-4 principal-container">
             @yield('content')
         </main>
+        @if (isset($aprobador) && $aprobador)
+           <!--Modal notificacion-->
+           <div class="modal fade " id="modalNotificacion2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Solicitudes Por Validar</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group">
+                        <div class="row">
+                            <div class="col-xs-12 col-md-8 col-lg-8"></div>
+                            <div class="col-xs-12 col-md-4 col-lg-4">
+                                <h6>Total Solicitudes En Mi Flujo: <b>{{$cantTotalSoli}}</b></h6>
+                                
+                            </div>
+                            
+                        </div>
+                        <table  id="tblistado" class="table table-light">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#Solicitud</th>
+                                    <th>Fecha Registro</th>
+                                    <th>Estado General</th>
+                                    <th>Flujo Actual</th>
+                                    <th>¿Validada en mi nivel?</th>
+                                    <th>Visualizar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                              
+                                @foreach ($arrayInfoNoti as $noti)
+                                @php
+                                    if ($noti['nivel_actual'] == $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Pendiente'){
+                                        $respuesta = "NO";
+                                    }elseif ($noti['nivel_actual'] == $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Aprobado'){
+                                        $respuesta = "SI";
+                                    } elseif ($noti['nivel_actual'] != $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Aprobado' || $noti['nivel_actual'] != $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Pendiente'){
+                                        $respuesta = "SI";
+                                    }elseif ($noti['nivel_actual'] == $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Rechazado'){
+                                        $respuesta = "SI";
+                                    }elseif($noti['nivel_actual'] != $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Rechazado' && $noti['nivel_actual'] < $noti['nivel_aprobador']){
+                                        $respuesta = "NO";
+                                    }elseif($noti['nivel_actual'] != $noti['nivel_aprobador'] && $noti['estGeneral'] == 'Rechazado' && $noti['nivel_actual'] > $noti['nivel_aprobador']){
+                                        $respuesta = "SI";
+                                    }
+                                    if($respuesta == "NO" && $noti['visto'] == "N"){
+                                        $color = "rgba(0,0,0,.075)";
+                                    }else if($respuesta == "NO" && $noti['visto'] == "S" && $noti['estGeneral'] == "Pendiente"){
+                                        $color = "rgb(255 247 2 / 28%)";
+                                    }else{
+                                        $color = "";
+                                    }
+                                @endphp
+                                    <tr style="background: {{$color}}">
+                                        <td>{{$noti['id_solicitud']}}</td>
+                                        <td>{{$noti['fecha_registro']}}</td>
+                                        @switch($noti['estGeneral'])
+                                            @case('Aprobado')
+                                                <td><span class="badge badge-success">{{$noti['estGeneral']}}</span></td>
+                                                @break
+                                            @case('Pendiente')
+                                                <td><span class="badge badge-warning">{{$noti['estGeneral']}}</span></td>
+                                                @break
+                                            @case('Rechazado')
+                                                <td><span class="badge badge-danger">{{$noti['estGeneral']}}</span></td>
+                                                @break
+                                                
+                                        @endswitch
+                                            <td>{{$noti['nivel_actual'].'/'.$noti['niveles']}}</td>
+                                            <td>{{$respuesta}}</td>
+                                     
+                                        <td><a onclick="visto({{$noti['id_solicitud']}})" href="{{$noti['url']}}" class="btn btn-primary"><i class="fa fa-eye"></i></a></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        @if ($cantTotalSoli == 0)
+                        <p>Actualmente no hay solicitudes por validar en el flujo al que perteneces</p>
+                         @endif
+                       
+                       
+                      </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+            </div>
+             </div>
+        @endif
 
     </div>
 
@@ -242,6 +389,24 @@
                 window.location.href = linkTitle;
             });
         });
+
+        function visto(idsolicitud)
+         {
+            var token = '{{csrf_token()}}';
+            $.ajax({
+                    type:  'POST',
+                    async: true,
+                    url: "{{route('asignar.visto')}}", 
+                    data: {'id':idsolicitud,_token:token},
+                    cache: false,
+                    success: function(response){
+                        //toastr.success('Visto');
+                        },
+                    error:function(xhr, ajaxOptions, thrownError) {
+                        alert(thrownError);
+                        }
+                    });
+         }
     </script>
 
     <script src="{{ asset('js/layaout.js') }}"></script>
@@ -290,12 +455,6 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 
 
 </body>
-@if (!isset($modulo))
-    <footer class="cts">
-        Carvajal © 2020 <br>
-        
-    </footer>
-    
-@endif
+
 
 </html>

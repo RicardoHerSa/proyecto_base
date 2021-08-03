@@ -456,7 +456,7 @@ class IngresoController extends Controller
                         border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                         <tr>	 
                         <td> 
-                        <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/person.png')."'WIDTH='60%' > 
+                        <br><img class='img-thumbnail' src='".asset('/fotos/fotos/person.png')."'WIDTH='60%' > 
                         </td> 
                         </tr> 
                         <tr> 
@@ -492,7 +492,7 @@ class IngresoController extends Controller
                         border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                         <tr>	 
                         <td> 
-                        <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/person.png')."'WIDTH='60%' > 
+                        <br><img class='img-thumbnail' src='".asset('/fotos/fotos/person.png')."'WIDTH='60%' > 
                         </td> 
                         </tr> 
                         <tr> 
@@ -567,7 +567,7 @@ class IngresoController extends Controller
                     border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                     <tr>	 
                     <td> 
-                    <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/person.png')."'WIDTH='60%'  > 
+                    <br><img class='img-thumbnail' src='".asset('/fotos/fotos/person.png')."'WIDTH='60%'  > 
                     </td> 
                     </tr> 
                     <tr> 
@@ -647,7 +647,7 @@ class IngresoController extends Controller
                         border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                         <tr>	 
                         <td> 
-                        <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/'.$row[2].'.jpg')."'WIDTH='80%'  > 
+                        <br><img class='img-thumbnail' src='".asset('/fotos/fotos/'.$row[2].'.jpg')."'WIDTH='80%'  > 
                         </td> 
                         </tr> 
                         <tr> 
@@ -682,7 +682,7 @@ class IngresoController extends Controller
                         border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                         <tr>	 
                         <td> 
-                        <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/'.$row[2].'.jpg')."'WIDTH='80%'  > 
+                        <br><img class='img-thumbnail' src='".asset('/fotos/fotos/'.$row[2].'.jpg')."'WIDTH='80%'  > 
                         </td> 
                         </tr> 
                         <tr> 
@@ -755,7 +755,7 @@ class IngresoController extends Controller
                     border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                     <tr>	 
                     <td> 
-                    <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/'.$row[2].'.jpg')."'WIDTH='80%'  >
+                    <br><img class='img-thumbnail' src='".asset('/fotos/fotos/'.$row[2].'.jpg')."'WIDTH='80%'  >
                     </td> 
                     </tr> 
                     <tr> 
@@ -831,7 +831,7 @@ class IngresoController extends Controller
                         border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
                         <tr>	 
                         <td> 
-                        <br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/person.png')."' WIDTH='50%'  >
+                        <br><img class='img-thumbnail' src='".asset('/fotos/fotos/person.png')."' WIDTH='50%'  >
                         </td> 
                         </tr> 
                         <tr> 
@@ -1657,9 +1657,9 @@ class IngresoController extends Controller
 						<tr><td>";
 						
 				if($row[4]=='S'){
-					$tabla.="<br><img  class='img-thumbnail' src='".asset('../storage/app/public/fotos/'.$row[2].'.jpg')."'WIDTH='80%' >";
+					$tabla.="<br><img  class='img-thumbnail' src='".asset('/fotos/fotos/'.$row[2].'.jpg')."'WIDTH='80%' >";
 				}else{
-					$tabla.="<br><img class='img-thumbnail' src='".asset('../storage/app/public/fotos/person.png')."'WIDTH='60%' > ";
+					$tabla.="<br><img class='img-thumbnail' src='".asset('/fotos/fotos/person.png')."'WIDTH='60%' > ";
 				}	
 				
 				$tabla.="</td> 
@@ -1674,7 +1674,7 @@ class IngresoController extends Controller
 					<td><label>".$row[3]."</label></td> 
 				</tr> 
 				<tr> 
-					<td><label>DESACTIVO</label></td> 
+					<td><label>INACTIVO</label></td> 
 				</tr> 
 				</table>";
 				

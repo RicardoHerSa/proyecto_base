@@ -27,11 +27,14 @@
                             <div class="card" style="width: 30rem;">
                                 
                                 <div class="card-body">
-                                  <h4 class="card-title"><i class="fa fa-user-circle" aria-hidden="true"></i> {{ Auth::user()->name }}</h4>
-                                  <h5 class="card-text"><i class="fa fa-envelope" aria-hidden="true"></i> {{ Auth::user()->email }}</h5>
+                                  <p style ="color: #000000;  font-size: 20px;" class="card-title"><i class="fa fa-user-circle" aria-hidden="true"></i> {{ Auth::user()->name }}</p>
+                                  <p style ="color: #000000;"  class="card-text"><i class="fa fa-envelope" aria-hidden="true"></i> {{ Auth::user()->email }}</p>
                                   <br>
-                                  <br>
+                                  
                                   <h6 class="card-text"> {{ now() }}</h6>
+								  <a  type="button" class="btn btn-primary" target="_blank" href="{{ asset('/resources/manual/Manual Sica v2.0.pdf') }}">
+								  
+								  <i class="fa fa-download" aria-hidden="true"></i>Manual de Uso</a> 
                                   <br>
                                   
                                 
@@ -60,5 +63,7 @@
 <br>
 <br>
 <br>
+@include('layouts.footer', ['modulo' => 'unitario'])
 @endsection
+
 

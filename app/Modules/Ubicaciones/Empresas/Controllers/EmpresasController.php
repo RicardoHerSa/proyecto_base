@@ -248,10 +248,11 @@ class EmpresasController extends Controller
             'fecha_creacion' => now(),
             'usuario_actualizacion' => 'admin',
             'fecha_actualizacion' => now(),
-            'id_sede' => 0,
-            'id_siso' => 0,
+            'id_sede' => $sede,
+           // 'id_siso' => 0,
             'tipo_empresa' =>$grupo,
             'sede_especifica_id' => $sede
+			
         ]);
 
         if($inserta){

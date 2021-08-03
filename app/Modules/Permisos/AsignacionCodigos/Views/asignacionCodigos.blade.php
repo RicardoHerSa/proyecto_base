@@ -57,8 +57,11 @@
                 <div class="col-xs-12 col-md-6 col-lg-6">
                      
 
-                    <img onerror="this.src='{{asset('../storage/app/public/fotos/person.png')}}'"  style="width:80%" src="{{ asset('../storage/app/public/fotos/'.$cedulVi.'.jpg') }}"  width="50%" >
-                    
+                   
+					<img  
+							onerror="this.src='{{asset('/fotos/fotos/person.png')}}'"
+							 class='img-thumbnail' src='{{ asset('/fotos/fotos/'.$row[2].'.jpg') }}' width='60%' />
+                       
                 </div>
                 <div class="col-xs-12 col-md-6 col-lg-6">
                     <ul style="list-style: none;margin-top:30px">

@@ -6,7 +6,7 @@
         <div class="col-xs-12 col-md-8 col-lg-8">
             <div class="card">
                 <div class="card-header">
-                   <strong> Registrar Nueva Empresa </strong>
+                   <strong> Registrar Nueva Empresa</strong>
                 </div>
                 <div class="card-body">
                     <a href="{{ url('/Empresas') }}" title="Volver"><button class="btn btn-warning"><i class="fa fa-arrow-left" aria-hidden="true"></i>Atrás</button></a>
@@ -129,7 +129,7 @@
                             $("#lblNombre").text("Empresa Encontrada:");
                             $("#encontrada").val(1);
                             //acomodo medidas de campos
-                            $("#contenedorPertenece").hide();
+                           // $("#contenedorPertenece").hide();
                             $("#contenedorEstado").hide();
                             var clasesOld = ['col-md-3', 'col-lg-3', 'col-md-5', 'col-lg-5'];
                             var clasesnew = ['col-md-5', 'col-lg-5', 'col-md-6', 'col-lg-6'];

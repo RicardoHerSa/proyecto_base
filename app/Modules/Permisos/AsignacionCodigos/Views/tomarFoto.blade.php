@@ -14,7 +14,9 @@
         <div class="row mt-5">
             <div class="col-xs-12 col-md-3 col-lg-3">
                 <p>Foto Actual</p>
-                <img class="img-thumbnail" src="{{ asset('../storage/app/public/fotos/'.$cedula.'.jpg') }}" alt="">
+               <img  
+							onerror="this.src='{{asset('/fotos/fotos/person.png')}}'"
+							 class='img-thumbnail' src='{{ asset('/fotos/fotos/'.$cedula.'.jpg') }}' width='70%' />
             </div>
             <div class="col-xs-12 col-md-6 col-lg-6">
                 @if (Session::has('msj') && Session::has('msj') == 'ok')

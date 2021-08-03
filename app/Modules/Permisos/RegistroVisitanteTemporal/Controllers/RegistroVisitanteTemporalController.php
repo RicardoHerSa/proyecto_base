@@ -236,7 +236,7 @@ class RegistroVisitanteTemporalController extends Controller
         $listaEmpresas = DB::table('ohxqc_empresas')
         ->select(DB::raw('DISTINCT(codigo_empresa)'),'descripcion')
         ->where('activo', '=', 'S')
-        ->where('id_sede', '=', 1)
+       // ->where('id_sede', '=', 1)
         ->orderBy('descripcion')
         ->get();
         return $listaEmpresas;
@@ -383,7 +383,7 @@ class RegistroVisitanteTemporalController extends Controller
                 border-left:0px; font-size:20px;font-family:'Lato', sans-serif'> 
             <tr>	 
                 <td> 
-                <img src='".asset('../storage/app/public/fotos/').$row[2].".jpg' height='200' width='245'> 
+                <img src='".asset('/fotos/fotos/').$row[2].".jpg' height='200' width='245'> 
                 </td> 
                 <td>
                 <table>
@@ -444,7 +444,8 @@ class RegistroVisitanteTemporalController extends Controller
         ->where('identificacion', '=', $cedula)
         ->get();
         $fecha_ini= date('Y-m-d');
-        $fecha_fin = date('Y-m-d', strtotime("+1 day"));
+        //$fecha_fin = date('Y-m-d', strtotime("+1 day"));
+		$fecha_fin = date('Y-m-d');
         if(count($consulta) > 0){
             $id_v = "";
             foreach($consulta as $c){
@@ -460,7 +461,7 @@ class RegistroVisitanteTemporalController extends Controller
                 //ACTUALIZA VISITANTE
 
                 $actual_date = date('Y-m-d');
-                if($actual_date > $fechaFinalIngreso ){
+               // if($actual_date > $fechaFinalIngreso ){
                       //***ELIMINA REGISTROS ANTERIORES
                     $eliminaPermisos = DB::table('ohxqc_permisos')
                     ->whereIn('id_permiso', function($query) use($cedula){
@@ -472,9 +473,9 @@ class RegistroVisitanteTemporalController extends Controller
                     })->delete();
                    // var_dump($eliminaPermisos);
                    // die();
-                }else{
+                //}else{
                     //echo "no ".$actual_date." -> ".$fechaFinalIngreso ." ".$cedula;
-                }
+               // }
                 $actualizaVisitante = DB::table('ohxqc_visitantes')
                 ->where('identificacion', '=', $cedula)
                 ->where('id_visitante', '=', $id_v)
@@ -509,7 +510,7 @@ class RegistroVisitanteTemporalController extends Controller
                     $id_empresa_v =  $consid->id_empresa_visitante;
                 }
         }else{
-            $idmaxi =  DB::select("select nextval('ohxqc_visitantes_seq'::regclass)");
+            $idmaxi =  DB::select("select nextval('ohxqc_visitantes_id_visitante_seq'::regclass)");
             $inserta = DB::table('ohxqc_visitantes')->insert([
                  'id_visitante' => $idmaxi[0]->nextval,
                  'identificacion_jefe' => null,
@@ -726,7 +727,7 @@ class RegistroVisitanteTemporalController extends Controller
                     $insertaPermisos = DB::table('ohxqc_permisos')->insert([
                         'id_empresa_visitante' => $id_empresa_v,
                         'id_ubicacion' => $id_ub,
-                        'id_horario' => 8,
+                        'id_horario' => 5,
                         'identificacion_responsable' => null,
                         'fecha_inicio' =>  $fecha_ini,
                         'fecha_fin' => $fecha_fin,

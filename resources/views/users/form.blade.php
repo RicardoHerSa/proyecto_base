@@ -86,12 +86,13 @@ $style = $visibility ?? '';
                         {!! $errors->first('profile_ordinal', '<p class="help-block">:message</p>') !!}
                     </div>
                 </div>
+				
                 <div class="form-group {{ $errors->has('gestor_externo') ? 'has-error' : ''}}">
                     <label for="gestor_externo" class="col-sm-4 control-label">{{ '¿Es gestor externo?' }}</label>
                     <div class="col-sm-12">
                         <select class="form-control" name="gestor_externo" id="gestor_externo" value="{{ isset($user->gestor_externo) ? $user->gestor_externo : ''}}">
-                            <option value="0">No</option>
-                            <option value="1">Si</option>
+                            <option {{$user->gestor_externo =='0'? 'selected':''}} value="0">No</option>
+                            <option {{$user->gestor_externo =='1'? 'selected':''}} value="1">Si</option>
                         </select>
                         {!! $errors->first('parent_id', '<p class="help-block">:message</p>') !!}
                     </div>
