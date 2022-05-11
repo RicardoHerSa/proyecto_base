@@ -2,7 +2,7 @@
 ## Carvajal Portal Base
 
 <p>
-    Proyecto base para futuros desarrollos con la versión de laravel: 8.35.1.
+    Proyecto base para futuros desarrollos con la versión de laravel: 8.35.1. y PHP 7.2^
     Tener en cuenta los siguientes items:
 </p>
 <ul>
