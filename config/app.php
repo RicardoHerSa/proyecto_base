@@ -12,8 +12,8 @@ return [
     | any other location as required by the application or its packages.
     |
     */
-    'name' => env('APP_NAME', 'Portal Cliente'),
-    'empresa' => env('APP_EMPRESA', 'Portal Cliente'),
+    'name' => env('APP_NAME', 'Portal Base'),
+    'empresa' => env('APP_EMPRESA', 'Portal Base'),
 
     /*
     |--------------------------------------------------------------------------

@@ -52,34 +52,14 @@ class ReporteSoporte extends Notification
     public function toMail($notifiable)
     {
        
-       if($this->i_tipo == 'OK'){
         return (new MailMessage)
-                    ->subject('Creación de Usuarios Sica')
-                    ->greeting('Buen Día')
-                    ->line('El Sistema Integral Control de Acceso (SICA) le informa ' )
-                    ->line('Total de  Nuevos Usuarios :' . $this->i_T_nuevo )
-                    ->line('Total de Usuarios Inactivados :' . $this->i_T_inactivo )
-                    ->line( 'Fecha: ' .now() )
+                    ->subject('Titulo de asunto')
+                    ->greeting('Saludo')
+                    ->line('En cada linea se escribe un texto' )
+                    ->line('Cada linea será como una etiqueta de aprrafo' )
                     ->line(new HtmlString('<br>' ))
                     ->line(new HtmlString('<br>' ))
                     ->salutation('Cordialmente:');
-       } else {
-       
-        $url = 'https://172.19.143.6:9455/services/SicaZzInterfaceHrsysMsService?tryit';
-        return (new MailMessage)
-                ->subject('ERROR - Creación de Usuarios Sica')
-                ->greeting('Buen Día')
-                ->line('El Sistema Integral Control de Acceso (SICA) le informa ' )
-                ->line('La Interfaz  de cargue de datos de Hrsys a Sica' )
-                ->line('NO  se ejecuto hoy ' . now() )
-                ->action('EJECUTAR SERVICIO', url($url))
-                ->line(new HtmlString('<br>' ))
-                ->salutation('Cordialmente:');
-       }
-
-
-
-
 
     }
 

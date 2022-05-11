@@ -1,0 +1,336 @@
+--TABLA: jess_menu;
+
+CREATE TABLE jess_menu (
+	id int4 NOT NULL DEFAULT nextval('jess_menu_seq'::regclass),
+	menutype varchar NOT NULL,
+	title varchar NOT NULL,
+	alias varchar NULL,
+	note varchar NULL,
+	"path" varchar NULL,
+	link varchar NOT NULL,
+	"type" varchar NULL,
+	published int4 NULL,
+	parent_id int4 NULL,
+	"level" int4 NULL,
+	component_id int4 NULL,
+	checked_out int4 NULL,
+	checked_out_time timestamp NULL,
+	browsernav int4 NULL,
+	"access" int4 NULL,
+	img varchar NULL,
+	template_style_id int4 NULL,
+	params varchar NULL,
+	lft int4 NULL,
+	rgt int4 NULL,
+	home int4 NULL,
+	"language" varchar NULL,
+	client_id int4 NULL,
+	updated_at timestamp NULL,
+	created_at timestamp NULL,
+	icono varchar(250) NULL,
+	orden int4 NULL DEFAULT 0,
+	CONSTRAINT jess_menu_pk PRIMARY KEY (id),
+	CONSTRAINT jess_menu_un UNIQUE (client_id, parent_id, alias, language)
+);
+CREATE INDEX jess_menu_alias_idx ON jess_menu USING btree (alias);
+CREATE INDEX jess_menu_component_id_idx ON jess_menu USING btree (component_id, menutype, published, access);
+CREATE INDEX jess_menu_language_idx ON jess_menu USING btree (language);
+CREATE INDEX jess_menu_lft_idx ON jess_menu USING btree (lft, rgt);
+CREATE INDEX jess_menu_menutype_idx ON jess_menu USING btree (menutype);
+CREATE INDEX jess_menu_path_idx ON jess_menu USING btree (path);
+
+--TABLA: jess_menu_viewlevel;
+
+CREATE TABLE jess_menu_viewlevel (
+	id varchar NOT NULL DEFAULT nextval('jess_menu_viewlevel_id_seq'::regclass),
+	menu_id int4 NOT NULL,
+	viewlevel_id int4 NOT NULL,
+	CONSTRAINT jess_menu_viewlevel_pk PRIMARY KEY (id)
+);
+
+
+
+
+--TABLA: jess_password;
+
+CREATE TABLE jess_password (
+	id varchar NOT NULL DEFAULT nextval('jess_password_id_seq'::regclass),
+	id_user int4 NULL,
+	password_user varchar NULL,
+	updated_at timestamp NULL,
+	created_at timestamp NULL,
+	CONSTRAINT jess_password_pk PRIMARY KEY (id)
+);
+
+--jess_password_resets;
+
+CREATE TABLE public.jess_password_resets (
+	id int4 NOT NULL DEFAULT nextval('jess_password_resets_seq'::regclass),
+	email varchar NOT NULL,
+	"token" varchar NOT NULL,
+	created_at timestamp NULL,
+	updated_at timestamp NULL,
+	CONSTRAINT jess_password_resets_pk PRIMARY KEY (id)
+);
+
+
+--TABLA: jess_user_usergroup_map ;
+
+CREATE TABLE jess_user_usergroup_map (
+	id int4 NOT NULL DEFAULT nextval('jess_user_usergroup_map_seq'::regclass),
+	user_id int4 NOT NULL,
+	usergroup_id int4 NOT NULL,
+	CONSTRAINT jess_user_usergroup_map_pk PRIMARY KEY (id)
+);
+
+
+--TABLA: jess_usergroup_viewlevel ;
+
+CREATE TABLE jess_usergroup_viewlevel (
+	id int4 NOT NULL DEFAULT nextval('jess_usergroup_viewlevel_seq'::regclass),
+	usergroup_id int4 NOT NULL,
+	viewlevel_id int4 NOT NULL,
+	CONSTRAINT jess_usergroup_viewlevel_pk PRIMARY KEY (id)
+);
+
+
+--TABLA:jess_usergroups;
+
+CREATE TABLE jess_usergroups (
+	id int4 NOT NULL DEFAULT nextval('jess_usergroups_seq'::regclass),
+	parent_id int4 NOT NULL,
+	lft int4 NULL,
+	title varchar NOT NULL,
+	rgt int4 NULL,
+	companycessid varchar NULL,
+	"level" varchar NULL,
+	created_at timestamp NULL,
+	updated_at timestamp NULL,
+	CONSTRAINT jess_usergroups_pk PRIMARY KEY (id)
+);
+CREATE INDEX jess_usergroups_lft_idx ON jess_usergroups USING btree (lft, rgt);
+CREATE INDEX jess_usergroups_parent_id_idx ON jess_usergroups USING btree (parent_id);
+CREATE INDEX jess_usergroups_title_idx ON jess_usergroups USING btree (title);
+
+
+--TABLA:jess_users ;
+
+CREATE TABLE jess_users (
+	id serial4 NOT NULL,
+	"name" varchar NOT NULL,
+	username varchar NOT NULL,
+	email varchar NOT NULL,
+	"password" varchar(250) NOT NULL,
+	block int4 NULL,
+	sendemail varchar NULL,
+	registerdate timestamp NULL,
+	lastvisitdate timestamp NULL,
+	activation varchar NULL,
+	params varchar NULL,
+	lastresettime timestamp NULL,
+	resetcount int4 NULL,
+	otpkey varchar NULL,
+	otep varchar NULL,
+	requirereset int4 NULL,
+	created_at timestamp NULL,
+	updated_at timestamp NULL,
+	profile_orgcountry varchar NULL,
+	profile_externalid varchar NULL,
+	profile_ordinal int4 NULL,
+	gestor_externo int4 NULL,
+	remember_token varchar NULL,
+	usuario_lda varchar(10) NULL,
+	cl_org_id int4 NULL,
+	cl_cod_pais varchar NULL,
+	cl_idioma varchar(3) NULL,
+	cl_cod_pais_cliente varchar(200) NULL,
+	cl_cupo_sugerido varchar(200) NULL,
+	cl_terminos_pago varchar(2000) NULL,
+	tipo_moneda varchar(7) NULL,
+	id_comercial varchar NULL,
+	telefono varchar(20) NULL,
+	CONSTRAINT jess_users_pk PRIMARY KEY (id)
+);
+CREATE INDEX jess_users_block_idx ON jess_users USING btree (block);
+CREATE INDEX jess_users_email_idx ON jess_users USING btree (email);
+CREATE INDEX jess_users_name_idx ON jess_users USING btree (name);
+CREATE INDEX jess_users_username_idx ON jess_users USING btree (username);
+
+
+--TABLA:jess_viewlevels ;
+
+CREATE TABLE jess_viewlevels (
+	id int4 NOT NULL DEFAULT nextval('jess_viewlevels_seq'::regclass),
+	title varchar NOT NULL,
+	"ordering" int4 NULL,
+	rules varchar NULL,
+	created_at timestamp NULL,
+	updated_at timestamp NULL,
+	CONSTRAINT jess_viewlevels_pk PRIMARY KEY (id),
+	CONSTRAINT jess_viewlevels_un UNIQUE (title)
+);
+
+
+--TABLA:cess_user_ldap ;
+
+CREATE TABLE cess_user_ldap (
+	username varchar(150) NOT NULL,
+	email varchar(100) NOT NULL,
+	cedula varchar(50) NOT NULL,
+	fecha_expiracion date NULL
+);
+
+
+--TABLA:cess_users  ;
+
+CREATE TABLE cess_users (
+	cess_id_user int4 NOT NULL,
+	cess_id_org varchar(30) NOT NULL,
+	cess_id_ext_per varchar(30) NOT NULL,
+	cess_or_ext_per int4 NOT NULL,
+	cess_id_company varchar(100) NOT NULL,
+	cess_dt_start timestamp NULL,
+	cess_dt_end date NOT NULL,
+	cess_username varchar(150) NOT NULL,
+	id varchar NOT NULL DEFAULT nextval('cess_users_id_seq'::regclass),
+	block varchar(2) NULL,
+	cess_id_org_working_obo varchar(30) NULL,
+	cess_id_company_working_obo varchar(100) NULL,
+	cess_id_ext_per_working_obo varchar(30) NULL,
+	cess_or_ext_per_working_obo int4 NULL,
+	cess_dt_create date NULL DEFAULT now(),
+	cess_dt_update date NULL,
+	cess_document varchar(50) NULL,
+	cess_log_process varchar(1000) NULL,
+	updated_at timestamp NULL,
+	created_at timestamp NULL,
+	CONSTRAINT cess_users1_pkey PRIMARY KEY (id)
+);
+
+
+
+CREATE SEQUENCE cess_users_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1;
+
+
+CREATE SEQUENCE jess_menu_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1;
+
+
+
+CREATE SEQUENCE jess_menu_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 329;
+
+
+CREATE SEQUENCE jess_menu_viewlevel_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1;
+
+
+
+CREATE SEQUENCE jess_password_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1;
+
+
+
+CREATE SEQUENCE jess_password_resets_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1;
+
+
+CREATE SEQUENCE jess_password_resets_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 24;
+
+CREATE SEQUENCE jess_user_usergroup_map_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1;
+
+
+CREATE SEQUENCE jess_user_usergroup_map_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 180017;
+
+
+CREATE SEQUENCE jess_usergroup_viewlevel_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1;
+
+
+CREATE SEQUENCE jess_usergroup_viewlevel_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 507;
+
+
+CREATE SEQUENCE jess_usergroups_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1;
+
+
+CREATE SEQUENCE jess_usergroups_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 469;
+
+
+
+CREATE SEQUENCE jess_users_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1;
+
+
+CREATE SEQUENCE jess_viewlevels_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1;
+
+
+CREATE SEQUENCE jess_viewlevels_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 178;
+
+--Creación de usuario por defecto
+
+INSERT INTO jess_users
+(id, name, username, email, "password", block, sendemail, registerdate, lastvisitdate, activation, params, lastresettime, resetcount, otpkey, otep, requirereset, created_at, updated_at, profile_orgcountry, profile_externalid, profile_ordinal, gestor_externo, remember_token, usuario_lda, cl_org_id, cl_cod_pais, cl_idioma, cl_cod_pais_cliente, cl_cupo_sugerido, cl_terminos_pago, tipo_moneda, id_comercial, telefono)
+VALUES(2, 'gestor Usuario', 'gestor_usuario', 'david.guanga@carvajal.com', '$2y$10$PjvigyhiaMsd.TX2fYUogO2Jwif7xuGlizplyR58PZcjMCHTj.Sde', 0, NULL, NULL, '2022-01-27 14:29:09.000', NULL, NULL, '2022-01-19 10:21:18.000', NULL, NULL, NULL, NULL, NULL, '2022-01-27 14:29:09.000', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO cess_users
+(cess_id_user, cess_id_org, cess_id_ext_per, cess_or_ext_per, cess_id_company, cess_dt_start, cess_dt_end, cess_username, id, block, cess_id_org_working_obo, cess_id_company_working_obo, cess_id_ext_per_working_obo, cess_or_ext_per_working_obo, cess_dt_create, cess_dt_update, cess_document, cess_log_process, updated_at, created_at)
+VALUES(2, '1', '1', 1, '1', '2022-01-19 00:00:00.000', '2022-01-19', 'fundacion', '2', NULL, NULL, NULL, NULL, NULL, '2022-01-19', NULL, NULL, NULL, NULL, NULL);
+
+

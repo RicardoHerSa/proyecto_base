@@ -3,29 +3,10 @@
 namespace App\Modules\Cliente\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Cliente\Models\cl_pais;
-use App\Modules\Cliente\Models\cl_tipo_identifica;
-use App\Modules\Cliente\Models\cl_identi_por_pais;
-use App\Modules\Cliente\Models\cl_tipo_persona;
-use App\Modules\Cliente\Models\cl_tipopersona_pais;
-use App\Modules\Cliente\Models\cl_departamento;
-use App\Modules\Cliente\Models\cl_direccion_por_formulario;
-use App\Modules\Cliente\Models\cl_accionista;
-use App\Modules\Cliente\Models\cl_representante;
-use App\Modules\Cliente\Models\cl_referencia_comerciale;
-use App\Modules\Cliente\Models\cl_servicio_etiqueta;
-use App\Modules\Cliente\Models\cl_referencia_bancaria;
-use App\Modules\Cliente\Models\cl_barrios;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use App\Services\Utilidad ;
-use App\Services\adobe;
-use App\Services\validacionCampos ;
 use Illuminate\Support\Facades\Storage;
-use App\Services\FlujoApr;
 use DB;
-use App\Notifications\Correcion;
-use Illuminate\Support\Facades\Notification;
 use Swift_SwiftException;
 
 
@@ -34,6 +15,7 @@ class clienteController extends Controller
     
     public function index()
     {   
+      
        // $url = env('APP_URL_HOME') ;
         //return view('home',compact('url'));
        
